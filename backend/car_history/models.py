@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from rolepermissions.roles import assign_role
+
 
 class User(AbstractUser):
     """ Model użytkownika systemu """
@@ -11,15 +11,10 @@ class User(AbstractUser):
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    first_name = models.CharField(max_length=20, blank=False, null=False)
-    last_name = models.CharField(max_length=50, blank=False, null=False)
-    login = models.CharField(max_length=50,blank=False, null=False,unique=True,editable=True)
-    password = models.CharField(max_length=20,blank=False, null=False,editable=True)
-    mail = models.EmailField() 
+    email = models.EmailField(unique=True)
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        assign_role(self, self.role)  # Automatycznie przypisuje rolę po zapisie użytkownika
+    def __str__(self):
+        return f"{self.username} ({self.role})"
     
 class Vehicle(models.Model):
     """ Model pojazdu przypisanego do użytkownika """
@@ -29,7 +24,7 @@ class Vehicle(models.Model):
     year = models.IntegerField()
     vin = models.CharField(max_length=17, unique=True)
     odometer = models.IntegerField()
-    color = models.CharField()
+    color = models.CharField(max_length=24)
     
     def __str__(self):
         return f"{self.make} {self.model} ({self.year})"
