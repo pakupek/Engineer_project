@@ -29,4 +29,4 @@ COPY . .
 
 EXPOSE 8000
 
-ENTRYPOINT ["/app/backend/entrypoint.sh"]
+ENTRYPOINT ["/backend/entrypoint.sh"]
