@@ -4,17 +4,13 @@ from django.db import models
 
 class User(AbstractUser):
     """ Model użytkownika systemu """
-    ROLE_CHOICES = [
-        ('owner', 'Właściciel pojazdu'),
-        ('service', 'Serwis'),
-        ('buyer', 'Kupujący'),
-    ]
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(unique=True)
+    joined_date = models.DateField(null=True)
 
     def __str__(self):
-        return f"{self.username} ({self.role})"
+        return f"{self.username}"
     
 class Vehicle(models.Model):
     """ Model pojazdu przypisanego do użytkownika """

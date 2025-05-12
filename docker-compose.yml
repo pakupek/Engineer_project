@@ -16,6 +16,8 @@ services:
       - ./backend:/app/backend
     depends_on:
       - db
+    networks:  
+      - app-network
   db:
     container_name: dev-db
     image: postgres:16.1-alpine
@@ -27,6 +29,8 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - app-network
   frontend:
     container_name: dev-frontend
     image: node:20-alpine
@@ -40,3 +44,7 @@ services:
       - /app/frontend/node_modules
 volumes:
   pgdata: {}
+
+networks:
+  app-network:
+    driver: bridge

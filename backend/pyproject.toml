@@ -13,7 +13,12 @@ dependencies = [
     "django-axes (==7.0.2)",
     "sqlparse (==0.5.3)",
     "typing-extensions (==4.12.2)",
-    "tzdata (==2025.2)"
+    "tzdata (==2025.2)",
+    "djangorestframework (>=3.16.0,<4.0.0)",
+    "djangorestframework-simplejwt (>=5.5.0,<6.0.0)",
+    "django-cors-headers (>=4.7.0,<5.0.0)",
+    "psycopg2 (>=2.9.10,<3.0.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)"
 ]
 
 
