@@ -8,9 +8,10 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@csrf_exempt
 def login(request):
     if request.method == 'POST':
         username = request.data.get('username')  
@@ -30,8 +31,8 @@ def login(request):
 
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
-    permission_classes = [permissions.AllowAny, IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

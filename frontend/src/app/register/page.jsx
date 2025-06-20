@@ -45,7 +45,6 @@ export default function Register() {
       const data = await response.json();
     
       if (!response.ok) {
-        // Django często zwraca błędy walidacji w formacie: { field_name: ["error message"] }
         setErrors(data);
         return;
       }

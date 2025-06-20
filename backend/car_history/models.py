@@ -7,7 +7,7 @@ class User(AbstractUser):
     
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(unique=True)
-    joined_date = models.DateField(null=True)
+    joined_date = models.DateField(auto_now_add=True,null=True)
 
     def __str__(self):
         return f"{self.username}"
