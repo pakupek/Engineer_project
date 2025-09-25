@@ -1,7 +1,10 @@
 'use client'
 import React from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function HomePage() {
+  const router = useRouter()
+
   return (
     <main style={{
       fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
@@ -64,6 +67,25 @@ export default function HomePage() {
               {feature}
             </li>
           ))}
+          {/* Nowy przycisk do przejścia na stronę bloga */}
+          <li
+            style={{
+              background: '#2ecc71',
+              color: 'white',
+              margin: '0.5rem 0',
+              padding: '0.75rem 1.25rem',
+              borderRadius: '8px',
+              fontWeight: 600,
+              boxShadow: '0 3px 6px rgba(46,204,113,0.4)',
+              cursor: 'pointer',
+              transition: 'background 0.3s ease',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = '#27ae60'}
+            onMouseLeave={e => e.currentTarget.style.background = '#2ecc71'}
+            onClick={() => router.push('/posts')}
+          >
+            Przejdź do bloga
+          </li>
         </ul>
       </div>
     </main>

@@ -1,6 +1,13 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Post
 from django.contrib.auth.password_validation import validate_password
+
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = "__all__"
+        read_only_fields = ['author', 'created_at']
+        
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
