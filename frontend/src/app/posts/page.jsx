@@ -53,19 +53,21 @@ export default function BlogPage() {
 
   const deletePost = async (id) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/posts/${id}/delete/`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `http://localhost:8000/api/posts/${id}/delete/`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
       if (res.ok) {
         setPosts(posts.filter((post) => post.id !== id));
-        showTemporaryToast("Post został usunięty", "success");
       } else {
-        showTemporaryToast("Nie udało się usunąć posta", "error");
+        alert("Nie udało się usunąć posta");
       }
-    } catch (error) {
-      console.error(error);
-      showTemporaryToast("Błąd sieci", "error");
+    } catch (err) {
+      console.error("Błąd usuwania posta", err);
     }
   };
 
@@ -106,74 +108,36 @@ export default function BlogPage() {
     }
   };
 
+  
+if (loading) return <p>Ładowanie...</p>;
 
   return (
     <main className="max-w-3xl mx-auto p-6">
       <h1 className="text-4xl font-bold mb-6">Mój Blog</h1>
+      <div className="space-y-6">
+        {posts.map((post) => (
+          <article
+            key={post.id}
+            className="border p-4 rounded-lg shadow relative"
+          >
+            <h2 className="text-2xl font-semibold">{post.title}</h2>
+            <p className="text-gray-600 text-sm">
+              {new Date(post.created_at).toLocaleDateString()}
+            </p>
+            <p className="mt-2">{post.content}</p>
 
-      {toast && (
-        <div
-          className={`fixed top-6 right-6 px-4 py-2 rounded shadow transition-opacity duration-500 ${
-            toast.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
-          } ${showToast ? "opacity-100" : "opacity-0"}`}
-        >
-          {toast.message}
-        </div>
-      )}
-
-      {/* Formularz dodawania posta */}
-      <form onSubmit={addPost} className="mb-6 border p-4 rounded-lg shadow space-y-4">
-        <input
-          type="text"
-          placeholder="Tytuł posta"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full border px-3 py-2 rounded"
-        />
-        <textarea
-          placeholder="Treść posta"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="w-full border px-3 py-2 rounded"
-          rows={4}
-        />
-        <button
-          type="submit"
-          disabled={submitting}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          {submitting ? "Dodawanie..." : "Dodaj post"}
-        </button>
-      </form>
-
-      {loading ? (
-        <p>Ładowanie postów...</p>
-      ) : (
-        <div className="space-y-6">
-          {posts.length === 0 ? (
-            <p>Brak postów do wyświetlenia.</p>
-          ) : (
-            posts.map((post) => (
-              <article key={post.id} className="border p-4 rounded-lg shadow relative">
-                <h2 className="text-2xl font-semibold">{post.title}</h2>
-                <p className="text-gray-600 text-sm">
-                  {new Date(post.created_at).toLocaleDateString()}
-                </p>
-                <p className="mt-2">{post.content}</p>
-
-                {post.author === token && (
-                  <button
-                    onClick={() => deletePost(post.id)}
-                    className="mt-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                  >
-                    Usuń
-                  </button>
-                )}
-              </article>
-            ))
-          )}
-        </div>
-      )}
+            
+            {user && Number(post.author) === user.id && (
+              <button
+                onClick={() => deletePost(post.id)}
+                className="mt-3 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+              >
+                Usuń
+              </button>
+            )}
+          </article>
+        ))}
+      </div>
     </main>
   );
 }

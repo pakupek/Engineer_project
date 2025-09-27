@@ -7,6 +7,7 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = "__all__"
         read_only_fields = ['author', 'created_at']
+    author = serializers.PrimaryKeyRelatedField(read_only=True)
         
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
