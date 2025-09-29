@@ -1,6 +1,34 @@
 from rest_framework import serializers
-from .models import User, Comment, Discussion
+from .models import User, Comment, Discussion, Message
 from django.contrib.auth.password_validation import validate_password
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username']
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    sender_name = serializers.CharField(source='sender.username', read_only=True)
+    receiver_name = serializers.CharField(source='receiver.username', read_only=True)
+    
+    class Meta:
+        model = Message
+        fields = ['id', 'sender', 'sender_name', 'receiver', 'receiver_name', 
+                 'content', 'timestamp', 'is_read']
+        read_only_fields = ['sender', 'timestamp', 'is_read']
+
+class MessageCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ['receiver', 'content']
+    
+    def validate_receiver(self, value):
+        # Sprawdź czy użytkownik nie wysyła wiadomości do siebie
+        if value == self.context['request'].user:
+            raise serializers.ValidationError("Nie możesz wysłać wiadomości do siebie.")
+        return value
 
 class CommentSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source='author.username', read_only=True)

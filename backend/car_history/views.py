@@ -1,8 +1,90 @@
-from rest_framework import generics, permissions
-from .serializers import UserRegistrationSerializer, DiscussionSerializer, CommentSerializer, DiscussionCreateSerializer
+from rest_framework import generics, permissions, status
+from .serializers import UserRegistrationSerializer, DiscussionSerializer, CommentSerializer, DiscussionCreateSerializer, MessageSerializer, MessageCreateSerializer, UserSerializer
 from rest_framework.permissions import AllowAny
-from .models import Comment, Discussion
-from rest_framework.permissions import IsAuthenticated
+from .models import Comment, Discussion, Message, User
+from rest_framework.response import Response
+from django.db.models import Q
+from rest_framework.decorators import api_view, permission_classes
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def check_auth_status(request):
+    """Sprawdza czy użytkownik jest zalogowany i zwraca jego dane"""
+    user = request.user
+    return Response({
+        'is_authenticated': True,
+        'user': {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email
+        }
+    }, status=status.HTTP_200_OK)
+
+
+class MessageListCreateView(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return MessageCreateSerializer
+        return MessageSerializer
+    
+    def get_queryset(self):
+        # Pokaż tylko wiadomości gdzie użytkownik jest nadawcą lub odbiorcą
+        return Message.objects.filter(
+            Q(sender=self.request.user) | Q(receiver=self.request.user)
+        ).select_related('sender', 'receiver')
+    
+    def perform_create(self, serializer):
+        serializer.save(sender=self.request.user)
+
+class ConversationListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = MessageSerializer
+    
+    def get_queryset(self):
+        other_user_id = self.kwargs['user_id']
+        # Pobierz konwersację między dwoma użytkownikami
+        return Message.objects.filter(
+            Q(sender=self.request.user, receiver_id=other_user_id) |
+            Q(sender_id=other_user_id, receiver=self.request.user)
+        ).select_related('sender', 'receiver').order_by('timestamp')
+
+class UnreadMessagesCountView(generics.GenericAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get(self, request):
+        count = Message.objects.filter(
+            receiver=request.user, 
+            is_read=False
+        ).count()
+        return Response({'unread_count': count})
+
+class MarkAsReadView(generics.UpdateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Message.objects.all()
+    
+    def update(self, request, *args, **kwargs):
+        message = self.get_object()
+        # Tylko odbiorca może oznaczyć wiadomość jako przeczytaną
+        if message.receiver == request.user:
+            message.is_read = True
+            message.save()
+            return Response({'status': 'marked as read'})
+        return Response(
+            {'error': 'Nie masz uprawnień do tej operacji'}, 
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+
+class UserListView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    
+    def get_queryset(self):
+        # Wyklucz aktualnego użytkownika z listy
+        return User.objects.exclude(id=self.request.user.id)
 
 
 class DiscussionListCreateView(generics.ListCreateAPIView):

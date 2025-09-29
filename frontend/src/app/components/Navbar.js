@@ -35,7 +35,7 @@ export default function Navbar() {
                   <a className="nav-link link text-black display-4" href="/discussion">Forum</a>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link link text-black display-4" href="#"
+                  <a className="nav-link link text-black display-4" href="/messages"
                     aria-expanded="false">Wiadomości</a>
                 </li>
                 <li className="nav-item">
