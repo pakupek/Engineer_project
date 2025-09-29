@@ -21,3 +21,32 @@ export const logout = () => {
   Cookies.remove("access_token");
   Cookies.remove("refresh_token");
 };
+
+// utils/auth.js
+export const isAuthenticated = () => {
+  if (typeof window !== 'undefined') {
+    return !!localStorage.getItem('access_token');
+  }
+  return false;
+};
+
+export const getToken = () => {
+  if (typeof window !== 'undefined') {
+    return localStorage.getItem('access_token');
+  }
+  return null;
+};
+
+export const setTokens = (access, refresh) => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('access_token', access);
+    localStorage.setItem('refresh_token', refresh);
+  }
+};
+
+export const clearTokens = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+  }
+};

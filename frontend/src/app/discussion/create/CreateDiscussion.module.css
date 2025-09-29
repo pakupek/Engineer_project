@@ -1,0 +1,250 @@
+/* app/discussion/create/CreateDiscussion.module.css */
+.createContainer {
+  min-height: 100vh;
+  position: relative;
+  background-image: url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  margin-top: -80px;
+  padding-top: 80px;
+}
+
+.backgroundOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.contentWrapper {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  padding-top: 4rem;
+}
+
+.mainContent {
+  max-width: 800px;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  margin-top: 2rem;
+  padding: 2rem;
+}
+
+/* Nagłówek */
+.headerSection {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #e1e5e9;
+}
+
+.pageTitle {
+  color: #333;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.pageSubtitle {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Formularz */
+.discussionForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formLabel {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.formInput, .formSelect, .formTextarea {
+  padding: 1rem;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: white;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.formInput:focus, .formSelect:focus, .formTextarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.formTextarea {
+  resize: vertical;
+  min-height: 200px;
+  line-height: 1.5;
+}
+
+.inputError {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
+}
+
+.errorText {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+.charCount {
+  font-size: 0.8rem;
+  color: #666;
+  text-align: right;
+  margin-top: 0.25rem;
+}
+
+/* Przyciski */
+.formActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.cancelButton, .submitButton {
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cancelButton {
+  background-color: #6c757d;
+  color: white;
+}
+
+.cancelButton:hover {
+  background-color: #5a6268;
+}
+
+.submitButton {
+  background-color: #28a745;
+  color: white;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+}
+
+.submitButton:disabled, .cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.loadingSpinner {
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Porady */
+.formTips {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.formTips h4 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.formTips ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.formTips li {
+  margin-bottom: 0.5rem;
+  color: #555;
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+  .createContainer {
+    margin-top: -60px;
+    padding-top: 60px;
+  }
+  
+  .contentWrapper {
+    padding: 1rem;
+    padding-top: 3rem;
+  }
+  
+  .mainContent {
+    margin-top: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .formActions {
+    flex-direction: column;
+  }
+  
+  .pageTitle {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .createContainer {
+    margin-top: -50px;
+    padding-top: 50px;
+  }
+  
+  .mainContent {
+    padding: 1rem;
+  }
+  
+  .pageTitle {
+    font-size: 1.8rem;
+  }
+}

@@ -138,7 +138,7 @@ export default function Register() {
           <div className={styles.imageSection}>
             <div className={styles.imageOverlay}>
               <div className={styles.imageContent}>
-                <h3>Dołącz do AutoMania</h3>
+                <h3>Dołącz do GaraZero</h3>
                 <p>Stwórz konto i dołącz do społeczności miłośników samochodów</p>
                 <ul className={styles.benefitsList}>
                   <li>✅ Dostęp do forum dyskusyjnego</li>

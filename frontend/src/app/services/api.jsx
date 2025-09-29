@@ -73,3 +73,13 @@ export const logout = () => {
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
 };
+
+// Funkcja do tworzenia dyskusji używająca api z interceptorami
+export const createDiscussion = async (discussionData) => {
+  return await api.post("discussions/", discussionData);
+};
+
+// Funkcja do pobierania dyskusji
+export const getDiscussions = async () => {
+  return await api.get("discussions/");
+};

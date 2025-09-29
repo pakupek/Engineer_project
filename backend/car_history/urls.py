@@ -10,5 +10,5 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('discussions/', DiscussionListCreateView.as_view(), name='discussion-list'),
     path('discussions/<int:pk>/', DiscussionDetailView.as_view(), name='discussion-detail'),
-    path('comments/', CommentListCreateView.as_view(), name='comment-list'),
+    path('discussions/<int:discussion_id>/comments/', CommentListCreateView.as_view(), name='comment-list'),
 ]

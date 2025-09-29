@@ -7,15 +7,22 @@ import styles from "./Login.module.css";
 
 export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
-      await login(form);
-      router.push("/home");
+      await login(form); // To zapisze token w localStorage
+      alert("Logowanie udane!");
+      router.push("/home"); // lub gdzie chcesz przekierować
     } catch (err) {
-      alert(err.response?.data || "Błąd logowania");
+      console.error('Login error:', err);
+      alert(err.response?.data?.detail || "Błąd logowania");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,7 +70,7 @@ export default function Login() {
           <div className={styles.imageSection}>
             <div className={styles.imageOverlay}>
               <div className={styles.imageContent}>
-                <h3>AutoMania</h3>
+                <h3>GaraZero</h3>
                 <p>Dołącz do społeczności miłośników samochodów</p>
               </div>
             </div>

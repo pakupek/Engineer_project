@@ -14,10 +14,26 @@ class User(AbstractUser):
 
 class Discussion(models.Model):
     """ Model dyskusji na forum """
+    CATEGORY_CHOICES = [
+        ('OGOLNE', 'Ogólne'),
+        ('TECHNICZNE', 'Techniczne pytania'),
+        ('PORADY', 'Porady mechaniczne'),
+        ('RECENZJE', 'Recenzje samochodów'),
+        ('TUNING', 'Tuning'),
+        ('ELEKTRO', 'Elektromobilność'),
+        ('HISTORIA', 'Motoryzacja historyczna'),
+    ]
+    
     title = models.CharField(max_length=200)
     content = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='OGOLNE')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    views = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.title
@@ -27,7 +43,7 @@ class Comment(models.Model):
     discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE)
     content = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     
 class Vehicle(models.Model):

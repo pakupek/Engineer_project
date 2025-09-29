@@ -10,7 +10,7 @@ export default function HomePage() {
           <div className="row">
             <div className="content-wrap col-12 col-md-10">
               <h1 className="mbr-section-title mbr-fonts-style mbr-white mb-4 display-1">
-                <strong>AutoMania: Twoje Centrum Motoryzacji</strong>
+                <strong>GaraZero: Twoje Centrum Motoryzacji</strong>
               </h1>
               <p className="mbr-fonts-style mbr-text mbr-white mb-4 display-7">Dołącz do naszej społeczności pasjonatów motoryzacji i dziel się swoją pasją!</p>
               <div className="mbr-section-btn"><a className="btn btn-white-outline display-7" href="#">Zacznij</a></div>
