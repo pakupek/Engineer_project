@@ -1,13 +1,23 @@
 from rest_framework import serializers
-from .models import User, Post
+from .models import User, Comment, Discussion
 from django.contrib.auth.password_validation import validate_password
 
-class PostSerializer(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(read_only=True)
+
     class Meta:
-        model = Post
+        model = Comment
         fields = "__all__"
-        read_only_fields = ['author', 'created_at']
-    author = serializers.PrimaryKeyRelatedField(read_only=True)
+        read_only_fields = ("author", "created")
+
+class DiscussionSerializer(serializers.ModelSerializer):
+    author = serializers.StringRelatedField(read_only=True)
+    comments = CommentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Discussion
+        fields = "__all__"
+        read_only_fields = ("author", "created")
         
 
 class UserRegistrationSerializer(serializers.ModelSerializer):

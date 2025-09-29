@@ -3,65 +3,17 @@ import ClientScripts from "../components/ClientScripts";
 export default function HomePage() {
   return (
     <main>
-      <section className="menu menu2 cid-uXZuRd8pjg" id="menu-5-uXZuRd8pjg">
-        <nav className="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
-          <div className="container">
-            <div className="navbar-brand">
-              <span className="navbar-logo">
-                <a href="https://mobiri.se">
-                  <img src="https://proxy.electricblaze.com/?u&#x3D;https%3A%2F%2Fimages.unsplash.com%2Fphoto-1701789831874-8cd82165113e%3Fixid%3DM3w0Mzc5fDB8MXxzZWFyY2h8NXx8Y2FyJTIwY29tbXVuaXR5fGVufDB8MHx8fDE3NTg5Njc1MzV8MA%26ixlib%3Drb-4.1.0%26auto%3Dformat%26fit%3Dcrop%26w%3D1200%26q%3D50&amp;e&#x3D;1762560000&amp;s&#x3D;TR9ev2TA5QsTjR3HfIzv5ZY9Xmq2IierL3QwPV_Uc2s" style={{ height: "4.3rem" }}/>
-                </a>
-              </span>
-              <span className="navbar-caption-wrap">
-                <a className="navbar-caption text-black display-4" href="https://mobiri.se">AutoMania</a>
-              </span>
-            </div>
-            <button className="navbar-toggler" type="button" data-toggle="collapse"
-              data-bs-toggle="collapse" data-target="#navbarSupportedContent"
-              data-bs-target="#navbarSupportedContent"
-              aria-controls="navbarNavAltMarkup" aria-expanded="false"
-              aria-label="Toggle navigation">
-              <div className="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-            </button>
-            <div className="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul className="navbar-nav nav-dropdown" data-app-modern-menu="true">
-                <li className="nav-item">
-                  <a className="nav-link link text-black display-4" href="#">Forum</a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link link text-black display-4" href="#"
-                    aria-expanded="false">Giełda</a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link link text-black display-4" href="#">Klub</a>
-                </li>
-              </ul>
-              <div className="navbar-buttons mbr-section-btn">
-                <a className="btn btn-primary display-4" href="https://mobiri.se">Dołącz Teraz</a>
-              </div>
-            </div>
-          </div>
-        </nav>
-      </section>
-
-      <section className="header18 cid-uXZuRd8QXl mbr-fullscreen" data-bg-video="https://www.youtube.com/embed/Sai-BP-ft1Y?autoplay&#x3D;1&amp;loop&#x3D;1&amp;playlist&#x3D;Sai-BP-ft1Y&amp;t&#x3D;20&amp;mute&#x3D;1&amp;playsinline&#x3D;1&amp;controls&#x3D;0&amp;showinfo&#x3D;0&amp;autohide&#x3D;1&amp;allowfullscreen&#x3D;true&amp;mode&#x3D;transparent" id="hero-15-uXZuRd8QXl">
-        <div className="mbr-overlay" style={{opacity: 0.3, backgroundColor:" rgb(0, 0, 0)"}}></div>
+      
+      <section className="header16 cid-uYaLNgXEi0 mbr-fullscreen mbr-parallax-background" id="hero-17-uYaLNgXEi0">
+        <div className="mbr-overlay" style={{ opacity: 0.3, backgroundColor:' rgb(0, 0, 0)'}}></div>
         <div className="container-fluid">
           <div className="row">
-            <div className="content-wrap col-12 col-md-8">
-              <h1
-                className="mbr-section-title mbr-fonts-style mbr-white mb-4 display-1 animate__animated animate__delay-1s animate__fadeInUp">
-                <strong>Świat Motoryzacji</strong>
+            <div className="content-wrap col-12 col-md-10">
+              <h1 className="mbr-section-title mbr-fonts-style mbr-white mb-4 display-1">
+                <strong>AutoMania: Twoje Centrum Motoryzacji</strong>
               </h1>
-              <p className="mbr-fonts-style mbr-text mbr-white mb-4 display-7 animate__animated animate__delay-1s animate__fadeInUp">Twoje miejsce spotkań z pasjonatami czterech kółek. Dziel się wiedzą i emocjami!</p>
-              <div className="mbr-section-btn">
-                <a className="btn btn-white-outline display-7 animate__animated animate__delay-1s animate__fadeInUp" href="#">Zacznij</a>
-              </div>
+              <p className="mbr-fonts-style mbr-text mbr-white mb-4 display-7">Dołącz do naszej społeczności pasjonatów motoryzacji i dziel się swoją pasją!</p>
+              <div className="mbr-section-btn"><a className="btn btn-white-outline display-7" href="#">Zacznij</a></div>
             </div>
           </div>
         </div>

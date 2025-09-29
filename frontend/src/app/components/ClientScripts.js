@@ -38,6 +38,7 @@ export default function ClientScripts() {
     if (window.initFooter) {
       window.initFooter();
     }
+    
   }, []);
 
   return null;

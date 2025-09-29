@@ -1,26 +1,32 @@
 from rest_framework import generics, permissions
-from .serializers import UserRegistrationSerializer, PostSerializer
+from .serializers import UserRegistrationSerializer, DiscussionSerializer, CommentSerializer
 from rest_framework.permissions import AllowAny
-from .models import Post
+from .models import Comment, Discussion
 from rest_framework.permissions import IsAuthenticated
 
 
-class PostListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Post.objects.all().order_by('-created_at')
-    serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]  # opcjonalnie, jeśli chcesz chronić endpoint
+class DiscussionListCreateView(generics.ListCreateAPIView):
+    queryset = Discussion.objects.all().order_by("-created")
+    serializer_class = DiscussionSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-class PostDeleteAPIView(generics.DestroyAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        # Można usuwać tylko własne posty
-        return self.queryset.filter(author=self.request.user)
+class DiscussionDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Discussion.objects.all()
+    serializer_class = DiscussionSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+
+class CommentListCreateView(generics.ListCreateAPIView):
+    queryset = Comment.objects.all().order_by("-created")
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class UserRegistrationView(generics.CreateAPIView):

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "../services/api";
+import styles from "./Login.module.css";
 
 export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
@@ -11,30 +12,64 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(form);      // zapis tokenów w localStorage
-      router.push("/home");   // przekierowanie na Twoją stronę główną
+      await login(form);
+      router.push("/home");
     } catch (err) {
       alert(err.response?.data || "Błąd logowania");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: "400px", margin: "100px auto", textAlign: "center" }}>
-      <h2>Logowanie</h2>
-      <input
-        placeholder="Username"
-        value={form.username}
-        onChange={(e) => setForm({ ...form, username: e.target.value })}
-        style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem" }}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={(e) => setForm({ ...form, password: e.target.value })}
-        style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem" }}
-      />
-      <button type="submit" style={{ padding: "0.5rem 1rem" }}>Zaloguj</button>
-    </form>
+    <div className={styles.loginContainer}>
+      {/* Overlay z blurem na całym tle */}
+      <div className={styles.backgroundOverlay}></div>
+
+      {/* Kontener z formularzem i boxem ze zdjęciem */}
+      <div className={styles.contentWrapper}>
+        {/* Główny kontener - formularz + zdjęcie obok */}
+        <div className={styles.mainBox}>
+          {/* Lewa strona - formularz logowania */}
+          <div className={styles.formSection}>
+            <form onSubmit={handleSubmit} className={styles.loginForm}>
+              <h2 className={styles.loginTitle}>Logowanie</h2>
+              
+              <div className={styles.inputGroup}>
+                <input
+                  placeholder="Nazwa użytkownika"
+                  value={form.username}
+                  onChange={(e) => setForm({ ...form, username: e.target.value })}
+                  className={styles.loginInput}
+                />
+                <input
+                  type="password"
+                  placeholder="Hasło"
+                  value={form.password}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                  className={styles.loginInput}
+                />
+              </div>
+              
+              <button type="submit" className={styles.loginButton}>
+                Zaloguj się
+              </button>
+
+              <div className={styles.loginFooter}>
+                <p>Nie masz konta? <a href="/register" className={styles.registerLink}>Zarejestruj się</a></p>
+              </div>
+            </form>
+          </div>
+
+          {/* Prawa strona - box z oryginalnym zdjęciem */}
+          <div className={styles.imageSection}>
+            <div className={styles.imageOverlay}>
+              <div className={styles.imageContent}>
+                <h3>AutoMania</h3>
+                <p>Dołącz do społeczności miłośników samochodów</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
