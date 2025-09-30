@@ -117,11 +117,11 @@ export default function Navbar() {
             <div className="navbar-brand">
               <span className="navbar-logo">
                 <a href="/home">
-                  <img src="/images/logo.jpg" style={{ height: '4.3rem' }} alt="AutoMania"/>
+                  <img src="/images/logo.jpg" style={{ height: '4.3rem', borderRadius: '2rem' }} alt="GaraZero"/>
                 </a>
               </span>
               <span className="navbar-caption-wrap">
-                <a className="navbar-caption text-black display-4" href="/home">AutoMania</a>
+                <a className="navbar-caption text-black display-4" href="/home">GaraZero</a>
               </span>
             </div>
             
@@ -147,7 +147,7 @@ export default function Navbar() {
                   <a className="nav-link link text-black display-4" href="/messages">Wiadomości</a>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link link text-black display-4" href="/about">O nas</a>
+                  <a className="nav-link link text-black display-4" href="/vehicleDetails">Szczegóły pojazdu</a>
                 </li>
               </ul>
 

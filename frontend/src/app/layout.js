@@ -78,7 +78,7 @@ export default function RootLayout({ children }) {
         </noscript>
         <link
           rel="stylesheet"
-          href="https://ai-builder.mobirise.com/api/v2/themes/startm5-next/additional.css?v=0Tg50PK5XtpL3E-AsAXeYA"
+          href="/css/additional.css"
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
