@@ -1,10 +1,46 @@
 from rest_framework import generics, permissions, status
-from .serializers import UserRegistrationSerializer, DiscussionSerializer, CommentSerializer, DiscussionCreateSerializer, MessageSerializer, MessageCreateSerializer, UserSerializer
+from .serializers import (
+    UserRegistrationSerializer, 
+    DiscussionSerializer, 
+    CommentSerializer, 
+    DiscussionCreateSerializer, 
+    MessageSerializer, 
+    MessageCreateSerializer, 
+    UserSerializer,
+    ChangePasswordSerializer
+)
 from rest_framework.permissions import AllowAny
 from .models import Comment, Discussion, Message, User
 from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.contrib.auth import get_user_model, update_session_auth_hash
+
+
+User = get_user_model()
+
+class UserProfileView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    serializer = ChangePasswordSerializer(data=request.data)
+    if serializer.is_valid():
+        user = request.user
+        if not user.check_password(serializer.validated_data['old_password']):
+            return Response({"old_password": ["Nieprawidłowe hasło"]}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        update_session_auth_hash(request, user)
+        return Response({"message": "Hasło zostało zmienione"})
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])

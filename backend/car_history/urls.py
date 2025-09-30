@@ -1,5 +1,17 @@
 from django.urls import path
-from .views import DiscussionListCreateView, DiscussionDetailView, CommentListCreateView, MessageListCreateView, ConversationListView, UnreadMessagesCountView, MarkAsReadView, UserListView, check_auth_status
+from .views import (
+    DiscussionListCreateView, 
+    DiscussionDetailView, 
+    CommentListCreateView, 
+    MessageListCreateView, 
+    ConversationListView, 
+    UnreadMessagesCountView, 
+    MarkAsReadView, 
+    UserListView, 
+    check_auth_status,
+    UserProfileView,
+    change_password
+)
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -17,4 +29,6 @@ urlpatterns = [
     path('messages/<int:pk>/mark-read/', MarkAsReadView.as_view(), name='mark-read'),
     path('users/', UserListView.as_view(), name='user-list'),
     path('auth/check/', check_auth_status, name='auth-check'),
+     path('profile/', UserProfileView.as_view(), name='user_profile'),
+    path('change-password/', change_password, name='change_password'),
 ]

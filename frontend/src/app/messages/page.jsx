@@ -197,7 +197,7 @@ function MessagesContent() {
                 AU
               </div>
               <div className={styles.userInfo}>
-                <h3>AutoMania Chat</h3>
+                <h3>GaraZero Chat</h3>
                 <p>Online</p>
               </div>
             </div>

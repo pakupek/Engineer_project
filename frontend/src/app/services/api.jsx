@@ -65,6 +65,7 @@ export const login = async (userData) => {
   if (response.data.access) {
     localStorage.setItem("access_token", response.data.access);
     localStorage.setItem("refresh_token", response.data.refresh);
+    window.dispatchEvent(new Event('authChange'));
   }
   return response.data;
 };

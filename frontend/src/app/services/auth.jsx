@@ -2,6 +2,50 @@ import axios from "axios";
 
 const API_URL = "http://localhost:8000/api/";
 
+// Konfiguracja axios z interceptors
+const api = axios.create({
+  baseURL: API_URL,
+});
+// Interceptor do dodawania tokena do requestów
+api.interceptors.request.use(
+  (config) => {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Interceptor do obsługi wygasłych tokenów
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const newToken = await refreshToken();
+        if (newToken) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        logout();
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export const refreshToken = async () => {
   try {
     const refresh = localStorage.getItem("refresh_token");
@@ -19,6 +63,7 @@ export const refreshToken = async () => {
 export const logout = () => {
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
+  window.location.href = '/login';
 };
 
 export const isAuthenticated = () => {
@@ -49,7 +94,75 @@ export const clearTokens = () => {
   }
 };
 
-// Sprawdź autoryzację używając endpointu users
+// Funkcje dla panelu użytkownika
+export const authService = {
+  // Logowanie
+  async login(email, password) {
+    try {
+      const response = await api.post('token/', { 
+        username: email, // Django często używa username zamiast email
+        password 
+      });
+      const { access, refresh } = response.data;
+      setTokens(access, refresh);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.detail || 'Błąd logowania');
+    }
+  },
+
+  // Rejestracja
+  async register(userData) {
+    try {
+      const response = await api.post('register/', userData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data || 'Błąd rejestracji');
+    }
+  },
+
+  // Pobieranie profilu użytkownika
+  async getProfile() {
+    try {
+      const response = await api.get('profile/');
+      return response.data;
+    } catch (error) {
+      throw new Error('Błąd pobierania profilu');
+    }
+  },
+
+  // Aktualizacja profilu użytkownika
+  async updateProfile(userData) {
+    try {
+      const response = await api.patch('profile/', userData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data || 'Błąd aktualizacji profilu');
+    }
+  },
+
+  // Zmiana hasła
+  async changePassword(passwordData) {
+    try {
+      const response = await api.post('change-password/', passwordData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data || 'Błąd zmiany hasła');
+    }
+  },
+
+  // Wylogowanie
+  logout() {
+    logout();
+  },
+
+  // Sprawdzenie czy użytkownik jest zalogowany
+  isAuthenticated() {
+    return isAuthenticated();
+  }
+};
+
+// Sprawdź autoryzację używając endpointu profile
 export const checkAuthStatus = async () => {
   try {
     const token = getToken();
@@ -57,22 +170,13 @@ export const checkAuthStatus = async () => {
       return { isAuthenticated: false, user: null };
     }
 
-    // Używamy endpointu users do sprawdzenia autoryzacji
-    const response = await fetch('http://localhost:8000/api/users/', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+    // Używamy endpointu profile do sprawdzenia autoryzacji
+    const response = await api.get('profile/');
 
-    if (response.ok) {
-      // Jeśli request się powiódł, użytkownik jest zalogowany
-      // Możemy pobrać dane użytkownika z innego endpointu lub użyć domyślnych
+    if (response.status === 200) {
       return { 
         isAuthenticated: true, 
-        user: {
-          id: 1, // Tymczasowe dane - w praktyce pobierzesz z API
-          username: 'Użytkownik'
-        } 
+        user: response.data 
       };
     } else {
       clearTokens();
@@ -80,12 +184,59 @@ export const checkAuthStatus = async () => {
     }
   } catch (error) {
     console.error('Error checking auth status:', error);
-    clearTokens();
+    if (error.response?.status === 401) {
+      clearTokens();
+    }
     return { isAuthenticated: false, user: null };
   }
 };
 
 export const getCurrentUser = async () => {
-  const status = await checkAuthStatus();
-  return status.user;
+  try {
+    const response = await api.get('profile/');
+    return response.data;
+  } catch (error) {
+    console.error('Error getting current user:', error);
+    return null;
+  }
 };
+
+// Dodatkowe funkcje pomocnicze dla panelu użytkownika
+export const userService = {
+  // Pobierz pełne dane użytkownika
+  async getUserData() {
+    return await getCurrentUser();
+  },
+
+  // Aktualizuj dane użytkownika
+  async updateUserData(userData) {
+    return await authService.updateProfile(userData);
+  },
+
+  // Zmiana hasła użytkownika
+  async changeUserPassword(oldPassword, newPassword) {
+    return await authService.changePassword({
+      old_password: oldPassword,
+      new_password: newPassword
+    });
+  },
+
+  // Upload awatara
+  async uploadAvatar(file) {
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+      
+      const response = await api.patch('profile/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data || 'Błąd uploadu awatara');
+    }
+  }
+};
+
+export default authService;
