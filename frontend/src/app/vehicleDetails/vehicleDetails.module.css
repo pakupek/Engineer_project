@@ -1,7 +1,7 @@
 .hero {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 75vh;
   overflow: hidden;
   border-radius: 0 !important;
 }
@@ -48,15 +48,35 @@
   text-align: left;
 }
 
+.leftSmall{
+  font-size: 16px;
+  font-weight: 500;
+}
+
 .right {
   text-align: right;
 }
 
+.rightSmall{
+  font-size: 16px;
+  font-weight: 500;
+}
+
 @media (max-width: 1024px) {
+
+  .hero {
+    position: relative;
+    width: 100%;
+    height: 50vh;
+    overflow: hidden;
+
+  }
+
   .overlay {
     font-size: 22px;
     padding: 0 24px;
     bottom: 16px;
+    margin-bottom: 16px;
   }
 }
 
@@ -72,7 +92,6 @@
 /* Bardzo małe telefony */
 @media (max-width: 480px) {
   .overlay {
-    flex-direction: column;
     gap: 6px;
     text-align: center;
     font-size: 16px;

@@ -220,7 +220,7 @@
   display: flex;
   height: 90px;
   padding: 0.5rem 0.6rem;
-  flex-wrap: nowrap;
+  flex-wrap: nowrap !important;
   background: rgba(255, 255, 255, 0.8) !important;
   left: 0;
   right: 0;
