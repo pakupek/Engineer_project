@@ -10,7 +10,11 @@ from .views import (
     UserListView, 
     check_auth_status,
     UserProfileView,
-    change_password
+    change_password,
+    VehicleCreateView,
+    UserVehicleListView,
+    VehicleListView,
+    VehiclesForSaleListView
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -20,15 +24,19 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('discussions/', DiscussionListCreateView.as_view(), name='discussion-list'),
-    path('discussions/<int:pk>/', DiscussionDetailView.as_view(), name='discussion-detail'),
-    path('discussions/<int:discussion_id>/comments/', CommentListCreateView.as_view(), name='comment-list'),
-    path('messages/', MessageListCreateView.as_view(), name='message-list'),
+    path('discussions/', DiscussionListCreateView.as_view(), name='discussion_list'),
+    path('discussions/<int:pk>/', DiscussionDetailView.as_view(), name='discussion_detail'),
+    path('discussions/<int:discussion_id>/comments/', CommentListCreateView.as_view(), name='comment_list'),
+    path('messages/', MessageListCreateView.as_view(), name='message_list'),
     path('messages/conversation/<int:user_id>/', ConversationListView.as_view(), name='conversation'),
-    path('messages/unread-count/', UnreadMessagesCountView.as_view(), name='unread-count'),
-    path('messages/<int:pk>/mark-read/', MarkAsReadView.as_view(), name='mark-read'),
-    path('users/', UserListView.as_view(), name='user-list'),
-    path('auth/check/', check_auth_status, name='auth-check'),
-     path('profile/', UserProfileView.as_view(), name='user_profile'),
+    path('messages/unread-count/', UnreadMessagesCountView.as_view(), name='unread_count'),
+    path('messages/<int:pk>/mark-read/', MarkAsReadView.as_view(), name='mark_read'),
+    path('users/', UserListView.as_view(), name='user_list'),
+    path('auth/check/', check_auth_status, name='auth_check'),
+    path('profile/', UserProfileView.as_view(), name='user_profile'),
     path('change-password/', change_password, name='change_password'),
+    path('vehicles/create/', VehicleCreateView.as_view(), name='create_car'),
+    path('vehicles/', VehicleListView.as_view(),name='vehicle_list'),
+    path('vehicles/my-vehicles/', UserVehicleListView.as_view(),name='user_vehicles'),
+    path('vehicles/for-sale/', VehiclesForSaleListView.as_view(), name='vehicles_for_sale')
 ]

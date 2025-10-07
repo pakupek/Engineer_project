@@ -7,10 +7,11 @@ from .serializers import (
     MessageSerializer, 
     MessageCreateSerializer, 
     UserSerializer,
-    ChangePasswordSerializer
+    ChangePasswordSerializer,
+    VehicleSerializer
 )
 from rest_framework.permissions import AllowAny
-from .models import Comment, Discussion, Message, User
+from .models import Comment, Discussion, Message, User, Vehicle
 from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
@@ -169,3 +170,45 @@ class CommentListCreateView(generics.ListCreateAPIView):
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
+
+
+class VehicleCreateView(generics.CreateAPIView):
+    """
+    Endpoint do tworzenia nowego pojazdu (/api/vehicles/create/)
+    """
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
+    permission_classes = [permissions.IsAuthenticated] 
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+class VehicleListView(generics.ListAPIView):
+    """
+    Endpoint do pobierania listy wszystkich pojazdów (/api/vehicles/)
+    """
+    queryset = Vehicle.objects.all().order_by('-year')
+    serializer_class = VehicleSerializer
+    permission_classes = [permissions.AllowAny]
+
+class UserVehicleListView(generics.ListAPIView):
+    """
+    Endpoint do pobierania listy pojazdów zalogowanego użytkownika (/api/vehicles/my-vehicles/)
+    """
+    serializer_class = VehicleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Vehicle.objects.filter(owner=self.request.user).order_by('-year')
+    
+class VehiclesForSaleListView(generics.ListAPIView):
+    """
+    Endpoint do pobierania listy pojazdów wystawionych na sprzedaż (/api/vehicles/for-sale/)
+    """
+    serializer_class = VehicleSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        # Zwraca pojazdy, które mają for_sale=True
+        return Vehicle.objects.filter(for_sale=True).order_by('-year')

@@ -1,6 +1,12 @@
 from rest_framework import serializers
-from .models import User, Comment, Discussion, Message
+from .models import User, Comment, Discussion, Message, Vehicle
 from django.contrib.auth.password_validation import validate_password
+
+class VehicleSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Vehicle
+        fields = '__all__'
 
 
 class ChangePasswordSerializer(serializers.Serializer):
