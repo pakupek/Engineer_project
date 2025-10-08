@@ -3,7 +3,7 @@ import ClientScripts from "../components/ClientScripts";
 export default function HomePage() {
   return (
     <main>
-      
+      {/* -------- Sekcja Hero Page ----------*/}
       <section className="header16 cid-uYaLNgXEi0 mbr-fullscreen mbr-parallax-background" id="hero-17-uYaLNgXEi0">
         <div className="mbr-overlay" style={{ opacity: 0.3, backgroundColor:' rgb(0, 0, 0)'}}></div>
         <div className="container-fluid">
@@ -19,6 +19,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* -------- Sekcja Counter -----------*/}
       <section className="features10 cid-uXZuRd8TLc" id="metrics-2-uXZuRd8TLc">
         <div className="container">
           <div className="row justify-content-center">
@@ -62,12 +63,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="image02 cid-uXZuRd8mMk mbr-fullscreen mbr-parallax-background" id="image-13-uXZuRd8mMk">
-        <div className="container">
-            <div className="row"></div>
-        </div>
-      </section>
-
+      
+      {/* ----- Sekcja Tematów Motoryzacyjnych ------------*/}
       <section className="news08 cid-uXZuRd8YdW" id="blog-5-uXZuRd8YdW">
         <div className="container">
           <div className="row justify-content-center mb-5">
@@ -76,7 +73,6 @@ export default function HomePage() {
                 <h4 className="mbr-section-title mbr-fonts-style align-center mb-0 display-2" >
                   <strong>Gorące Tematy Motoryzacji</strong>
                 </h4>
-                
               </div>
             </div>
           </div>
@@ -106,7 +102,6 @@ export default function HomePage() {
                     <strong>Porady ekspertów</strong>
                   </h6>
                   <p className="mbr-text mbr-fonts-style mb-3 display-7" >Praktyczne wskazówki dotyczące konserwacji i napraw Twojego pojazdu.</p>
-                  
                 </div>
               </div>
             </div><div className="item features-image col-12 col-md-6 col-lg-6">
@@ -133,8 +128,7 @@ export default function HomePage() {
                   <h6 className="item-subtitle mbr-fonts-style mb-3 display-5" >
                     <strong>Historia motoryzacji</strong>
                   </h6>
-                  <p className="mbr-text mbr-fonts-style mb-3 display-7" >Cofnij się w czasie i poznaj legendarne samochody.</p>
-                  
+                  <p className="mbr-text mbr-fonts-style mb-3 display-7" >Cofnij się w czasie i poznaj legendarne samochody.</p> 
                 </div>
               </div>
             </div>
@@ -142,23 +136,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="gallery10 cid-uXZuRd9czH" id="features-69-uXZuRd9czH">
-        <div className="container-fluid">
-            <div className="loop-container">
-              <div className="item display-1" data-linewords="
-                Społeczność Pasjonatów *
-                Wymiana Wiedzy i Doświadczeń *" 
-              data-direction="-1" data-speed="0.05">
-              </div>
-              <div className="item display-1" data-linewords="
-                Społeczność Pasjonatów *
-                Wymiana Wiedzy i Doświadczeń *" 
-              data-direction="-1" data-speed="0.05">
-              </div>
-            </div>   
-        </div>
-      </section>
-
+      
+      {/* ---------- Sekcja Najczęściej zadawane pytania -------------*/}
       <section className="list05 cid-uXZuRd96hI" id="faq-3-uXZuRd96hI">
         <div className="container">
             <div className="col-12 mb-5 content-head">
@@ -218,6 +197,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ---------- Sekcja Nasz Zespół -----------*/}
       <section className="people03 cid-uXZuRd9XKy" id="team-1-uXZuRd9XKy">
         <div className="container-fluid">
           <div className="row justify-content-center">
@@ -283,6 +263,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ---------- Sekcja Opinie ------------*/}
       <section className="people04 cid-uXZuRd9MlR" id="testimonials-3-uXZuRd9MlR">
         <div className="container">
           <div className="row mb-5 justify-content-center">
@@ -387,6 +368,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* --------- Sekcja Dołącz do Nas -------------*/}
       <section className="header14 cid-uXZuRd9Tgq" id="call-to-action-10-uXZuRd9Tgq">
         <div className="container">
           <div className="row justify-content-center">
@@ -398,12 +380,12 @@ export default function HomePage() {
                   </h1>
                   <p className="mbr-text mbr-fonts-style mb-4 display-7">
                     Zarejestruj się już dziś i stań się częścią naszej motoryzacyjnej rodziny.
-                              </p>
+                  </p>
                   <div className="mbr-section-btn mt-4">
-                                  <a className="btn btn-primary display-7" href="#">
-                                      Zarejestruj Się
-                                  </a>
-                              </div>
+                    <a className="btn btn-primary display-7" href="/register">
+                      Zarejestruj Się
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -411,14 +393,49 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="header18 cid-uXZuRd9ToS mbr-fullscreen" data-bg-video="https://www.youtube.com/embed/CFE1VxLvA0o?autoplay&#x3D;1&amp;loop&#x3D;1&amp;playlist&#x3D;CFE1VxLvA0o&amp;t&#x3D;20&amp;mute&#x3D;1&amp;playsinline&#x3D;1&amp;controls&#x3D;0&amp;showinfo&#x3D;0&amp;autohide&#x3D;1&amp;allowfullscreen&#x3D;true&amp;mode&#x3D;transparent" id="video-5-uXZuRd9ToS">
-        <div className="mbr-overlay" style={{ opacity: 0.3, backgroundColor: "rgb(0, 0, 0)" }}></div>
-        <div className="container-fluid">
-          <div className="row">
+      {/* -------- Sekcja Formularz Kontaktowy -----------*/}
+      <section className="header18 cid-uXZuRd9ToS mbr-fullscreen" data-bg-video="https://www.youtube.com/watch?v=J4t4pMZBXZg&t=2134s?autoplay=1&loop=1&playlist=CFE1VxLvA0o&t=20&mute=1&playsinline=1&controls=0&showinfo=0&autohide=1&allowfullscreen=true&mode=transparent" id="video-5-uXZuRd9ToS"
+      >
+        {/* Nakładka przyciemniająca */}
+        <div
+          className="mbr-overlay"
+          style={{ opacity: 0.3, backgroundColor: "rgb(0, 0, 0)" }}
+        ></div>
+
+        {/* Formularz */}
+        <div className="container-fluid2">
+          <div className="form-overlay">
+            <h3 className="form-title">
+              <strong>Masz jakieś pytania?</strong>
+            </h3>
+            <p className="form-subtitle">Napisz do nas już teraz!</p>
+
+            <form
+              action="https://mobirise.eu/"
+              method="POST"
+              className="contact-form"
+              data-form-title="Contact Form"
+            >
+              <div className="form-row">
+                <input type="text" name="name" placeholder="Imię" required />
+                <input type="email" name="email" placeholder="Email" required />
+              </div>
+
+              <textarea
+                name="message"
+                placeholder="Wiadomość"
+                required
+              ></textarea>
+
+              <button type="submit" className="btn-submit">
+                Wyślij
+              </button>
+            </form>
           </div>
         </div>
       </section>
 
+      {/* --------- Sekcja Galeria ----------*/}
       <section className="gallery4 cid-uXZuRd95m6" id="gallery-12-uXZuRd95m6">
         <div className="container-fluid gallery-wrapper">
           <div className="grid-container">
@@ -454,115 +471,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="social4 cid-uXZuRd9Aqj" id="follow-us-1-uXZuRd9Aqj">
-        <div className="container">
-            <div className="media-container-row">
-                <div className="col-12">
-                    <h3 className="mbr-section-title align-center mb-5 mbr-fonts-style display-2">
-                        <strong>Śledź Naszą Społeczność</strong>
-                    </h3>
-                    <div className="social-list align-center">
-                        <a className="iconfont-wrapper bg-facebook m-2 " target="_blank" href="#">
-                            <span className="socicon-facebook socicon"></span>
-                        </a>
-                        <a className="iconfont-wrapper bg-twitter m-2" href="#" target="_blank">
-                            <span className="socicon-twitter socicon"></span>
-                        </a>
-                        <a className="iconfont-wrapper bg-instagram m-2" href="#" target="_blank">
-                            <span className="socicon-instagram socicon"></span>
-                        </a>
-                        <a className="iconfont-wrapper bg-tiktok m-2" href="#" target="_blank">
-                            <span className="socicon-tiktok socicon"></span>
-                        </a>                   
-                    </div>
-                </div>
-            </div>
-        </div>
-      </section>
-
-      <section className="form5 cid-uXZuRd9AkP" id="contact-form-2-uXZuRd9AkP">
-        <div className="container">
-            <div className="row justify-content-center">
-                <div className="col-12 content-head">
-                    <div className="mbr-section-head mb-5">
-                        <h3 className="mbr-section-title mbr-fonts-style align-center mb-0 display-2">
-                            <strong>Dołącz do Dyskusji</strong>
-                        </h3>                    
-                    </div>
-                </div>
-            </div>
-            <div className="row justify-content-center">
-                <div className="col-lg-8 mx-auto mbr-form" data-form-type="formoid">
-                    <form action="https://mobirise.eu/" method="POST" className="mbr-form form-with-styler" data-form-title="Form Name"><input type="hidden" name="email" data-form-email="true" value=""/>
-                        <div className="row">
-                            <div hidden="hidden" data-form-alert="" className="alert alert-success col-12">Thanks for filling out the form!</div>
-                            <div hidden="hidden" data-form-alert-danger="" className="alert alert-danger col-12">
-                                Oops...! some problem!
-                            </div>
-                        </div>
-                        <div className="dragArea row">
-                            <div className="col-md col-sm-12 form-group mb-3" data-for="name">
-                                <input type="text" name="name" placeholder="Imię" data-form-field="name" className="form-control" id="name-form02-0" defaultValue=""/>
-                            </div>
-                            <div className="col-md col-sm-12 form-group mb-3" data-for="email">
-                                <input type="email" name="email" placeholder="Email" data-form-field="email" className="form-control" defaultValue="" id="email-form02-0"/>
-                            </div>
-                            <div className="col-12 form-group mb-3" data-for="textarea">
-                                <textarea name="textarea" placeholder="Wiadomość" data-form-field="textarea" className="form-control" id="textarea-form02-0"></textarea>
-                            </div>
-                            <div className="col-lg-12 col-md-12 col-sm-12 align-center mbr-section-btn"><button type="submit" className="btn btn-primary display-7">Wyślij</button></div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-      </section>
-
-      <section className="contacts4 map1 cid-uXZuRdaRni" id="contacts-3-uXZuRdaRni">
-        <div className="main_wrapper">
-          <div className="b_wrapper">
-            <div className="container-fluid">
-              <div className="row justify-content-start">
-                <div className="col-md-5 col-lg-4 item-wrapper">
-                  <h5 className="cardTitle mbr-fonts-style mb-2 display-5">
-                      <strong>Kontakt</strong>
-                  </h5>
-                  <ul className="list mbr-fonts-style display-7">
-                    <li className="mbr-text item-wrap">Telefon: <a href="tel:555-123-4567" className="text-black">555-123-4567</a></li>
-                    <li className="mbr-text item-wrap">WhatsApp: <a href="tel:555-123-4567" className="text-black">555-123-4567</a></li>
-                    <li className="mbr-text item-wrap">Email: <a href="mailto:kontakt@moto-forum.pl" className="text-black">kontakt@moto-forum.pl</a></li>
-                    <li className="mbr-text item-wrap">Adres: ul. Wyścigowa 1, 00-001 Warszawa</li>
-                    <li className="mbr-text item-wrap">Godziny Otwarcia: Pon-Pt: 9:00 - 18:00, Sob: 10:00 - 14:00</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-              <div className="google-map"><iframe frameBorder="0" style={{ border: 0 }} src="https://www.google.com/maps/embed/v1/place?key&#x3D;AIzaSyCt1265A4qvZy9HKUeA8J15AOC4SrCyZe4&amp;q&#x3D;Sok%C3%B3%C5%82ka%20Poland" allowFullScreen=""></iframe></div>
-        </div>
-      </section>
-
+      {/* ------------ Sekcja Stopka ------------*/}
       <section className="footer3 cid-uXZuRdagkn" id="footer-6-uXZuRdagkn">
         <div className="container">
-            <div className="row">
-                <div className="row-links">
-                    <ul className="header-menu">
-                    <li className="header-menu-item mbr-fonts-style display-5">
-                        <a href="#" className="text-white">O nas</a>
-                      </li><li className="header-menu-item mbr-fonts-style display-5">
-                        <a href="#" className="text-white">Regulamin</a>
-                      </li><li className="header-menu-item mbr-fonts-style display-5">
-                        <a href="#" className="text-white">Prywatność</a>
-                      </li><li className="header-menu-item mbr-fonts-style display-5">
-                        <a href="#" className="text-white">Reklama</a>
-                      </li></ul>
-                  </div>
-                <div className="col-12 mt-4">
-                    <p className="mbr-fonts-style copyright display-7">
-                        Wszelkie prawa zastrzeżone © 2025 Moto-Forum
-                    </p>
-                </div>
+          <div className="row">
+            <div className="col-12 mt-4">
+              <p className="mbr-fonts-style copyright display-7">
+                Wszelkie prawa zastrzeżone © 2025 GaraZero
+              </p>
             </div>
+          </div>
         </div>
       </section>
       <ClientScripts/>

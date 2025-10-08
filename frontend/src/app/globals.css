@@ -861,7 +861,6 @@
 
 /* -------------- Koniec Sekcja z avatarem użytkownika i jego dropdown ---------------*/
 
-/* Naprawa wyświetlania nawigacji */
 .cid-uYaLNgWuYz .navbar-collapse {
   opacity: 1 !important;
   visibility: visible !important;
@@ -901,9 +900,9 @@
 .cid-uYaLNgWuYz .navbar-collapse {
   flex-basis: auto !important;
 }
-/* Koniec Sekcji Nawigacji*/
+/* ---------------Koniec Sekcji Nawigacji -----------------*/
 
-/* Początek Hero Page*/
+/* ------------------Początek Hero Page -------------------*/
 .cid-uYaLNgXEi0 {
     display: flex;
     background-image: url("/images/lancer.jpg");
@@ -949,8 +948,9 @@
 .cid-uYaLNgXEi0 .mbr-section-btn {
     text-align: center;
 }
-/* Koniec Hero Page*/
+/* --------------- Koniec Hero Page ------------------*/
 
+/* --------------- Początek Countera -----------------*/
 .cid-uXZuRd8TLc {
   padding-top: 3rem;
   padding-bottom: 3rem;
@@ -1000,11 +1000,9 @@
   color: #000000;
 }
 
-.cid-uXZuRd8mMk {
-  overflow: hidden;
-  background-image: url("https://proxy.electricblaze.com/?u=https%3A%2F%2Fimages.unsplash.com%2Fphoto-1758560076739-0d3995458b53%3Fixid%3DM3w0Mzc5fDB8MXxzZWFyY2h8OHx8Y2FyJTIwY29tbXVuaXR5fGVufDB8MHx8fDE3NTg5Njc1MzV8MA%26ixlib%3Drb-4.1.0%26auto%3Dformat%26fit%3Dcrop%26w%3D1200%26q%3D50&e=1762560000&s=XvSLrjXZQaR5x1BYzqGbOLklmfh00Y8dWZ6ITtpq0DQ");
-}
+/* --------------- Koniec Countera ----------------*/
 
+/* -----------Początek Motoryzacyjnych tematów -------------*/
 .cid-uXZuRd8YdW {
   padding-top: 6rem;
   padding-bottom: 6rem;
@@ -1054,34 +1052,9 @@
   max-width: 800px;
 }
 
-.cid-uXZuRd9czH {
-  padding-top: 6rem;
-  padding-bottom: 6rem;
-  background-color: #ffffff;
-}
-.cid-uXZuRd9czH .item:focus,
-.cid-uXZuRd9czH span:focus {
-  outline: none;
-}
-.cid-uXZuRd9czH .container-fluid {
-  padding-left: 0;
-  padding-right: 0;
-  overflow: hidden;
-}
-.cid-uXZuRd9czH .content-head {
-  max-width: 800px;
-}
-.cid-uXZuRd9czH .item {
-  color: #232323;
-  min-height: 90px;
-  font-weight: bold;
-}
-@media (max-width: 768px) {
-  .cid-uXZuRd9czH .item {
-    min-height: 45px;
-  }
-}
+/* ------------Koniec Motoryzacyjnych tematów --------------*/
 
+/* ------------ Zadawane pytania ---------------------------*/
 .cid-uXZuRd96hI {
   padding-top: 5rem;
   padding-bottom: 5rem;
@@ -1119,6 +1092,9 @@
   }
 }
 
+/* -------------- Koniec Zadawane Pytania ---------------*/
+
+/* ----------------- Nasz zespół ------------------------*/
 .cid-uXZuRd9XKy {
     padding-top: 5rem;
     padding-bottom: 3rem;
@@ -1172,6 +1148,9 @@
     max-width: 800px;
 }
 
+/* ---------------- Koniec Nasz Zespół ---------------*/
+
+/* ------------------- Opinie ------------------------*/
 .cid-uXZuRd9MlR {
   padding-top: 6rem;
   padding-bottom: 6rem;
@@ -1223,54 +1202,60 @@
   justify-content: center;
 }
 
+/* -------------- Koniec Opinie ----------------*/
+
+/* --------------- Dołącz do Nas ----------------*/
 .cid-uXZuRd9Tgq {
-        padding-top: 5rem;
-        padding-bottom: 5rem;
-        background-color: transparent;
-    }
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+  background-color: transparent;
+}
 
-    .cid-uXZuRd9Tgq .mbr-fallback-image.disabled {
-        display: none;
-    }
+.cid-uXZuRd9Tgq .mbr-fallback-image.disabled {
+  display: none;
+}
 
-    .cid-uXZuRd9Tgq .mbr-fallback-image {
-        display: block;
-        background-size: cover;
-        background-position: center center;
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        top: 0;
-    }
+.cid-uXZuRd9Tgq .mbr-fallback-image {
+  display: block;
+  background-size: cover;
+  background-position: center center;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+}
 
-    .cid-uXZuRd9Tgq .card-wrapper {
-        background: #ffffff;
-    }
+.cid-uXZuRd9Tgq .card-wrapper {
+  background: #ffffff;
+}
 
-    @media (max-width: 767px) {
-        .cid-uXZuRd9Tgq .card-wrapper {
-            padding: 2rem 1.5rem;
-            margin-bottom: 1rem;
-        }
-    }
+@media (max-width: 767px) {
+  .cid-uXZuRd9Tgq .card-wrapper {
+    padding: 2rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+}
 
-    @media (min-width: 768px) and (max-width: 991px) {
-        .cid-uXZuRd9Tgq .card-wrapper {
-            padding: 2.25rem;
-        }
-    }
+@media (min-width: 768px) and (max-width: 991px) {
+  .cid-uXZuRd9Tgq .card-wrapper {
+    padding: 2.25rem;
+  }
+}
 
-    @media (min-width: 992px) {
-        .cid-uXZuRd9Tgq .card-wrapper {
-            padding: 4rem;
-        }
-    }
+@media (min-width: 992px) {
+  .cid-uXZuRd9Tgq .card-wrapper {
+    padding: 4rem;
+  }
+}
 
-    .cid-uXZuRd9Tgq .mbr-text,
-    .cid-uXZuRd9Tgq .mbr-section-btn {
-        text-align: center;
-    }
+.cid-uXZuRd9Tgq .mbr-text,
+.cid-uXZuRd9Tgq .mbr-section-btn {
+  text-align: center;
+}
 
+/* ------------- Koniec Dołącz do Nas --------------*/
+
+/* -------------- Sekcja z wideo -------------------*/
 .cid-uXZuRd9ToS .mbr-fallback-image.disabled {
   display: none;
 }
@@ -1285,6 +1270,9 @@
   background: #000000;
 }
 
+/* ------------- Koniec sekcja z wideo ------------*/
+
+/* ------------- Początek galeria ------------------*/
 .cid-uXZuRd95m6 {
   padding-top: 6rem;
   padding-bottom: 6rem;
@@ -1365,67 +1353,9 @@
   align-items: flex-start;
 }
 
-.cid-uXZuRd9Aqj {
-  padding-top: 5rem;
-  padding-bottom: 5rem;
-  background-color: #ffffff;
-}
-.cid-uXZuRd9Aqj .mbr-fallback-image.disabled {
-  display: none;
-}
-.cid-uXZuRd9Aqj .mbr-fallback-image {
-  display: block;
-  background-size: cover;
-  background-position: center center;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-}
-.cid-uXZuRd9Aqj .bg-facebook {
-  background: #1778f2;
-  color: #ffffff;
-}
-.cid-uXZuRd9Aqj .bg-facebook:hover {
-  background: #0b60cb;
-}
-.cid-uXZuRd9Aqj .bg-twitter {
-  background: #1da1f2;
-  color: #ffffff;
-}
-.cid-uXZuRd9Aqj .bg-twitter:hover {
-  background: #0c85d0;
-}
-.cid-uXZuRd9Aqj .bg-instagram {
-  background: #f00075;
-  color: #ffffff;
-}
-.cid-uXZuRd9Aqj .bg-instagram:hover {
-  background: #bd005c;
-}
-.cid-uXZuRd9Aqj .bg-tiktok {
-  background: #000000;
-  color: #ffffff;
-}
-.cid-uXZuRd9Aqj .bg-tiktok:hover {
-  background: #000000;
-}
-.cid-uXZuRd9Aqj .iconfont-wrapper {
-  display: inline-block;
-  font-size: 32px;
-  border-radius: 50%;
-  width: 72px;
-  height: 72px;
-  line-height: 72px;
-  text-align: center;
-  transition: all 0.3s ease-in-out;
-}
-.cid-uXZuRd9Aqj [class^="socicon-"]:before,
-.cid-uXZuRd9Aqj [class*=" socicon-"]:before {
-  line-height: 55px;
-  padding: .6rem;
-}
+/* ------------- Koniec galeria ---------------*/
 
+/* ------------- Formularz -------------------*/
 .cid-uXZuRd9AkP {
   padding-top: 6rem;
   padding-bottom: 6rem;
@@ -1451,95 +1381,9 @@
   max-width: 800px;
 }
 
-.cid-uXZuRdaRni .main_wrapper {
-  position: relative;
-  height: 800px;
-  width: 100%;
-}
-.cid-uXZuRdaRni .b_wrapper {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  position: relative;
-  z-index: 2;
-  pointer-events: none;
-}
-@media (max-width: 991px) {
-  .cid-uXZuRdaRni .b_wrapper {
-    position: relative;
-    width: 100%;
-    height: auto !important;
-    flex-direction: column;
-  }
-}
-.cid-uXZuRdaRni .row {
-  margin: 0;
-}
-@media (max-width: 991px) {
-  .cid-uXZuRdaRni .container-fluid {
-    padding: 0;
-  }
-}
-.cid-uXZuRdaRni .item-wrapper {
-  height: 100%;
-  background-color: #ffffff;
-  pointer-events: fill;
-  padding: 2.25rem;
-}
-@media (min-width: 992px) and (max-width: 1200px) {
-  .cid-uXZuRdaRni .item-wrapper {
-    padding: 1.5rem;
-  }
-}
-@media (max-width: 991px) {
-  .cid-uXZuRdaRni .item-wrapper {
-    width: 100%;
-    position: relative;
-    padding: 2rem;
-    border-radius: 0px !important;
-  }
-}
-.cid-uXZuRdaRni .google-map {
-  height: 100%;
-  width: 100%;
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 1;
-}
-.cid-uXZuRdaRni .google-map iframe {
-  height: 100%;
-  width: 100%;
-  border-radius: 0px !important;
-}
-.cid-uXZuRdaRni .google-map [data-state-details] {
-  color: #edefeb;
-  height: 1.5em;
-  margin-top: -0.75em;
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
-  position: absolute;
-  text-align: center;
-  top: 50%;
-  width: 100%;
-}
-.cid-uXZuRdaRni .google-map[data-state] {
-  background: #edefeb;
-}
-.cid-uXZuRdaRni .google-map[data-state="loading"] [data-state-details] {
-  display: none;
-}
-@media (max-width: 991px) {
-  .cid-uXZuRdaRni .google-map {
-    position: static;
-  }
-}
-.cid-uXZuRdaRni ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
+/* --------------- Koniec formularz -------------*/
 
+/* --------------- Stopka ----------------------*/
 .cid-uXZuRdagkn {
   padding-top: 5rem;
   padding-bottom: 5rem;
@@ -1596,3 +1440,106 @@
 .cid-uXZuRdagkn .mbr-section-title {
   color: #ffffff;
 }
+/* ------------ Koniec stopka ---------------*/
+
+.header18 {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Nakładka przyciemniająca tło */
+.mbr-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 1;
+}
+
+/* Wideo w tle (Mobirise samo je wstawi przez data-bg-video) */
+.header18[data-bg-video] {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Centrowanie formularza */
+.container-fluid2 {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Karta formularza z efektem blur */
+.form-overlay {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 2.5rem;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.form-title {
+  color: #fff;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-subtitle {
+  color: #e5e5e5;
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.contact-form input,
+.contact-form textarea {
+  flex: 1;
+  padding: 0.8rem;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.85);
+  font-size: 1rem;
+  color: #333;
+}
+
+.contact-form textarea {
+  resize: none;
+  min-height: 120px;
+}
+
+.btn-submit {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 0.9rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+  background-color: #9fe870;
+  color: #000000;
+}
+

@@ -141,13 +141,13 @@ export default function Navbar() {
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
               <ul className="navbar-nav nav-dropdown nav-right me-auto" data-app-modern-menu="true">
                 <li className="nav-item">
+                  <a className="nav-link link text-black display-4" href="/home">Strona główna</a>
+                </li>
+                <li className="nav-item">
                   <a className="nav-link link text-black display-4" href="/discussion">Forum</a>
                 </li>
                 <li className="nav-item">
                   <a className="nav-link link text-black display-4" href="/messages">Wiadomości</a>
-                </li>
-                <li className="nav-item">
-                  <a className="nav-link link text-black display-4" href="/vehicleDetails">Szczegóły pojazdu</a>
                 </li>
               </ul>
 
