@@ -3,7 +3,7 @@ from .models import User, Comment, Discussion, Message, Vehicle
 from django.contrib.auth.password_validation import validate_password
 
 class VehicleSerializer(serializers.ModelSerializer):
-    
+    owner = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = Vehicle
         fields = '__all__'
