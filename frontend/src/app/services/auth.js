@@ -99,12 +99,16 @@ export const authService = {
   // Logowanie
   async login(email, password) {
     try {
-      const response = await api.post('token/', { 
+      const response = await api.post('login/', { 
         username: email, // Django często używa username zamiast email
         password 
       });
       const { access, refresh } = response.data;
-      setTokens(access, refresh);
+      if (response.data.access) {
+        setTokens(access, refresh);
+        window.dispatchEvent(new Event('authChange'));
+      }
+
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.detail || 'Błąd logowania');
@@ -148,6 +152,20 @@ export const authService = {
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data || 'Błąd zmiany hasła');
+    }
+  },
+
+  async refreshToken() {
+    try {
+      const refresh = localStorage.getItem("refresh_token");
+      if (!refresh) throw new Error("No refresh token found");
+    
+      const response = await axios.post(API_URL + "token/refresh/", { refresh });
+      localStorage.setItem("access_token", response.data.access);
+      return response.data.access;
+    } catch (err) {
+      logout();
+      return null;
     }
   },
 
@@ -238,5 +256,6 @@ export const userService = {
     }
   }
 };
+
 
 export default authService;

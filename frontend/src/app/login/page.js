@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { login } from "../services/api";
+import authService from "../services/auth";
 import styles from "./Login.module.css";
 
 export default function Login() {
@@ -15,7 +15,7 @@ export default function Login() {
     setLoading(true);
 
     try {
-      await login(form); // To zapisze token w localStorage
+      await authService.login(form.username, form.password); // To zapisze token w localStorage
       alert("Logowanie udane!");
       router.push("/home"); // lub gdzie chcesz przekierować
     } catch (err) {
