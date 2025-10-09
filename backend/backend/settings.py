@@ -40,6 +40,7 @@ ALLOWED_HOSTS = [
     '82.139.134.185',  # Twój adres IP
     'localhost',       # Dla rozwoju lokalnego
     '127.0.0.1',       # Dla rozwoju lokalnego
+    'dev-django',
 ]
 AUTH_USER_MODEL = 'car_history.User'
 
