@@ -212,3 +212,11 @@ class VehiclesForSaleListView(generics.ListAPIView):
     def get_queryset(self):
         # Zwraca pojazdy, które mają for_sale=True
         return Vehicle.objects.filter(for_sale=True).order_by('-year')
+    
+class VehicleDetailAPI(generics.RetrieveAPIView):
+    """
+    Endpoint do pobierania danych konkretnego pojazdu (api/vehicles/id/)
+    """
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleSerializer
+    lookup_field = 'vin'

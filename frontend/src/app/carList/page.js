@@ -92,6 +92,7 @@ export default function VehiclesPage() {
       <VehicleList 
         vehicles={vehicles} 
         onDeleteVehicle={handleDeleteVehicle}
+        onViewDetails={(vehicleVin) => window.location.href = `/vehicleDetails/${vehicleVin}`} 
       />
     </div>
   );

@@ -14,7 +14,8 @@ from .views import (
     VehicleCreateView,
     UserVehicleListView,
     VehicleListView,
-    VehiclesForSaleListView
+    VehiclesForSaleListView,
+    VehicleDetailAPI
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -38,5 +39,6 @@ urlpatterns = [
     path('vehicles/create/', VehicleCreateView.as_view(), name='create_car'),
     path('vehicles/', VehicleListView.as_view(),name='vehicle_list'),
     path('vehicles/my-vehicles/', UserVehicleListView.as_view(),name='user_vehicles'),
-    path('vehicles/for-sale/', VehiclesForSaleListView.as_view(), name='vehicles_for_sale')
+    path('vehicles/for-sale/', VehiclesForSaleListView.as_view(), name='vehicles_for_sale'),
+    path('vehicles/<str:vin>/', VehicleDetailAPI.as_view(), name='vehicle-detail'),
 ]

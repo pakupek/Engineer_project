@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-export default function VehicleCard({ vehicle, onDelete }) {
+export default function VehicleCard({ vehicle, onDelete, onViewDetails }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -41,11 +41,8 @@ export default function VehicleCard({ vehicle, onDelete }) {
       </div>
 
       <div className="mt-6 flex space-x-3">
-        <button 
-          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition-colors"
-          onClick={() => window.location.href = `/vehicles/${vehicle.id}/edit`}
-        >
-          Edytuj
+        <button onClick={() => onViewDetails(vehicle.vin)} className="details-btn">
+            Szczegóły
         </button>
         <button 
           className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors disabled:bg-red-300"
