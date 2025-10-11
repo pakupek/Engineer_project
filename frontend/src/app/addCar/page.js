@@ -1,17 +1,27 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getToken } from "../services/auth";
 
 export default function AddVehiclePage() {
+  const [makes, setMakes] = useState([]);
+  const [models, setModels] = useState([]);
+  const [searchMake, setSearchMake] = useState('');
+  const [selectedMake, setSelectedMake] = useState('');
+  const [selectedModel, setSelectedModel] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  
+
+  const [generations, setGenerations] = useState([]);
+  const [selectedGeneration, setSelectedGeneration] = useState('');
   const [formData, setFormData] = useState({
     make: '',
     model: '',
-    year: new Date().getFullYear(),
+    generation: '',
+    production_year: new Date().getFullYear(),
     vin: '',
     odometer: 0,
     body_color: 'Biały',
@@ -23,9 +33,58 @@ export default function AddVehiclePage() {
     drive_type: 'FWD',
     location: '',
     wheel_size: '',
-    tire_size: '',
     for_sale: false
   });
+
+  useEffect(() => {
+    // Pobierz marki
+    const fetchMakes = async () => {
+      try {
+        const token = getToken();
+        const res = await fetch('http://localhost:8000/api/makes/', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        console.log('Rendering makes:', makes.map(m => ({ id: m.id, name: m.name })));
+        setMakes(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchMakes();
+  }, []);
+
+  // Pobierz modele po zmianie marki
+  useEffect(() => {
+    if (!selectedMake) return;
+    const fetchModels = async () => {
+      try {
+        const token = getToken();
+        const res = await fetch(`http://localhost:8000/api/models/?make=${selectedMake}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        setModels(data); 
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchModels();
+  }, [selectedMake]);
+
+  useEffect(() => {
+    if (selectedModel) {
+      fetch(`http://localhost:8000/api/generations/?model=${selectedModel}`)
+        .then(res => res.json())
+        .then(data => setGenerations(data))
+        .catch(err => console.error(err));
+    } else {
+      setGenerations([]);
+      setSelectedGeneration('');
+    }
+  }, [selectedModel]);
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -51,6 +110,8 @@ export default function AddVehiclePage() {
     setError('');
     setSuccess('');
 
+    console.log("Form data do wysłania:", formData);
+
     try {
       const token = getToken();
       const response = await fetch('http://localhost:8000/api/vehicles/create/', {
@@ -63,6 +124,7 @@ export default function AddVehiclePage() {
       });
 
       const data = await response.json();
+      console.log("Odpowiedź z backendu:", data);
 
       if (response.ok) {
         setSuccess('Pojazd został pomyślnie dodany!');
@@ -70,7 +132,8 @@ export default function AddVehiclePage() {
         setFormData({
           make: '',
           model: '',
-          year: new Date().getFullYear(),
+          generation: '',
+          production_year: new Date().getFullYear(),
           vin: '',
           odometer: 0,
           body_color: 'Biały',
@@ -82,7 +145,6 @@ export default function AddVehiclePage() {
           drive_type: 'FWD',
           location: '',
           wheel_size: '',
-          tire_size: '',
           for_sale: false
         });
         
@@ -103,6 +165,10 @@ export default function AddVehiclePage() {
       setLoading(false);
     }
   };
+  
+  const filteredMakes = makes.filter(make =>
+    make.name.toLowerCase().includes(searchMake.toLowerCase())
+  );
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 50 }, (_, i) => currentYear - i);
@@ -117,18 +183,6 @@ export default function AddVehiclePage() {
         <p className="text-gray-600 mt-2">Wypełnij formularz, aby dodać nowy pojazd do swojej kolekcji</p>
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-          {success}
-        </div>
-      )}
-
       <form onSubmit={handleSubmit} className="bg-white shadow-md rounded-lg p-6">
         {/* Podstawowe informacje */}
         <div className="mb-8">
@@ -138,31 +192,68 @@ export default function AddVehiclePage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Marka *
               </label>
-              <input
-                type="text"
-                name="make"
-                value={formData.make}
-                onChange={handleChange}
+              <select
+                value={selectedMake}
+                onChange={(e) => {
+                  setSelectedMake(e.target.value);
+                  setSelectedModel('');
+                  setFormData(prev => ({ ...prev, make: e.target.value, model: '' }));
+                }}
+                className="w-full border px-2 py-1 rounded"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="np. Toyota"
-              />
+              >
+                <option value="">Wybierz markę</option>
+                {makes.map(make => (
+                  <option key={make.id} value={make.id}>{make.name}</option>
+                ))}
+              </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Model *
-              </label>
-              <input
-                type="text"
-                name="model"
-                value={formData.model}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="np. Corolla"
-              />
-            </div>
+            {/* Wybór modelu po wybraniu marki */}
+            {selectedMake && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Model *
+                </label>
+                <select
+                  value={selectedModel}
+                  onChange={(e) => {
+                    setSelectedModel(e.target.value);
+                    setFormData(prev => ({ ...prev, model: e.target.value }));
+                  }}
+                  className="w-full border px-2 py-1 rounded"
+                  required
+                >
+                  <option value="">Wybierz model</option>
+                  {models.map(model => (
+                    <option key={model.id} value={model.id}>{model.name}</option>
+                    
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {selectedModel && (
+              <div>
+                <label className="block font-medium mb-1">Generacja:</label>
+                <select
+                  value={selectedGeneration}
+                  onChange={(e) => {
+                    setSelectedGeneration(e.target.value);
+                    setFormData(prev => ({ ...prev, generation: parseInt(e.target.value, 10) }));
+                  }}
+                  className="w-full border px-2 py-1 rounded"
+                >
+                  <option value="">Wybierz generację</option>
+                  {generations.map(gen => (
+                    <option key={gen.id} value={gen.id}>
+                      {gen.name} ({gen.production_start}–{gen.production_end || "?"})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -170,7 +261,7 @@ export default function AddVehiclePage() {
               </label>
               <select
                 name="year"
-                value={formData.year}
+                value={formData.production_year}
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -300,28 +391,6 @@ export default function AddVehiclePage() {
                 <option value='20"'>20"</option>
                 <option value='21"'>21"</option>
                 <option value='22"'>22"</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rozmiar opon
-              </label>
-              <select
-                name="tire_size"
-                value={formData.tire_size}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Wybierz rozmiar</option>
-                <option value="195/65 R15">195/65 R15</option>
-                <option value="205/55 R16">205/55 R16</option>
-                <option value="225/45 R17">225/45 R17</option>
-                <option value="235/40 R18">235/40 R18</option>
-                <option value="245/35 R19">245/35 R19</option>
-                <option value="255/30 R20">255/30 R20</option>
-                <option value="265/35 R21">265/35 R21</option>
-                <option value="275/30 R22">275/30 R22</option>
               </select>
             </div>
           </div>

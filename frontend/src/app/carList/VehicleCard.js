@@ -1,55 +1,81 @@
 "use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 
 export default function VehicleCard({ vehicle, onDelete, onViewDetails }) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
-    if (confirm('Czy na pewno chcesz usunąć ten pojazd?')) {
+    if (confirm("Czy na pewno chcesz usunąć ten pojazd?")) {
       setIsDeleting(true);
-      await onDelete(vehicle.id);
+      await onDelete(vehicle.vin);
       setIsDeleting(false);
     }
   };
 
+  const vehicleModel = vehicle.generation || {};
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+      {/* Nagłówek */}
       <div className="flex justify-between items-start mb-4">
         <h3 className="text-xl font-semibold text-gray-900">
-          {vehicle.brand} {vehicle.model}
+          {vehicleModel.make || "Nieznana marka"}{" "}
+          {vehicleModel.model || "Nieznany model"}
         </h3>
       </div>
 
+      {/* Dane pojazdu */}
       <div className="space-y-2 text-gray-600">
         <div className="flex justify-between">
-          <span>Rejestracja:</span>
-          <span className="font-medium">{vehicle.licensePlate}</span>
+          <span>VIN:</span>
+          <span className="font-medium">{vehicle.vin}</span>
         </div>
         <div className="flex justify-between">
           <span>Rok produkcji:</span>
-          <span className="font-medium">{vehicle.year}</span>
+          <span className="font-medium">
+            {vehicle.production_year || "Brak danych"}
+          </span>
         </div>
         <div className="flex justify-between">
           <span>Przebieg:</span>
-          <span className="font-medium">{vehicle.odometer?.toLocaleString()} km</span>
+          <span className="font-medium">
+            {vehicle.odometer
+              ? `${vehicle.odometer.toLocaleString()} km`
+              : "Brak danych"}
+          </span>
         </div>
         <div className="flex justify-between">
           <span>Typ paliwa:</span>
-          <span className="font-medium">{vehicle.fuel_type}</span>
+          <span className="font-medium">
+            {vehicleModel.fuel_type || "Brak danych"}
+          </span>
+        </div>
+        <div className="flex justify-between">
+          <span>Kolor nadwozia:</span>
+          <span className="font-medium">{vehicle.body_color || "Brak danych"}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Lokalizacja:</span>
+          <span className="font-medium">{vehicle.location || "Brak danych"}</span>
         </div>
       </div>
 
+      {/* Przyciski akcji */}
       <div className="mt-6 flex space-x-3">
-        <button onClick={() => onViewDetails(vehicle.vin)} className="details-btn">
-            Szczegóły
+        <button
+          onClick={() => onViewDetails(vehicle.vin)}
+          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition-colors"
+        >
+          Szczegóły
         </button>
-        <button 
+
+        <button
           className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors disabled:bg-red-300"
           onClick={handleDelete}
           disabled={isDeleting}
         >
-          {isDeleting ? 'Usuwanie...' : 'Usuń'}
+          {isDeleting ? "Usuwanie..." : "Usuń"}
         </button>
       </div>
     </div>

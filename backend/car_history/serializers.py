@@ -1,8 +1,28 @@
 from rest_framework import serializers
-from .models import User, Comment, Discussion, Message, Vehicle
+from .models import User, Comment, Discussion, Message, Vehicle, VehicleModel, VehicleMake, VehicleGeneration
 from django.contrib.auth.password_validation import validate_password
 
+class VehicleMakeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VehicleMake
+        fields = '__all__'
+
+class VehicleModelSerializer(serializers.ModelSerializer):
+    make = VehicleMakeSerializer(read_only=True)
+    class Meta:
+        model = VehicleModel
+        fields = '__all__'
+
+class VehicleGenerationSerializer(serializers.ModelSerializer):
+    model = VehicleModelSerializer(read_only=True)
+    class Meta:
+        model = VehicleGeneration
+        fields = '__all__'
+
 class VehicleSerializer(serializers.ModelSerializer):
+    generation = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleGeneration.objects.all()
+    )
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     class Meta:
         model = Vehicle

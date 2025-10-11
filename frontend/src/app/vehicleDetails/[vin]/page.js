@@ -6,12 +6,22 @@ import { useParams } from "next/navigation";
 import { getToken } from "../../services/auth";
 import styles from "../vehicleDetails.module.css";
 
-export default function VehicleDetails() {
+export default function carDetails() {
   const { vin } = useParams();
 
   const [car, setCar] = useState(null);
   const [current, setCurrent] = useState(0);
   const [showMore, setShowMore] = useState(false);
+
+  const getProductionYears = (generation) => {
+    if (!generation) return "Brak danych";
+    const start = generation.production_start;
+    const end = generation.production_end;
+    if (start) {
+      return end ? `${start} – ${end}` : `${start}`;
+    }
+    return "Brak danych";
+  };
 
   // Fetch danych auta z API
   useEffect(() => {
@@ -25,7 +35,7 @@ export default function VehicleDetails() {
           },
         });
         
-        if (!response.ok) throw new Error("Błąd pobierania auta: ${response.status}");
+        if (!response.ok) throw new Error(`Błąd pobierania auta: ${response.status}`);
         const data = await response.json();
         setCar(data);
       } catch (err) {
@@ -86,7 +96,7 @@ export default function VehicleDetails() {
             </div>
             <div className="flex flex-col text-right">
               <span className={styles.rightSmall}>Paliwo</span>
-              <span className={styles.right}>{car.fuel}</span>
+              <span className={styles.right}>{car.fuel_type}</span>
             </div>
             <div className="flex flex-col text-right">
               <span className={styles.rightSmall}>Moc</span>
@@ -129,20 +139,16 @@ export default function VehicleDetails() {
         <div className="flex-1">
           <h3 className="font-semibold">Kolor wnętrza</h3>
           <div className="flex items-center gap-3">
-            {car.interior_colors?.map((c) => (
-              <div
-                key={c}
-                className="w-8 h-8 rounded-full border border-gray-300 cursor-pointer"
-                style={{ backgroundColor: c }}
-              />
-            ))}
+            
+            <span className="px-2 py-1 bg-gray-200 rounded">{car.interior_color}</span>
+    
           </div>
         </div>
 
         <div className="flex-1">
           <h3 className="font-semibold">Koła</h3>
           <div className="flex items-center gap-3 mt-2">
-            <p className="text-2xl font-bold">{car.wheels}</p>
+            <p className="text-2xl font-bold">{car.wheel_size}</p>
           </div>
         </div>
 
@@ -167,8 +173,8 @@ export default function VehicleDetails() {
           <ul className="list-disc pl-6 text-gray-600 space-y-2">
             <li>Przyspieszenie 0-100 km/h: {car.acceleration}</li>
             <li>Maksymalny moment obrotowy: {car.torque}</li>
-            <li>Napęd: {car.drive}</li>
-            <li>Rocznik: {car.year}</li>
+            <li>Napęd: {car.drive_type}</li>
+            <li>Rocznik: {getProductionYears(car.generation)}</li>
           </ul>
         </div>
       )}

@@ -15,7 +15,11 @@ from .views import (
     UserVehicleListView,
     VehicleListView,
     VehiclesForSaleListView,
-    VehicleDetailAPI
+    VehicleDetailAPI,
+    UserRegistrationView,
+    VehicleMakeListAPI,
+    VehicleModelListAPI,
+    VehicleGenerationListAPI
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -24,6 +28,7 @@ from rest_framework_simplejwt.views import (
 
 urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('register/', UserRegistrationView.as_view(), name='register'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('discussions/', DiscussionListCreateView.as_view(), name='discussion_list'),
     path('discussions/<int:pk>/', DiscussionDetailView.as_view(), name='discussion_detail'),
@@ -36,9 +41,14 @@ urlpatterns = [
     path('auth/check/', check_auth_status, name='auth_check'),
     path('profile/', UserProfileView.as_view(), name='user_profile'),
     path('change-password/', change_password, name='change_password'),
+
+
     path('vehicles/create/', VehicleCreateView.as_view(), name='create_car'),
     path('vehicles/', VehicleListView.as_view(),name='vehicle_list'),
     path('vehicles/my-vehicles/', UserVehicleListView.as_view(),name='user_vehicles'),
     path('vehicles/for-sale/', VehiclesForSaleListView.as_view(), name='vehicles_for_sale'),
-    path('vehicles/<str:vin>/', VehicleDetailAPI.as_view(), name='vehicle-detail'),
+    path('vehicles/<str:vin>/', VehicleDetailAPI.as_view(), name='vehicle_detail'),
+    path('makes/', VehicleMakeListAPI.as_view(), name='vehicle_makes'),
+    path('models/', VehicleModelListAPI.as_view(), name='vehicle_models'),
+    path('generations/', VehicleGenerationListAPI.as_view(), name='vehicle-generations'),
 ]

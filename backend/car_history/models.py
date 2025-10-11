@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.forms import ValidationError
 from django.utils import timezone
 
 class User(AbstractUser):
@@ -48,27 +49,59 @@ class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
+class VehicleMake(models.Model):
+    """Marka pojazdu (np. Toyota, BMW, Audi)."""
+
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name = "Marka"
+        verbose_name_plural = "Marki"
+
+    def __str__(self):
+        return self.name
+
+
+class VehicleModel(models.Model):
+    """Model pojazdu (np. Corolla, A4, 3 Series)."""
+
+    make = models.ForeignKey(VehicleMake, on_delete=models.CASCADE, related_name="models")
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ('make', 'name')
+        verbose_name = "Model"
+        verbose_name_plural = "Modele"
+
+    def __str__(self):
+        return f"{self.make.name} {self.name}"
+
+
+class VehicleGeneration(models.Model):
+    """Generacja modelu (np. Golf VII, Corolla E210)."""
+
+    model = models.ForeignKey(VehicleModel, on_delete=models.CASCADE, related_name="generations")
+    name = models.CharField(max_length=50) 
+    production_start = models.PositiveIntegerField(null=True, blank=True)
+    production_end = models.PositiveIntegerField(null=True, blank=True)    
+
+    class Meta:
+        unique_together = ('model', 'name')
+        verbose_name = "Generacja"
+        verbose_name_plural = "Generacje"
+
+    def __str__(self):
+        years = []
+        if self.production_start:
+            years.append(str(self.production_start))
+        if self.production_end:
+            years.append(str(self.production_end))
+        year_range = "–".join(years) if years else "?"
+        return f"{self.model.make.name} {self.model.name} {self.name} ({year_range})"
+
     
 class Vehicle(models.Model):
-    """ Model pojazdu przypisanego do użytkownika """
-    FUEL_CHOICES = [
-        ('Benzyna', 'Benzyna'),
-        ('Diesel', 'Diesel'),
-        ('Hybryda', 'Hybryda'),
-        ('Elektryczny', 'Elektryczny'),
-    ]
-
-    TRANSMISSION_CHOICES = [
-        ('Manual', 'Manual'),
-        ('Automat', 'Automat'),
-    ]
-
-    DRIVE_CHOICES = [
-        ('FWD', 'Napęd na przód'),
-        ('RWD', 'Napęd na tył'),
-        ('AWD', 'Napęd na wszystkie koła'),
-        ('4WD', '4x4 / 4WD'),
-    ]
+    """Pojazd użytkownika."""
 
     BODY_COLOR_CHOICES = [
         ('Czarny', 'Czarny'),
@@ -104,69 +137,42 @@ class Vehicle(models.Model):
         ('22"', '22"'),
     ]
 
-    TIRE_SIZE_CHOICES = [
-        ('195/65 R15', '195/65 R15'),
-        ('205/55 R16', '205/55 R16'),
-        ('225/45 R17', '225/45 R17'),
-        ('235/40 R18', '235/40 R18'),
-        ('245/35 R19', '245/35 R19'),
-        ('255/30 R20', '255/30 R20'),
-        ('265/35 R21', '265/35 R21'),
-        ('275/30 R22', '275/30 R22'),
-    ]
+    generation = models.ForeignKey(VehicleGeneration, on_delete=models.CASCADE, related_name='vehicles', null=True, blank=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vehicles')
+    vin = models.CharField(max_length=17, unique=True, primary_key=True, verbose_name='VIN')
+    production_year = models.PositiveIntegerField(null=True,blank=True,verbose_name="Rok produkcji")
+    odometer = models.PositiveIntegerField(verbose_name='Przebieg (km)')
+    body_color = models.CharField(default='Biały', choices=BODY_COLOR_CHOICES, verbose_name='Kolor nadwozia')
+    interior_color = models.CharField(default='Czarny', choices=INTERIOR_COLOR_CHOICES, verbose_name='Kolor wnętrza')
+    price = models.DecimalField(max_digits=8, default=0.0, decimal_places=2, editable=True, verbose_name='Cena (PLN)')
+    first_registration = models.DateField(default=timezone.now, blank=True, null=True, verbose_name='Data pierwszej rejestracji')
+    image = models.ImageField(blank=True, null=True, upload_to='vehicles/%Y/%m/%d/', verbose_name='Zdjęcie')
+    location = models.CharField(default='', max_length=100, verbose_name='Lokalizacja')
+    wheel_size = models.CharField(default='', max_length=10, choices=WHEEL_SIZE_CHOICES, verbose_name='Rozmiar felg')
+    for_sale = models.BooleanField(default=False, verbose_name='Na sprzedaż')
 
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    make = models.CharField(max_length=50)
-    model = models.CharField(max_length=50)
-    year = models.IntegerField()
-    vin = models.CharField(max_length=17, unique=True, primary_key=True)
-    odometer = models.IntegerField()
-    body_color = models.CharField(default='Biały', choices=BODY_COLOR_CHOICES)
-    interior_color = models.CharField(default='Czarny', choices=INTERIOR_COLOR_CHOICES)
-    price = models.FloatField(default=0.0, editable=True)
-    first_registration = models.DateField(default=timezone.now, blank=True, null=True)
-    image = models.ImageField(blank=True, null=True, upload_to='images/')
-    fuel_type = models.CharField(default='Diesel', max_length=20, choices=FUEL_CHOICES)
-    transmission = models.CharField(default='Manual', max_length=20, choices=TRANSMISSION_CHOICES)
-    drive_type = models.CharField(default='Napęd na przód', max_length=30, choices=DRIVE_CHOICES)
-    location = models.CharField(default='', max_length=100)
-    wheel_size = models.CharField(default='', max_length=10, choices=WHEEL_SIZE_CHOICES)
-    tire_size = models.CharField(default='', max_length=15, choices=TIRE_SIZE_CHOICES)
-    for_sale = models.BooleanField(default=False)
-    
-    def __str__(self):
-        return f"{self.make} {self.model} ({self.year})"
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
 
-class ServiceHistory(models.Model):
-    """ Historia serwisowa pojazdu """
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
-    service_center = models.ForeignKey('ServiceCenter', on_delete=models.SET_NULL, null=True)
-    date = models.DateField(default=timezone.now)
-    description = models.TextField()
-    cost = models.DecimalField(max_digits=10, decimal_places=2)
+    class Meta:
+        verbose_name = 'Pojazd'
+        verbose_name_plural = 'Pojazdy'
+        ordering = ['-created_at']
 
     def __str__(self):
-        return f"Serwis {self.vehicle} - {self.date}"
+        return f"{self.generation.model.make.name} {self.generation.model.name} {self.generation.name} ({self.vin})"
 
-class ServiceCenter(models.Model):
-    """ Model serwisu wykonującego naprawy """
-    name = models.CharField(max_length=100)
-    address = models.TextField()
-    phone = models.CharField(max_length=15)
-    
-    def __str__(self):
-        return self.name
+    def age(self):
+        from datetime import date
+        if self.first_registration:
+            return date.today().year - self.first_registration.year
+        return None
 
-class Listing(models.Model):
-    """ Ogłoszenie sprzedaży pojazdu """
-    seller = models.ForeignKey(User, on_delete=models.CASCADE)
-    vehicle = models.OneToOneField(Vehicle, on_delete=models.CASCADE)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    description = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    def save(self, *args, **kwargs):
+        if len(self.vin) != 17:
+            raise ValidationError("VIN musi mieć 17 znaków")
+        super().save(*args, **kwargs)
 
-    def __str__(self):
-        return f"Sprzedaż: {self.vehicle} za {self.price} PLN"
 
 class Message(models.Model):
     """ Wiadomości między użytkownikami """

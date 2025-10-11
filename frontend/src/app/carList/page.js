@@ -83,7 +83,7 @@ export default function VehiclesPage() {
       <div className={styles["button-section"]}>
         <button 
           className={styles["add-button"]}
-          onClick={() => window.location.href = 'http://localhost:8000/api/vehicles/create/'}
+          onClick={() => window.location.href = '/addCar'}
         >
           Dodaj nowy pojazd
         </button>

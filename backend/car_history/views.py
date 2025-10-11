@@ -8,10 +8,13 @@ from .serializers import (
     MessageCreateSerializer, 
     UserSerializer,
     ChangePasswordSerializer,
-    VehicleSerializer
+    VehicleSerializer,
+    VehicleMakeSerializer,
+    VehicleModelSerializer,
+    VehicleGenerationSerializer
 )
 from rest_framework.permissions import AllowAny
-from .models import Comment, Discussion, Message, User, Vehicle
+from .models import Comment, Discussion, Message, User, Vehicle, VehicleMake, VehicleModel, VehicleGeneration
 from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
@@ -172,6 +175,35 @@ class UserRegistrationView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
 
+# Lista marek
+class VehicleMakeListAPI(generics.ListAPIView):
+    queryset = VehicleMake.objects.all().order_by('name')
+    serializer_class = VehicleMakeSerializer
+    permission_classes = [permissions.AllowAny]
+
+# Lista modeli dla danej marki
+class VehicleModelListAPI(generics.ListAPIView):
+    serializer_class = VehicleModelSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_queryset(self):
+        make_id = self.request.query_params.get('make')
+        if make_id:
+            return VehicleModel.objects.filter(make_id=make_id).order_by('name')
+        return VehicleModel.objects.all().order_by('name')
+    
+class VehicleGenerationListAPI(generics.ListAPIView):
+    serializer_class = VehicleGenerationSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = VehicleGeneration.objects.all().order_by('name')
+        model_id = self.request.query_params.get('model')  # spodziewa się ID
+        if model_id:
+            queryset = queryset.filter(model_id=model_id)
+        return queryset
+
+
 class VehicleCreateView(generics.CreateAPIView):
     """
     Endpoint do tworzenia nowego pojazdu (/api/vehicles/create/)
@@ -188,7 +220,7 @@ class VehicleListView(generics.ListAPIView):
     """
     Endpoint do pobierania listy wszystkich pojazdów (/api/vehicles/)
     """
-    queryset = Vehicle.objects.all().order_by('-year')
+    queryset = Vehicle.objects.select_related('generation', 'generation__model', 'generation__model__make').order_by('-generation__production_start')
     serializer_class = VehicleSerializer
     permission_classes = [permissions.AllowAny]
 
@@ -200,7 +232,7 @@ class UserVehicleListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Vehicle.objects.filter(owner=self.request.user).order_by('-year')
+        return Vehicle.objects.filter(owner=self.request.user).select_related('generation', 'generation__model', 'generation__model__make').order_by('-generation__production_start')
     
 class VehiclesForSaleListView(generics.ListAPIView):
     """
@@ -211,12 +243,13 @@ class VehiclesForSaleListView(generics.ListAPIView):
 
     def get_queryset(self):
         # Zwraca pojazdy, które mają for_sale=True
-        return Vehicle.objects.filter(for_sale=True).order_by('-year')
+        return Vehicle.objects.filter(for_sale=True).select_related('generation', 'generation__model', 'generation__model__make').order_by('-generation__production_start')
     
 class VehicleDetailAPI(generics.RetrieveAPIView):
     """
     Endpoint do pobierania danych konkretnego pojazdu (api/vehicles/id/)
     """
-    queryset = Vehicle.objects.all()
+    permission_classes = [IsAuthenticated]
+    queryset = Vehicle.objects.select_related('generation', 'generation__model', 'generation__model__make')
     serializer_class = VehicleSerializer
     lookup_field = 'vin'

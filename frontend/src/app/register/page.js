@@ -1,13 +1,17 @@
-// app/register/page.js
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { register } from "../services/api";
+import { authService } from "../services/auth";
 import styles from './Register.module.css';
 
 export default function Register() {
-  const [form, setForm] = useState({ username: "", email: "", password: "", password2: "" });
+  const [form, setForm] = useState({ 
+    username: "", 
+    email: "", 
+    phone_number: "",
+    password: "", 
+    password2: "" });
   const [errors, setErrors] = useState({});
   const router = useRouter();
 
@@ -24,6 +28,14 @@ export default function Register() {
       newErrors.email = "Email jest wymagany";
     } else if (!/\S+@\S+\.\S+/.test(form.email)) {
       newErrors.email = "Email jest nieprawidłowy";
+    }
+
+    if (!form.phone_number.trim()) {
+      newErrors.phone_number = "Numer telefonu jest wymagany";
+    } else if (
+      !/^(\+48\s?\d{3}\s?\d{3}\s?\d{3}|\d{3}\s?\d{3}\s?\d{3})$/.test(form.phone_number)
+    ) {
+      newErrors.phone_number = "Numer telefonu jest nieprawidłowy";
     }
 
     if (!form.password) {
@@ -49,7 +61,7 @@ export default function Register() {
     }
 
     try {
-      await register(form);
+      await authService.register(form);
       alert("Rejestracja udana!");
       router.push("/login");
     } catch (err) {
@@ -99,6 +111,17 @@ export default function Register() {
                     className={`${styles.registerInput} ${errors.email ? styles.inputError : ''}`}
                   />
                   {errors.email && <span className={styles.errorText}>{errors.email}</span>}
+                </div>
+
+                <div className={styles.inputField}>
+                  <input
+                    type="tel"
+                    placeholder="Numer telefonu (np. +48 123 456 789)"
+                    value={form.phone_number}
+                    onChange={(e) => handleInputChange('phone_number', e.target.value)}
+                    className={`${styles.registerInput} ${errors.phone_number ? styles.inputError : ''}`}
+                  />
+                  {errors.phone_number && <span className={styles.errorText}>{errors.phone_number}</span>}
                 </div>
 
                 <div className={styles.inputField}>
