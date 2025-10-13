@@ -1,16 +1,18 @@
 "use client";
-import { useState, useEffect } from 'react';
-import { authService } from '../services/auth';
+import { useState, useEffect } from "react";
+import { User, LogOut, Settings, Home, Loader2 } from "lucide-react";
+import { authService, logout } from "../services/auth";
+import styles from "./Profile.module.css";
 
-export default function UserProfile() {
+export default function UserDashboard() {
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
   });
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -22,13 +24,13 @@ export default function UserProfile() {
       const userData = await authService.getProfile();
       setUser(userData);
       setFormData({
-        first_name: userData.first_name || '',
-        last_name: userData.last_name || '',
-        email: userData.email || '',
-        phone: userData.phone || '',
+        first_name: userData.first_name || "",
+        last_name: userData.last_name || "",
+        email: userData.email || "",
+        phone: userData.phone || "",
       });
     } catch (error) {
-      console.error('Błąd ładowania profilu:', error);
+      console.error("Błąd ładowania profilu:", error);
     }
   };
 
@@ -39,101 +41,92 @@ export default function UserProfile() {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage('');
-
+  const handleLogout = async () => {
     try {
-      await authService.updateProfile(formData);
-      setMessage('Profil został zaktualizowany!');
-      await loadProfile(); // Odśwież dane
+      setLoading(true);
+      // wywołujemy funkcję logout z serwisu
+      logout();
     } catch (error) {
-      setMessage('Błąd aktualizacji profilu');
+      console.error("Błąd podczas wylogowania:", error);
     } finally {
       setLoading(false);
     }
   };
 
+  
   if (!user) {
-    return <div>Ładowanie...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="animate-spin w-10 h-10 text-blue-600" />
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6">Mój profil</h2>
-      
-      {message && (
-        <div className={`p-4 mb-4 rounded ${
-          message.includes('Błąd') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
-        }`}>
-          {message}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Imię
-            </label>
-            <input
-              type="text"
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 text-sm font-bold mb-2">
-              Nazwisko
-            </label>
-            <input
-              type="text"
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+    <div className={styles.container}>
+      {/* Sidebar */}
+      <aside className={styles.sidebar}>
+        <div className={styles.sidebarHeader}>
+          <User className={styles.sidebarIcon} />
+          <h2 className={styles.sidebarTitle}>Panel Użytkownika</h2>
         </div>
 
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Email
-          </label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Telefon
-          </label>
-          <input
-            type="tel"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+        <nav className={styles.sidebarNav}>
+          <a href="/profile" className={`${styles.navLink} ${styles.active}`}>
+            <Home size={20} /> <span>Dashboard</span>
+          </a>
+          <a href="/EditProfile" className={styles.navLink}>
+            <Settings size={20} /> <span>Edytuj profil</span>
+          </a>
+        </nav>
 
         <button
-          type="submit"
+          onClick={handleLogout}
+          className={styles.logoutBtn}
           disabled={loading}
-          className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
         >
-          {loading ? 'Zapisywanie...' : 'Zapisz zmiany'}
+          {loading ? (
+            <>
+              <Loader2 className="animate-spin" size={20} /> Wylogowywanie...
+            </>
+          ) : (
+            <>
+              <LogOut size={20} /> Wyloguj się
+            </>
+          )}
         </button>
-      </form>
+      </aside>
+
+      {/* Main content */}
+      <main className={styles.mainContent}>
+        <h1 className={styles.mainTitle}>
+          Witaj, {user.first_name} 👋
+        </h1>
+
+        {/* Statystyki */}
+        <div className={styles.statsGrid}>
+          <div className={styles.statCard}>
+            <h3 className={styles.statLabel}>Liczba logowań</h3>
+            <p className={styles.statValue}>
+              {user.login_count ?? 14}
+            </p>
+          </div>
+
+          <div className={styles.statCard}>
+            <h3 className={styles.statLabel}>Ostatnia aktywność</h3>
+            <p className={styles.statValueGray}>
+              {user.last_login ?? "brak danych"}
+            </p>
+          </div>
+
+          <div className={styles.statCard}>
+            <h3 className={styles.statLabel}>Konto utworzono</h3>
+            <p className={styles.statValueGray}>
+              {user.created_at ?? "nieznane"}
+            </p>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

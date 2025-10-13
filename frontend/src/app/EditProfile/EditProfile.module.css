@@ -1,0 +1,473 @@
+.epPage {
+  display: flex;
+  min-height: 100vh;
+  background-color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #333333;
+}
+
+/* Sidebar - nowy styl */
+.epSidebar {
+  width: 280px;
+  background-color: #2563eb;
+  border-right: 1px solid #e9ecef;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0px;
+}
+
+.epSidebarHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+  margin-top: 100px;
+}
+
+.epIcon {
+  width: 32px;
+  height: 32px;
+  color: #495057;
+}
+
+.epTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #212529;
+}
+
+.epNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.epNavLink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #495057;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+  font-weight: 400;
+  font-size: 0.9rem;
+}
+
+.epNavLink:hover {
+  background: #e9ecef;
+  color: #212529;
+}
+
+.epNavLink.active {
+  background: #007bff;
+  color: white;
+}
+
+.epLogoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-weight: 400;
+  font-size: 0.9rem;
+  margin-top: auto;
+}
+
+.epLogoutBtn:hover {
+  background: #e9ecef;
+  border-color: #adb5bd;
+}
+
+/* Main Content */
+.epMain {
+  flex: 1;
+  margin-left: 280px;
+  padding: 2rem;
+  max-width: 1000px;
+  margin-top: 100px;
+}
+
+.epHeading {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.epGrid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* Cards - nowy styl */
+.epCard {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.epCardTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #e9ecef;
+}
+
+/* Messages */
+.epMessage {
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.25rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+
+.epMessageSuccess {
+  background: #d4edda;
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+.epMessageError {
+  background: #f8d7da;
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
+/* Form - nowy styl */
+.epForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.epFormRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.epLabel {
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.85rem;
+}
+
+.epInput {
+  padding: 0.75rem;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: all 0.15s ease;
+  background: white;
+  color: #495057;
+}
+
+.epInput:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.epInput::placeholder {
+  color: #6c757d;
+}
+
+.epFormActions {
+  margin-top: 0.5rem;
+}
+
+.epButton {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.9rem;
+}
+
+.epButton:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.epButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Preview - nowy styl jak z obrazka */
+.epPreview {
+  background: white;
+  border: 1px solid #e9ecef;
+}
+
+.epPreviewList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.epPreviewItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.epPreviewItem:last-child {
+  border-bottom: none;
+}
+
+.epPreviewLabel {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 400;
+  margin-bottom: 0.25rem;
+}
+
+.epPreviewValue {
+  font-size: 0.95rem;
+  color: #212529;
+  font-weight: 500;
+}
+
+/* Specjalne style dla nagłówków jak na obrazku */
+.epPreviewItem:first-child .epPreviewLabel {
+  font-size: 0.75rem;
+  color: #495057;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.epPreviewItem:first-child .epPreviewValue {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #212529;
+}
+
+/* Loading */
+.epCenterScreen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.epLoader {
+  width: 32px;
+  height: 32px;
+  color: #007bff;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===================== */
+/* 💻 Responsywność CSS */
+/* ===================== */
+
+/* ✅ Ekrany do 1024px (np. tablety w poziomie, małe laptopy) */
+@media (max-width: 1024px) {
+  .epSidebar {
+    width: 220px;
+  }
+
+  .epMain {
+    margin-left: 220px;
+    padding: 1.5rem;
+  }
+
+  .epGrid {
+    grid-template-columns: 1fr; 
+    gap: 1.5rem;
+  }
+
+  .epTitle {
+    font-size: 1rem;
+  }
+
+  .epNavLink {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.75rem;
+  }
+}
+
+/* ✅ Ekrany do 768px (np. tablety w pionie, duże telefony) */
+@media (max-width: 768px) {
+  .epSidebar {
+    width: 70px;
+    padding: 1rem 0.5rem;
+    align-items: center;
+  }
+
+  .epSidebarHeader {
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 60px;
+  }
+
+  .epTitle {
+    display: none; /* ukryj nazwę aplikacji */
+  }
+
+  .epNav {
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .epNavLink {
+    justify-content: center;
+    padding: 0.5rem;
+  }
+
+  .epNavLink span,
+  .epNavLink.active span {
+    display: none !important;
+  }
+
+  .epNavLink svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .epLogoutBtn {
+    justify-content: center;
+    font-size: 0;
+    padding: 0.5rem;
+  }
+
+  .epLogoutBtn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .epMain {
+    margin-left: 70px;
+    padding: 1rem;
+  }
+
+  .epGrid {
+    grid-template-columns: 1fr; /* elementy pionowo */
+    gap: 1.5rem;
+  }
+
+  .epHeading {
+    font-size: 1.3rem;
+  }
+}
+
+/* ✅ Ekrany do 480px (telefony) */
+@media (max-width: 480px) {
+  .epSidebar {
+    width: 60px;
+    padding: 0.75rem 0.25rem;
+  }
+
+  .epNavLink {
+    justify-content: center;
+    padding: 0.5rem;
+  }
+
+  .epNavLink span,
+  .epNavLink.active span {
+    display: none !important;
+  }
+
+  .epNavLink svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .epMain {
+    margin-left: 60px;
+    padding: 0.75rem;
+  }
+
+  .epGrid {
+    grid-template-columns: 1fr; /* elementy pionowo */
+    gap: 1.5rem;
+  }
+
+  .epHeading {
+    font-size: 1.2rem;
+  }
+
+  .epCard {
+    padding: 1rem;
+  }
+
+  .epButton {
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 0.85rem;
+  }
+}
+
+/* ✅ Ekrany bardzo małe (np. 360px szerokości) */
+@media (max-width: 360px) {
+  .epSidebar {
+    width: 55px;
+  }
+
+  .epMain {
+    margin-left: 55px;
+  }
+
+  .epGrid {
+    grid-template-columns: 1fr; /* elementy pionowo */
+    gap: 1.5rem;
+  }
+
+  .epNavLink {
+    justify-content: center;
+    padding: 0.5rem;
+  }
+
+  .epNavLink span,
+  .epNavLink.active span {
+    display: none !important;
+  }
+
+  .epNavLink svg {
+    width: 18px;
+    height: 18px;
+  }
+}
