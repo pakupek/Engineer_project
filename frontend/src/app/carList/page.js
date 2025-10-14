@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import VehicleList from './VehicleList';
 import { getToken } from "../services/auth";
 import styles from './carList.module.css'; 
+import DashboardLayout from '../DashboardLayout/page';
 
 export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState([]);
@@ -74,26 +75,25 @@ export default function VehiclesPage() {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Moje pojazdy</h1>
-        <p className={styles.subtitle}>Zarządzaj swoimi pojazdami</p>
-      </div>
+    <DashboardLayout>
+      <main className={styles.container}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Moje pojazdy</h1>
+          <p className={styles.subtitle}>Zarządzaj swoimi pojazdami</p>
+        </div>
 
-      <div className={styles["button-section"]}>
-        <button 
-          className={styles["add-button"]}
-          onClick={() => window.location.href = '/addCar'}
-        >
-          Dodaj nowy pojazd
-        </button>
-      </div>
+        <div className={styles["button-section"]}>
+          <button className={styles["add-button"]} onClick={() => window.location.href = '/addCar'}>
+            Dodaj nowy pojazd
+          </button>
+        </div>
 
-      <VehicleList 
-        vehicles={vehicles} 
-        onDeleteVehicle={handleDeleteVehicle}
-        onViewDetails={(vehicleVin) => window.location.href = `/vehicleDetails/${vehicleVin}`} 
-      />
-    </div>
+        <VehicleList 
+          vehicles={vehicles} 
+          onDeleteVehicle={handleDeleteVehicle}
+          onViewDetails={(vehicleVin) => window.location.href = `/vehicleDetails/${vehicleVin}`} 
+        />
+      </main>
+    </DashboardLayout>
   );
 }
