@@ -11,57 +11,6 @@
   color: #212529;
 }
 
-.epNav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  flex: 1;
-}
-
-.epNavLink {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  color: #495057;
-  text-decoration: none;
-  border-radius: 6px;
-  transition: all 0.15s ease;
-  font-weight: 400;
-  font-size: 0.9rem;
-}
-
-.epNavLink:hover {
-  background: #e9ecef;
-  color: #212529;
-}
-
-.epNavLink.active {
-  background: #007bff;
-  color: white;
-}
-
-.epLogoutBtn {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: transparent;
-  color: #495057;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-weight: 400;
-  font-size: 0.9rem;
-  margin-top: auto;
-}
-
-.epLogoutBtn:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
-}
-
 /* Main Content */
 .epMain {
   flex: 1;
@@ -274,9 +223,6 @@
 
 /* ✅ Ekrany do 1024px (np. tablety w poziomie, małe laptopy) */
 @media (max-width: 1024px) {
-  .epSidebar {
-    width: 220px;
-  }
 
   .epMain {
     margin-left: 220px;
@@ -291,60 +237,13 @@
   .epTitle {
     font-size: 1rem;
   }
-
-  .epNavLink {
-    font-size: 0.85rem;
-    padding: 0.6rem 0.75rem;
-  }
 }
 
 /* ✅ Ekrany do 768px (np. tablety w pionie, duże telefony) */
 @media (max-width: 768px) {
-  .epSidebar {
-    width: 70px;
-    padding: 1rem 0.5rem;
-    align-items: center;
-  }
-
-  .epSidebarHeader {
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-top: 60px;
-  }
 
   .epTitle {
-    display: none; /* ukryj nazwę aplikacji */
-  }
-
-  .epNav {
-    gap: 0.5rem;
-    align-items: center;
-  }
-
-  .epNavLink {
-    justify-content: center;
-    padding: 0.5rem;
-  }
-
-  .epNavLink span,
-  .epNavLink.active span {
-    display: none !important;
-  }
-
-  .epNavLink svg {
-    width: 22px;
-    height: 22px;
-  }
-
-  .epLogoutBtn {
-    justify-content: center;
-    font-size: 0;
-    padding: 0.5rem;
-  }
-
-  .epLogoutBtn svg {
-    width: 20px;
-    height: 20px;
+    display: none; 
   }
 
   .epMain {
@@ -353,7 +252,7 @@
   }
 
   .epGrid {
-    grid-template-columns: 1fr; /* elementy pionowo */
+    grid-template-columns: 1fr; 
     gap: 1.5rem;
   }
 
@@ -364,33 +263,13 @@
 
 /* ✅ Ekrany do 480px (telefony) */
 @media (max-width: 480px) {
-  .epSidebar {
-    width: 60px;
-    padding: 0.75rem 0.25rem;
-  }
-
-  .epNavLink {
-    justify-content: center;
-    padding: 0.5rem;
-  }
-
-  .epNavLink span,
-  .epNavLink.active span {
-    display: none !important;
-  }
-
-  .epNavLink svg {
-    width: 20px;
-    height: 20px;
-  }
-
   .epMain {
     margin-left: 60px;
     padding: 0.75rem;
   }
 
   .epGrid {
-    grid-template-columns: 1fr; /* elementy pionowo */
+    grid-template-columns: 1fr; 
     gap: 1.5rem;
   }
 
@@ -411,31 +290,12 @@
 
 /* ✅ Ekrany bardzo małe (np. 360px szerokości) */
 @media (max-width: 360px) {
-  .epSidebar {
-    width: 55px;
-  }
-
   .epMain {
     margin-left: 55px;
   }
 
   .epGrid {
-    grid-template-columns: 1fr; /* elementy pionowo */
+    grid-template-columns: 1fr;
     gap: 1.5rem;
-  }
-
-  .epNavLink {
-    justify-content: center;
-    padding: 0.5rem;
-  }
-
-  .epNavLink span,
-  .epNavLink.active span {
-    display: none !important;
-  }
-
-  .epNavLink svg {
-    width: 18px;
-    height: 18px;
   }
 }
