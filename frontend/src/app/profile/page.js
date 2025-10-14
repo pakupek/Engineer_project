@@ -2,7 +2,9 @@
 import { useState, useEffect } from "react";
 import { User, LogOut, Settings, Home, Loader2 } from "lucide-react";
 import { authService, logout } from "../services/auth";
-import styles from "./Profile.module.css";
+import styles from "./Profile.module.css"
+
+import DashboardLayout from "../DashboardLayout/page";
 
 export default function UserDashboard() {
   const [user, setUser] = useState(null);
@@ -63,41 +65,13 @@ export default function UserDashboard() {
   }
 
   return (
-    <div className={styles.container}>
-      {/* Sidebar */}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <User className={styles.sidebarIcon} />
-          <h2 className={styles.sidebarTitle}>Panel Użytkownika</h2>
-        </div>
-
-        <nav className={styles.sidebarNav}>
+    <DashboardLayout onLogout={handleLogout} loading={loading}>{/* Main content */}
+      <nav className={styles.sidebarNav}>
           <a href="/profile" className={`${styles.navLink} ${styles.active}`}>
             <Home size={20} /> <span>Dashboard</span>
           </a>
-          <a href="/EditProfile" className={styles.navLink}>
-            <Settings size={20} /> <span>Edytuj profil</span>
-          </a>
-        </nav>
+      </nav>
 
-        <button
-          onClick={handleLogout}
-          className={styles.logoutBtn}
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <Loader2 className="animate-spin" size={20} /> Wylogowywanie...
-            </>
-          ) : (
-            <>
-              <LogOut size={20} /> Wyloguj się
-            </>
-          )}
-        </button>
-      </aside>
-
-      {/* Main content */}
       <main className={styles.mainContent}>
         <h1 className={styles.mainTitle}>
           Witaj, {user.first_name} 👋
@@ -127,6 +101,6 @@ export default function UserDashboard() {
           </div>
         </div>
       </main>
-    </div>
+    </DashboardLayout>
   );
 }

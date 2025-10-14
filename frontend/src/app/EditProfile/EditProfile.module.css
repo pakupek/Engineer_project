@@ -1,35 +1,3 @@
-.epPage {
-  display: flex;
-  min-height: 100vh;
-  background-color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #333333;
-}
-
-/* Sidebar - nowy styl */
-.epSidebar {
-  width: 280px;
-  background-color: #2563eb;
-  border-right: 1px solid #e9ecef;
-  padding: 2rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  position: fixed;
-  height: 100vh;
-  left: 0;
-  top: 0px;
-}
-
-.epSidebarHeader {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e9ecef;
-  margin-top: 100px;
-}
-
 .epIcon {
   width: 32px;
   height: 32px;
