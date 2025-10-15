@@ -11,15 +11,17 @@ from .serializers import (
     VehicleSerializer,
     VehicleMakeSerializer,
     VehicleModelSerializer,
-    VehicleGenerationSerializer
+    VehicleGenerationSerializer,
+    VehicleImageSerializer
 )
 from rest_framework.permissions import AllowAny
-from .models import Comment, Discussion, Message, User, Vehicle, VehicleMake, VehicleModel, VehicleGeneration
+from .models import Comment, Discussion, Message, User, Vehicle, VehicleMake, VehicleModel, VehicleGeneration, VehicleImage
 from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model, update_session_auth_hash
+from django.shortcuts import get_object_or_404
 
 
 User = get_user_model()
@@ -202,6 +204,44 @@ class VehicleGenerationListAPI(generics.ListAPIView):
         if model_id:
             queryset = queryset.filter(model_id=model_id)
         return queryset
+
+class VehicleImageListCreateView(generics.ListCreateAPIView):
+    """
+    GET  -> pobiera wszystkie zdjęcia danego pojazdu
+    POST -> dodaje nowe zdjęcia dla danego pojazdu
+    """
+    serializer_class = VehicleImageSerializer
+
+    def get_queryset(self):
+        vin = self.kwargs['vin']
+        return VehicleImage.objects.filter(vehicle__vin=vin)
+
+    def post(self, request, *args, **kwargs):
+        vin = self.kwargs['vin']
+        vehicle = get_object_or_404(Vehicle, vin=vin)
+
+        files = request.FILES.getlist('images')
+        if not files:
+            return Response({"detail": "Nie wybrano żadnych plików."}, status=status.HTTP_400_BAD_REQUEST)
+
+        created_images = []
+        errors = []
+
+        for file in files:
+            serializer = self.get_serializer(data={'image': file})
+            if serializer.is_valid():
+                
+                serializer.save(vehicle=vehicle)
+                created_images.append(serializer.data)
+            else:
+                print(serializer.errors)
+
+                errors.append(serializer.errors)
+
+        if errors:
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(created_images, status=status.HTTP_201_CREATED)
 
 
 class VehicleCreateView(generics.CreateAPIView):

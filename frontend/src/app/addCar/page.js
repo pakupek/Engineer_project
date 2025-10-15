@@ -15,6 +15,8 @@ export default function AddVehiclePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [images, setImages] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   
 
   const [generations, setGenerations] = useState([]);
@@ -37,6 +39,45 @@ export default function AddVehiclePage() {
     wheel_size: '',
     for_sale: false
   });
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files); // zamieniamy FileList na tablicę
+    setImages(files); // zapisujemy w stanie
+  };
+
+
+  const uploadImages = async (vin, files) => {
+    if (!files || files.length === 0) return;
+
+    const formData = new FormData();
+    files.forEach((file) => formData.append("images", file));
+
+    const token = getToken();
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/vehicles/${vin}/images/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        console.log("Zdjęcia zostały przesłane pomyślnie:", data);
+      } else {
+        console.error("Błąd przy przesyłaniu zdjęć:", data);
+      }
+
+    } catch (err) {
+      console.error("Błąd uploadu zdjęć:", err);
+    }
+  };
+
+
+
+
 
   useEffect(() => {
     // Pobierz marki
@@ -137,7 +178,15 @@ export default function AddVehiclePage() {
       console.log("Odpowiedź z backendu:", data);
 
       if (response.ok) {
-        setSuccess('Pojazd został pomyślnie dodany!');
+        // Upload zdjęć po utworzeniu pojazdu
+        if (images.length > 0 && data.vin) {
+          await uploadImages(data.vin, images);
+        }
+        setSuccess("Pojazd i zdjęcia zostały przesłane pomyślnie!");
+        
+        setImages([]);
+        
+
         // Reset form
         setFormData({
           make: '',
@@ -159,18 +208,27 @@ export default function AddVehiclePage() {
         });
         
         setTimeout(() => {
-           window.location.href = '/home';
-        }, 2000);
+           window.location.href = '/carList';
+        }, 10000);
 
       } else {
         setError(JSON.stringify(data, null, 2));
         console.log("Błąd:", data);
       }
     } catch (err) {
-        setError(JSON.stringify(data, null, 2));
-        console.log("Błąd:", data);
-
-        console.error('Error:', err);
+        let errorMessage = '';
+        if (err.response) {
+            try {
+                const errorData = await err.response.json();
+                errorMessage = JSON.stringify(errorData, null, 2);
+            } catch {
+                errorMessage = err.response.statusText;
+            }
+        } else {
+            errorMessage = err.message;
+        }
+        console.error('Błąd:', errorMessage);
+        setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -194,7 +252,7 @@ export default function AddVehiclePage() {
           <p className={styles["subtitle"]}>Wypełnij formularz, aby dodać nowy pojazd do swojej kolekcji</p>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles["vehicle-form"]}>
+        <form onSubmit={handleSubmit} className={styles["vehicle-form"]} encType="multipart/form-data">
           {/* Sekcja 1: Podstawowe informacje */}
           <div className={styles["form-section"]}>
             <h2 className={styles["section-title"]}>Podstawowe informacje</h2>
@@ -437,6 +495,38 @@ export default function AddVehiclePage() {
             />
             <label htmlFor="for_sale">Wystawiony na sprzedaż</label>
           </div>
+
+          {/* Zdjęcia */}
+          <div className={styles["form-section"]}>
+            <h2 className={styles["section-title"]}>Zdjęcia pojazdu</h2>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleImageChange}
+                className={styles["form-control"]}
+              />
+
+              {images.length > 0 && (
+                <div className="mt-4 grid grid-cols-3 gap-4">
+                  {images.map((img, i) => {
+                    const objectUrl = URL.createObjectURL(img);
+                    return (
+                      <img
+                        key={i}
+                        src={objectUrl}
+                        alt={`preview-${i}`}
+                        onLoad={() => URL.revokeObjectURL(objectUrl)}
+                        
+                      />
+                    );
+                  })}
+                </div>
+              )}
+           
+            
+          </div>
+
 
           {/* Przyciski */}
           <div className={styles["form-buttons"]}>

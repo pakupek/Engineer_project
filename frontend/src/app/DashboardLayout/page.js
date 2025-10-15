@@ -1,3 +1,5 @@
+"use client";
+
 import styles from "./DashboardLayout.module.css";
 import { Home, Settings, LogOut, Loader2 } from "lucide-react";
 import { usePathname } from "next/navigation";

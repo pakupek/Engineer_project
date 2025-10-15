@@ -21,7 +21,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Katalog, w którym będą przechowywane pliki użytkowników
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = MEDIA_ROOT = '/app/backend/media'
 
 # URL do serwowania tych plików w przeglądarce
 MEDIA_URL = '/media/'
@@ -41,6 +41,7 @@ ALLOWED_HOSTS = [
     'localhost',       # Dla rozwoju lokalnego
     '127.0.0.1',       # Dla rozwoju lokalnego
     'dev-django',
+    '82.139.169.143',
 ]
 AUTH_USER_MODEL = 'car_history.User'
 

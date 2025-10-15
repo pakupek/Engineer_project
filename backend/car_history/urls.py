@@ -19,12 +19,16 @@ from .views import (
     UserRegistrationView,
     VehicleMakeListAPI,
     VehicleModelListAPI,
-    VehicleGenerationListAPI
+    VehicleGenerationListAPI,
+    VehicleImageListCreateView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -50,5 +54,9 @@ urlpatterns = [
     path('vehicles/<str:vin>/', VehicleDetailAPI.as_view(), name='vehicle_detail'),
     path('makes/', VehicleMakeListAPI.as_view(), name='vehicle_makes'),
     path('models/', VehicleModelListAPI.as_view(), name='vehicle_models'),
-    path('generations/', VehicleGenerationListAPI.as_view(), name='vehicle-generations'),
+    path('generations/', VehicleGenerationListAPI.as_view(), name='vehicle_generations'),
+    path('vehicles/<str:vin>/images/', VehicleImageListCreateView.as_view(), name='vehicle_images'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

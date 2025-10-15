@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.forms import ValidationError
 from django.utils import timezone
+from .utils import vehicle_image_path
+
 
 class User(AbstractUser):
     """ Model użytkownika systemu """
@@ -146,7 +148,6 @@ class Vehicle(models.Model):
     interior_color = models.CharField(default='Czarny', choices=INTERIOR_COLOR_CHOICES, verbose_name='Kolor wnętrza')
     price = models.DecimalField(max_digits=8, default=0.0, decimal_places=2, editable=True, verbose_name='Cena (PLN)')
     first_registration = models.DateField(default=timezone.now, blank=True, null=True, verbose_name='Data pierwszej rejestracji')
-    image = models.ImageField(blank=True, null=True, upload_to='vehicles/%Y/%m/%d/', verbose_name='Zdjęcie')
     location = models.CharField(default='', max_length=100, verbose_name='Lokalizacja')
     wheel_size = models.CharField(default='', max_length=10, choices=WHEEL_SIZE_CHOICES, verbose_name='Rozmiar felg')
     for_sale = models.BooleanField(default=False, verbose_name='Na sprzedaż')
@@ -173,7 +174,24 @@ class Vehicle(models.Model):
             raise ValidationError("VIN musi mieć 17 znaków")
         super().save(*args, **kwargs)
 
+class VehicleImage(models.Model):
+    """Obraz powiązany z pojazdem."""
 
+    vehicle = models.ForeignKey(
+        Vehicle, on_delete=models.CASCADE, related_name='images', verbose_name='Pojazd'
+    )
+    image = models.ImageField(upload_to=vehicle_image_path, verbose_name='Zdjęcie')
+    uploaded_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = 'Zdjęcie pojazdu'
+        verbose_name_plural = 'Zdjęcia pojazdów'
+        ordering = ['-uploaded_at']
+    
+    def __str__(self):
+        return f"Zdjęcie pojazdu {self.vehicle.vin}"
+
+    
 class Message(models.Model):
     """ Wiadomości między użytkownikami """
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages")

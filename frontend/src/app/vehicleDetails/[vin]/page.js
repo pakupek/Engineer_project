@@ -12,6 +12,7 @@ export default function carDetails() {
   const [car, setCar] = useState(null);
   const [current, setCurrent] = useState(0);
   const [showMore, setShowMore] = useState(false);
+  const [images, setImages] = useState([]);
 
   const getProductionYears = (generation) => {
     if (!generation) return "Brak danych";
@@ -46,16 +47,49 @@ export default function carDetails() {
     fetchCar();
   }, [vin]);
 
-  // Autoplay slidera co 5 sekund
+  // Pobierz zdjęcia pojazdu
   useEffect(() => {
-    if (!car?.images?.length) return;
+    const fetchImages = async () => {
+      try {
+        const token = getToken();
+        const response = await fetch(`http://localhost:8000/api/vehicles/${vin}/images/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-    const interval = setInterval(
-      () => setCurrent((prev) => (prev + 1) % car.images.length),
-      5000
-    );
+        if (!response.ok) throw new Error(`Błąd pobierania zdjęć: ${response.status}`);
+        const data = await response.json();
+
+        // Poprawny format URL zdjęć
+        const imageUrls = data
+          .map((img) =>
+            img.image && img.image.trim() !== ""
+              ? img.image.startsWith("http")
+                ? img.image
+                : `http://localhost:8000${img.image}`
+              : null
+          )
+          .filter(Boolean); // usuwa null-e
+        setImages(imageUrls);
+      } catch (err) {
+        console.error("Błąd pobierania zdjęć:", err);
+      }
+    };
+
+    fetchImages();
+  }, [vin]);
+
+ // Autoplay slidera co 5 sekund
+  useEffect(() => {
+    if (!images.length) return;
+
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % images.length);
+    }, 5000);
     return () => clearInterval(interval);
-  }, [car]);
+  }, [images]);
+
 
   if (!car) {
     return <div className={styles.loading}>Ładowanie danych pojazdu...</div>;
@@ -66,17 +100,22 @@ export default function carDetails() {
       {/* Slider z obrazami auta */}
       <div className={styles.hero}>
         <div className={styles.slider}>
-          {car.images?.map((img, index) => (
+          {car.images?.filter((imgObj) => imgObj?.image && imgObj.image.trim() !== "").map((imgObj, index) => (
             <div
               key={index}
               className={`${styles.slide} ${index === current ? styles.active : ""}`}
             >
               <Image
-                src={img}
-                alt={car.name}
+                src={
+                imgObj.image.startsWith("http")
+                  ? imgObj.image
+                  : `http://localhost:8000${imgObj.image}`
+              }
+                alt={car?.name ? `Zdjęcie pojazdu: ${car.name}` : "Zdjęcie pojazdu"}
                 fill
                 className={styles.image}
                 priority={index === current}
+                unoptimized={true}
               />
             </div>
           ))}

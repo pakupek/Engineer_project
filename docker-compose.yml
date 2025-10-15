@@ -14,6 +14,7 @@ services:
       - POSTGRES_PORT=5432
     volumes:
       - ./backend:/app/backend
+      
     depends_on:
       - db
     networks:  
@@ -33,7 +34,7 @@ services:
       - app-network
   frontend:
     container_name: dev-frontend
-    image: node:20-alpine
+    image: node:20
     build: ./frontend
     ports:
       - "3000:3000"
