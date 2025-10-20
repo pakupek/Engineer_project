@@ -519,6 +519,101 @@ class Command(BaseCommand):
                 "Z4 M":[],
             },
 
+            "BYD":{
+                "Atto 2":[],
+                "Atto 3":[],
+                "Dolphin":[],
+                "Dolphin Surf":[],
+                "Leopard 5":[],
+                "Seal":[],
+                "Seal 5":[],
+                "Seal 6":[],
+                "Seal U":[],
+                "Sealion 7":[],
+            },
+
+            "Chevrolet":{
+                "Aveo":[],
+                "Camaro":[],
+                "Captiva":[],
+                "Corvette":[],
+                "Cruze":[],
+                "Orlando":[],
+                "Spark":[],
+            },
+
+            "Chrysler":{
+                "300C":[],
+                "Grand Voyager":[
+                    {"name": "I", "production_start": 1990, "production_end": 1995},
+                    {"name": "II", "production_start": 1995, "production_end": 2000},
+                    {"name": "III", "production_start": 2001, "production_end": 2006},
+                    {"name": "IV", "production_start": 2007, "production_end": 2010},
+                    {"name": "V", "production_start": 2008, "production_end": 2015},
+                ],
+                "Pacifica":[],
+                "PT Cruiser":[],
+                "Town & Country":[
+                    {"name": "I", "production_start": 1988, "production_end": 1990},
+                    {"name": "II", "production_start": 1991, "production_end": 1995},
+                    {"name": "III", "production_start": 1995, "production_end": 2001},
+                    {"name": "IV", "production_start": 2001, "production_end": 2007},
+                    {"name": "V", "production_start": 2007, "production_end": 2016},
+                ],
+                "Voyager":[
+                    {"name": "I", "production_start": 1984, "production_end": 1990},
+                    {"name": "II", "production_start": 1990, "production_end": 1995},
+                    {"name": "III", "production_start": 1995, "production_end": 2000},
+                    {"name": "IV", "production_start": 2000, "production_end": 2007},
+                    {"name": "V", "production_start": 2005, "production_end": 2010},
+                ],
+            },
+
+            "Citroen":{
+                "Berlingo":[
+                    {"name": "I", "production_start": 1996, "production_end": 2010},
+                    {"name": "II", "production_start": 2008, "production_end": 2018},
+                    {"name": "III", "production_start": 2018, "production_end": None},
+                ],
+                "C-Elysee":[],
+                "C1":[
+                    {"name": "I", "production_start": 2005, "production_end": 2014},
+                    {"name": "II", "production_start": 2014, "production_end": None},
+                ],
+                "C3":[
+                    {"name": "I", "production_start": 2002, "production_end": 2009},
+                    {"name": "II", "production_start": 2008, "production_end": 2018},
+                    {"name": "III", "production_start": 2016, "production_end": 2024},
+                    {"name": "IV", "production_start": 2024, "production_end": None},
+                ],
+                "C3 Aircross":[],
+                "C3 Picasso":[],
+                "C4":[
+                    {"name": "I", "production_start": 2004, "production_end": 2010},
+                    {"name": "II", "production_start": 2010, "production_end": 2020},
+                    {"name": "III", "production_start": 2020, "production_end": None},
+                ],
+                "C4 Aircross":[],
+                "C4 Cactus":[],
+                "C4 Grand Picasso":[
+                    {"name": "I", "production_start": 2006, "production_end": 2013},
+                    {"name": "II", "production_start": 2013, "production_end": None},
+                ],
+                "C4 Picasso":[
+                    {"name": "I", "production_start": 2006, "production_end": 2013},
+                    {"name": "II", "production_start": 2013, "production_end": None},
+                ],
+                "C5":[
+                    {"name": "I", "production_start": 2001, "production_end": 2004},
+                    {"name": "II", "production_start": 2004, "production_end": 2008},
+                    {"name": "III", "production_start": 2008, "production_end": None},
+                ],
+                "C5 Aircross":[],
+                "DS3":[],
+                "DS4":[],
+                "DS5":[],
+                "DS7":[],
+            },
 
             "Toyota": {
                 "Corolla": [
