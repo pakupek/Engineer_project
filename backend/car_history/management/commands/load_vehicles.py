@@ -360,6 +360,165 @@ class Command(BaseCommand):
                     {"name": "8S", "production_start": 2014,"production_end": None},
                 ],
             },
+            "BAIC":{
+                "3":[],
+                "5":[],
+                "7":[],
+                "BJ20":[],
+                "BJ30":[],
+                "BJ40":[],
+                "BJ60":[],
+                "Senova X25":[],
+                "Senova X35":[],
+                "Senova X55":[],
+                "Senova X65":[],
+                "X75":[],
+            },
+
+            "BAW":{
+                "Pony":[],
+            },
+
+            "Bentley":{
+                "Arnage":[],
+                "Azure":[],
+                "Bentayga":[],
+                "Continental GT":[],
+                "Flying Spur":[],
+                "Mulsanne":[],
+            },
+
+            "Bestune":{
+                "B70":[],
+                "T77":[],
+                "T90":[],
+            },
+
+            "BMW": {
+                "1M":[],
+                "3 GT":[
+                    {"name": "F34", "production_start": 2013, "production_end": 2021}
+                ],
+                "5 GT":[],
+                "6 GT":[],
+                "i3":[],
+                "i4":[],
+                "i5":[],
+                "i7":[],
+                "i8":[],
+                "iX":[],
+                "iX1":[],
+                "iX2":[],
+                "iX3":[],
+                "M2":[],
+                "M3":[],
+                "M4":[],
+                "M5":[],
+                "M6":[],
+                "M8":[],
+                "Seria 1":[
+                    {"name": "E81/E87", "production_start": 2004, "production_end": 2013},
+                    {"name": "F20/F21", "production_start": 2011, "production_end": 2019},
+                    {"name": "F40", "production_start": 2019, "production_end": None},
+                    {"name": "F70", "production_start": 2024, "production_end": None},
+                ],
+                "Seria 2":[],
+                "Seria 3": [
+                    {"name": "E21", "production_start": 1975, "production_end": 1982},
+                    {"name": "E30", "production_start": 1982, "production_end": 1994},
+                    {"name": "E36", "production_start": 1990, "production_end": 1999},
+                    {"name": "E46", "production_start": 1998, "production_end": 2007},
+                    {"name": "E90/E91/E92/E93", "production_start": 2005, "production_end": 2012},
+                    {"name": "F30/F31", "production_start": 2012, "production_end": 2020},
+                    {"name": "G20/G21", "production_start": 2019, "production_end": None},
+                ],
+                "Seria 4":[
+                    {"name": "F32/F33/F82", "production_start": 2015, "production_end": 2019},
+                    {"name": "G22/G23/G82", "production_start": 2020, "production_end": None},
+                ],
+                "Seria 5":[
+                    {"name": "E12", "production_start": 1972, "production_end": 1981},
+                    {"name": "E28", "production_start": 1981, "production_end": 1987},
+                    {"name": "E34", "production_start": 1988, "production_end": 1996},
+                    {"name": "E39", "production_start": 1996, "production_end": 2003},
+                    {"name": "E60/E61", "production_start": 2003, "production_end": 2010},
+                    {"name": "F10/F11", "production_start": 2009, "production_end": 2017},
+                    {"name": "G30/G31", "production_start": 2017, "production_end": 2023},
+                    {"name": "G60", "production_start": 2023, "production_end": None},
+                ],
+                "Seria 6":[
+                    {"name": "E24", "production_start": 1976, "production_end": 1989},
+                    {"name": "E63/E64", "production_start": 2002, "production_end": 2010},
+                    {"name": "F12/F13/F14", "production_start": 2011, "production_end": 2017},
+                    {"name": "G32", "production_start": 2017, "production_end": None},
+                ],
+                "Seria 7":[
+                    {"name": "E23", "production_start": 1977, "production_end": 1986},
+                    {"name": "E32", "production_start": 1986, "production_end": 1994},
+                    {"name": "E38", "production_start": 1994, "production_end": 2001},
+                    {"name": "E65/E66", "production_start": 2001, "production_end": 2008},
+                    {"name": "F01", "production_start": 2008, "production_end": 2015},
+                    {"name": "G11/G12", "production_start": 2015, "production_end": 2022},
+                    {"name": "G70", "production_start": 2022, "production_end": None},
+                ],
+                "Seria 8":[
+                    {"name": "E31", "production_start": 1989, "production_end": 1999},
+                    {"name": "G14/G15/G16", "production_start": 2018, "production_end": None},
+                ],
+                "X1":[
+                    {"name": "E84", "production_start": 2009, "production_end": 2015},
+                    {"name": "F48", "production_start": 2015, "production_end": 2022},
+                    {"name": "U11", "production_start": 2022, "production_end": None},
+                ],
+                "X2":[
+                    {"name": "F39", "production_start": 2017, "production_end": 2023},
+                    {"name": "U10", "production_start": 2023, "production_end": None},
+                ],
+                "X3":[
+                    {"name": "E83", "production_start": 2003, "production_end": 2010},
+                    {"name": "F25", "production_start": 2010, "production_end": 2017},
+                    {"name": "G01", "production_start": 2017, "production_end": 2024},
+                    {"name": "G45", "production_start": 2024, "production_end": None},
+                ],
+                "X3 M":[
+                    {"name": "F97", "production_start": 2017, "production_end": 2024},
+                    {"name": "G45", "production_start": 2024, "production_end": None},
+                ],
+                "X4":[
+                    {"name": "E89", "production_start": 2009, "production_end": 2016},
+                    {"name": "F26", "production_start": 2014, "production_end": 2018},
+                    {"name": "G02", "production_start": 2018, "production_end": None},
+                ],
+                "X4 M":[
+                    {"name": "F83", "production_start": 2014, "production_end": 2018},
+                    {"name": "F97", "production_start": 2019, "production_end": None},
+                ],
+                "X5":[
+                    {"name": "E53", "production_start": 1999, "production_end": 2003},
+                    {"name": "E70", "production_start": 2006, "production_end": 2013},
+                    {"name": "F15", "production_start": 2013, "production_end": 2018},
+                    {"name": "G05", "production_start": 2018, "production_end": None},
+                ],
+                "X5 M":[],
+                "X6":[
+                    {"name": "E71", "production_start": 2008, "production_end": 2014},
+                    {"name": "F16", "production_start": 2014, "production_end": 2019},
+                    {"name": "G06", "production_start": 2019, "production_end": None},
+                ],
+                "X6 M":[],
+                "X7":[
+                    {"name": "G07", "production_start": 2019, "production_end": None},
+                ],
+                "XM":[],
+                "Z3":[],
+                "Z4":[
+                    {"name": "E85/E86", "production_start": 2002, "production_end": 2008},
+                    {"name": "E89", "production_start": 2009, "production_end": 2016},
+                    {"name": "G29", "production_start": 2018, "production_end": None},
+                ],
+                "Z4 M":[],
+            },
+
 
             "Toyota": {
                 "Corolla": [
@@ -382,14 +541,6 @@ class Command(BaseCommand):
                 "Passat": [
                     {"name": "B7", "production_start": 2010, "production_end": 2015},
                     {"name": "B8", "production_start": 2015, "production_end": None},
-                ],
-            },
-
-            "BMW": {
-                "3 Series": [
-                    {"name": "E90", "production_start": 2005, "production_end": 2013},
-                    {"name": "F30", "production_start": 2011, "production_end": 2019},
-                    {"name": "G20", "production_start": 2018, "production_end": None},
                 ],
             },
         }
