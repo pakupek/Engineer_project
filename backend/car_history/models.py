@@ -3,6 +3,14 @@ from django.db import models
 from django.forms import ValidationError
 from django.utils import timezone
 from .utils import vehicle_image_path
+import time
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.keys import Keys
+from datetime import datetime, timedelta
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 
 class User(AbstractUser):
@@ -151,6 +159,7 @@ class Vehicle(models.Model):
     location = models.CharField(default='', max_length=100, verbose_name='Lokalizacja')
     wheel_size = models.CharField(default='', max_length=10, choices=WHEEL_SIZE_CHOICES, verbose_name='Rozmiar felg')
     for_sale = models.BooleanField(default=False, verbose_name='Na sprzedaż')
+    registration = models.CharField(default='', verbose_name='Nr rejestracyjny')
 
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
@@ -190,6 +199,112 @@ class VehicleImage(models.Model):
     
     def __str__(self):
         return f"Zdjęcie pojazdu {self.vehicle.vin}"
+    
+class VehicleHistory:
+    def __init__(self, rejestracja, vin, rocznik, options=[]):
+        self.registration_plate = rejestracja
+        self.vin = vin
+        self.production_date = rocznik
+
+        self.url = 'https://historiapojazdu.gov.pl/'
+		
+        chrome_options = Options()
+
+        for option in options:
+            chrome_options.add_argument(option)
+
+        self.driver = webdriver.Remote(
+            command_executor="http://selenium:4444/wd/hub",
+            options=chrome_options
+        )
+
+    def closeBrowser(self):
+        if self.driver:
+            self.driver.quit()
+
+    def search(self):
+        try:
+            # Data produkcji
+            date_obj = datetime.strptime(str(self.production_date), "%d%m%Y")
+            target_year = date_obj.year
+                    
+            date_str = date_obj.strftime("%d%m%Y")
+            print(f"Trying date: {date_str}")
+            print(f"Rejestracja: {self.registration_plate}\tVIN: {self.vin}\t Data: {self.production_date}\n")
+                
+            self.driver.get(self.url)
+
+            wait = WebDriverWait(self.driver, 10)
+
+                # Wait for registration field
+            rejestracja_field = wait.until(
+                EC.presence_of_element_located((By.ID, "registrationNumber"))
+            )
+            rejestracja_field.clear()
+            rejestracja_field.send_keys(self.registration_plate)
+
+            vin_field = wait.until(
+                EC.presence_of_element_located((By.ID, "VINNumber"))
+            )
+            vin_field.clear()
+            vin_field.send_keys(self.vin)
+
+            data_rejestracji = wait.until(
+                EC.presence_of_element_located((By.ID, "firstRegistrationDate"))
+            )
+            data_rejestracji.clear()
+            data_rejestracji.send_keys(Keys.HOME)
+            data_rejestracji.send_keys(date_str)
+
+            submit = wait.until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "button.nforms-button"))
+            )
+
+            submit.click()
+
+                # Wait for page to process
+            time.sleep(3)
+
+                # Check for error messages first
+            try:
+                error_message = self.driver.find_elements(By.CSS_SELECTOR, ".error-message, .alert-danger")
+                if error_message:
+                    print(f"Error found for date {date_str}, trying next date")
+                    
+            except:
+                pass
+
+                # Look for Timeline tab
+            try:
+                timeline_tab = wait.until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, "//div[@role='tab' and contains(., 'Oś czasu')]")
+                    )
+                )
+                timeline_tab.click()  
+                time.sleep(2)
+                print(f"✅ Found and clicked 'Oś czasu' for date {date_str}")
+            except Exception as e:
+                print(f"❌ Could not find or click 'Oś czasu' for date {date_str}: {str(e)}")
+              
+                # Get timeline data
+            try:
+                timeline_container = wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "app-axis ul"))
+                )
+                timeline_html = timeline_container.get_attribute("outerHTML")
+                    
+                print(f"Successfully retrieved timeline for date: {date_str}")
+                return {
+                    "data_rejestracji": date_str,
+                    "timeline_html": timeline_html,
+                }
+            except Exception as e:
+                print(f"Could not get timeline content for date {date_str}: {str(e)}")
+                
+        except Exception as e:
+            print(f"Could not scrape for timeline {date_str}: {str(e)}")
+            return False
 
     
 class Message(models.Model):

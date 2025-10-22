@@ -15,13 +15,25 @@ from .serializers import (
     VehicleImageSerializer
 )
 from rest_framework.permissions import AllowAny
-from .models import Comment, Discussion, Message, User, Vehicle, VehicleMake, VehicleModel, VehicleGeneration, VehicleImage
+from .models import (
+    Comment, 
+    Discussion, 
+    Message, 
+    User, 
+    Vehicle, 
+    VehicleMake, 
+    VehicleModel, 
+    VehicleGeneration, 
+    VehicleImage,
+    VehicleHistory,
+)
 from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
 
 
 User = get_user_model()
@@ -293,3 +305,45 @@ class VehicleDetailAPI(generics.RetrieveAPIView):
     queryset = Vehicle.objects.select_related('generation', 'generation__model', 'generation__model__make')
     serializer_class = VehicleSerializer
     lookup_field = 'vin'
+
+_vehicle_history_cache = {}
+
+def get_vehicle_history(rejestracja, vin, rocznik):
+    if vin in _vehicle_history_cache:
+        return _vehicle_history_cache[vin]
+
+    historia = VehicleHistory(rejestracja, vin, rocznik, ['--headless', '--no-sandbox'])
+    result = historia.search()
+    historia.closeBrowser()
+
+    if result:
+        _vehicle_history_cache[vin] = result
+        return result
+    return None
+
+def vehicle_history(request,vin):
+    """
+    Endpoint który zwraca oś czasu dla pojazdu
+    """
+    try:
+        # Szukanie pojazdu po VIN
+        vehicle = Vehicle.objects.filter(vin=vin).first()
+        if not vehicle:
+            return JsonResponse({"success": False, "message": "Nie znaleziono pojazdu o podanym VIN."})
+
+        timeline_data = get_vehicle_history(
+            rejestracja=vehicle.registration,
+            vin=vehicle.vin,
+            rocznik=vehicle.first_registration.strftime("%d%m%Y")
+        )
+
+        if timeline_data:
+            return JsonResponse({
+                "success": True,
+                "vin": vin,
+                "timeline_html": timeline_data.get("timeline_html"),
+            })
+        else:
+            return JsonResponse({"success": False, "message": "Brak danych dla tego pojazdu."})
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)})

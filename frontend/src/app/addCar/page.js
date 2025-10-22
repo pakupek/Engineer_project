@@ -37,7 +37,8 @@ export default function AddVehiclePage() {
     drive_type: 'FWD',
     location: '',
     wheel_size: '',
-    for_sale: false
+    for_sale: false,
+    registration:''
   });
 
   const handleImageChange = (e) => {
@@ -74,9 +75,6 @@ export default function AddVehiclePage() {
       console.error("Błąd uploadu zdjęć:", err);
     }
   };
-
-
-
 
 
   useEffect(() => {
@@ -204,12 +202,13 @@ export default function AddVehiclePage() {
           drive_type: 'FWD',
           location: '',
           wheel_size: '',
-          for_sale: false
+          for_sale: false,
+          registration:''
         });
         
         setTimeout(() => {
            window.location.href = '/carList';
-        }, 10000);
+        }, 3000);
 
       } else {
         setError(JSON.stringify(data, null, 2));
@@ -477,6 +476,16 @@ export default function AddVehiclePage() {
                   type="date"
                   name="first_registration"
                   value={formData.first_registration}
+                  onChange={handleChange}
+                  className={styles["form-control"]}
+                />
+              </div>
+              <div className={styles["form-group"]}>
+                <label>Numer rejestracyjny</label>
+                <input
+                  type="text"
+                  name="registration"
+                  value={formData.registration}
                   onChange={handleChange}
                   className={styles["form-control"]}
                 />

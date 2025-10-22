@@ -45,6 +45,15 @@ services:
       - /app/frontend/node_modules
     networks:
       - app-network
+
+  selenium:
+    image: selenium/standalone-chrome:114.0
+    container_name: selenium
+    ports:
+      - "4444:4444"
+    networks:
+      - app-network
+
 volumes:
   pgdata: {}
 

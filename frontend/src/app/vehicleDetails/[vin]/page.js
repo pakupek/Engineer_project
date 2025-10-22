@@ -13,6 +13,9 @@ export default function carDetails() {
   const [current, setCurrent] = useState(0);
   const [showMore, setShowMore] = useState(false);
   const [images, setImages] = useState([]);
+  const [timeline, setTimeline] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const getProductionYears = (generation) => {
     if (!generation) return "Brak danych";
@@ -23,6 +26,28 @@ export default function carDetails() {
     }
     return "Brak danych";
   };
+
+  // Pobranie osi czasu z historiapojazdugov.pl
+  const fetchHistory = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`http://localhost:8000/api/vehicle-history/${vin}/`);
+      const data = await res.json();
+
+      if (data.success) {
+        setTimeline(data);
+      } else {
+        setError(data.message || data.error);
+      }
+    } catch (err) {
+      setError("Błąd połączenia z serwerem");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   // Fetch danych auta z API
   useEffect(() => {
@@ -207,15 +232,40 @@ export default function carDetails() {
 
       {/* Dodatkowe informacje po kliknięciu */}
       {showMore && (
-        <div className="w-full mt-6 bg-gray-50 rounded-2xl shadow p-6">
-          <h3 className="text-xl font-semibold mb-4">Dodatkowe informacje</h3>
-          <ul className="list-disc pl-6 text-gray-600 space-y-2">
-            <li>Przyspieszenie 0-100 km/h: {car.acceleration}</li>
-            <li>Maksymalny moment obrotowy: {car.torque}</li>
-            <li>Napęd: {car.drive_type}</li>
-            <li>Rocznik: {getProductionYears(car.generation)}</li>
-          </ul>
-        </div>
+        <>
+          <div className="w-full mt-6 bg-gray-50 rounded-2xl shadow p-6">
+            <h3 className="text-xl font-semibold mb-4">Dodatkowe informacje</h3>
+            <ul className="list-disc pl-6 text-gray-600 space-y-2">
+              <li>Przyspieszenie 0-100 km/h: {car.acceleration}</li>
+              <li>Maksymalny moment obrotowy: {car.torque}</li>
+              <li>Napęd: {car.drive_type}</li>
+              <li>Rocznik: {getProductionYears(car.generation)}</li>
+            </ul>
+          </div>
+
+          <div className="max-w-xl mx-auto p-6">
+            <h1 className="text-xl font-bold mb-4">Historia pojazdu</h1>
+            <button
+              onClick={fetchHistory}
+              className="bg-blue-600 text-white px-4 py-2 rounded"
+              disabled={loading || !vin}
+            >
+              {loading ? "Pobieranie..." : "Sprawdź historię"}
+            </button>
+
+            {error && <p className="text-red-600 mt-3">{error}</p>}
+
+            {timeline && (
+              <div className="mt-6">
+                <h2 className="text-lg font-semibold">Oś czasu</h2>
+                <div
+                  className="border p-3 mt-2"
+                  dangerouslySetInnerHTML={{ __html: timeline.timeline_html }}
+                />
+              </div>
+            )}
+          </div>
+        </>
       )}
     </>
   );
