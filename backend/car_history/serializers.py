@@ -1,6 +1,18 @@
 from rest_framework import serializers
-from .models import User, Comment, Discussion, Message, Vehicle, VehicleModel, VehicleMake, VehicleGeneration, VehicleImage
+from .models import (
+    User, 
+    Comment, 
+    Discussion, 
+    Message, 
+    Vehicle, 
+    VehicleModel, 
+    VehicleMake, 
+    VehicleGeneration, 
+    VehicleImage,
+    ServiceEntry
+)
 from django.contrib.auth.password_validation import validate_password
+import datetime
 
 class VehicleImageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,10 +20,12 @@ class VehicleImageSerializer(serializers.ModelSerializer):
         fields = ['id', 'vehicle', 'image', 'uploaded_at']
         read_only_fields = ['id', 'uploaded_at', 'vehicle']
 
+
 class VehicleMakeSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleMake
         fields = '__all__'
+
 
 class VehicleModelSerializer(serializers.ModelSerializer):
     make = VehicleMakeSerializer(read_only=True)
@@ -19,11 +33,13 @@ class VehicleModelSerializer(serializers.ModelSerializer):
         model = VehicleModel
         fields = '__all__'
 
+
 class VehicleGenerationSerializer(serializers.ModelSerializer):
     model = VehicleModelSerializer(read_only=True)
     class Meta:
         model = VehicleGeneration
         fields = '__all__'
+
 
 class VehicleSerializer(serializers.ModelSerializer):
     generation = serializers.PrimaryKeyRelatedField(
@@ -57,6 +73,7 @@ class MessageSerializer(serializers.ModelSerializer):
                  'content', 'timestamp', 'is_read']
         read_only_fields = ['sender', 'timestamp', 'is_read']
 
+
 class MessageCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
@@ -68,6 +85,7 @@ class MessageCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Nie możesz wysłać wiadomości do siebie.")
         return value
 
+
 class CommentSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source='author.username', read_only=True)
     
@@ -75,6 +93,7 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ['id', 'content', 'author', 'author_name', 'created_at']
         read_only_fields = ['author', 'created_at']
+
 
 class DiscussionSerializer(serializers.ModelSerializer):
     author_name = serializers.CharField(source='author.username', read_only=True)
@@ -92,6 +111,7 @@ class DiscussionSerializer(serializers.ModelSerializer):
     def get_comment_count(self, obj):
         return obj.comments.count()
         
+
 class DiscussionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Discussion
@@ -100,6 +120,7 @@ class DiscussionCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['author'] = self.context['request'].user
         return super().create(validated_data)
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
@@ -128,3 +149,29 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+    
+
+class ServiceEntrySerializer(serializers.ModelSerializer):
+    """
+    Serializer dla wpisów serwisowych 
+    """
+
+    class Meta:
+        model = ServiceEntry
+        fields = ['id','date','mileage','description','cost','invoice_image']
+        
+
+    def validate_date(self, value):
+        if value > datetime.date.today():
+            raise serializers.ValidationError("Data nie może być z przyszłości")
+        return value
+
+    def validate_mileage(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Przebieg nie może być ujemny")
+        return value
+
+    def validate_cost(self, value):
+        if value and value < 0:
+            raise serializers.ValidationError("Koszt nie może być ujemny")
+        return value

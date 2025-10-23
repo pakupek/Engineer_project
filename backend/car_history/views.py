@@ -12,7 +12,8 @@ from .serializers import (
     VehicleMakeSerializer,
     VehicleModelSerializer,
     VehicleGenerationSerializer,
-    VehicleImageSerializer
+    VehicleImageSerializer,
+    ServiceEntrySerializer
 )
 from rest_framework.permissions import AllowAny
 from .models import (
@@ -26,6 +27,7 @@ from .models import (
     VehicleGeneration, 
     VehicleImage,
     VehicleHistory,
+    ServiceEntry
 )
 from rest_framework.response import Response
 from django.db.models import Q
@@ -34,6 +36,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
+from rest_framework.parsers import MultiPartParser, FormParser
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 User = get_user_model()
@@ -347,3 +353,55 @@ def vehicle_history(request,vin):
             return JsonResponse({"success": False, "message": "Brak danych dla tego pojazdu."})
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)})
+    
+
+class ServiceEntryListView(generics.ListAPIView):
+    """
+    Widok do pobierania listy wpisów serwisowych
+    """
+
+    serializer_class = ServiceEntrySerializer
+    
+    def get_queryset(self):
+        vin = self.kwargs.get("vin")
+        return ServiceEntry.objects.filter(vehicle__vin=vin).order_by('-date')
+
+
+class ServiceEntryCreateView(generics.CreateAPIView):
+    """
+    Widok do tworzenia wpisów serwisowych
+    """
+
+    serializer_class = ServiceEntrySerializer
+    parser_classes = (MultiPartParser, FormParser)
+
+
+    def create(self, request, *args, **kwargs):
+        vin = self.kwargs.get("vin")
+        logger.info(f"Creating service entry for VIN: {vin}")
+        
+        try:
+            vehicle = Vehicle.objects.get(vin=vin)
+        except Vehicle.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Nie znaleziono pojazdu o podanym VIN"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        
+        if serializer.is_valid():
+            # Zapisujemy z vehicle
+            service_entry = serializer.save(vehicle=vehicle)
+            
+            return Response({
+                "success": True,
+                "message": "Wpis serwisowy został dodany pomyślnie",
+                "data": ServiceEntrySerializer(service_entry).data
+            }, status=status.HTTP_201_CREATED)
+        else:
+            return Response({
+                "success": False,
+                "message": "Błąd walidacji danych",
+                "errors": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)

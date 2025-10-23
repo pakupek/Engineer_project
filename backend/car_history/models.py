@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.forms import ValidationError
 from django.utils import timezone
-from .utils import vehicle_image_path
+from .utils import vehicle_image_path, vehicle_invoice_path
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -14,7 +14,9 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 class User(AbstractUser):
-    """ Model użytkownika systemu """
+    """
+    Model użytkownika systemu 
+    """
     
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     email = models.EmailField(unique=True)
@@ -27,7 +29,10 @@ class User(AbstractUser):
     
 
 class Discussion(models.Model):
-    """ Model dyskusji na forum """
+    """
+    Model dyskusji na forum 
+    """
+
     CATEGORY_CHOICES = [
         ('OGOLNE', 'Ogólne'),
         ('TECHNICZNE', 'Techniczne pytania'),
@@ -52,15 +57,22 @@ class Discussion(models.Model):
     def __str__(self):
         return self.title
 
+
 class Comment(models.Model):
-    """ Model komentarza do dyskusji na forum """
+    """
+    Model komentarza do dyskusji na forum
+    """
+
     discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE)
     content = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
+
 class VehicleMake(models.Model):
-    """Marka pojazdu (np. Toyota, BMW, Audi)."""
+    """
+    Model marki pojazdu (np. Toyota, BMW, Audi)
+    """
 
     name = models.CharField(max_length=100, unique=True)
 
@@ -73,7 +85,9 @@ class VehicleMake(models.Model):
 
 
 class VehicleModel(models.Model):
-    """Model pojazdu (np. Corolla, A4, 3 Series)."""
+    """
+    Model pojazdu (np. Corolla, A4, Seria 3)
+    """
 
     make = models.ForeignKey(VehicleMake, on_delete=models.CASCADE, related_name="models")
     name = models.CharField(max_length=100)
@@ -88,7 +102,9 @@ class VehicleModel(models.Model):
 
 
 class VehicleGeneration(models.Model):
-    """Generacja modelu (np. Golf VII, Corolla E210)."""
+    """
+    Model generacji modelu auta (np. Golf VII)
+    """
 
     model = models.ForeignKey(VehicleModel, on_delete=models.CASCADE, related_name="generations")
     name = models.CharField(max_length=50) 
@@ -111,7 +127,9 @@ class VehicleGeneration(models.Model):
 
     
 class Vehicle(models.Model):
-    """Pojazd użytkownika."""
+    """
+    Model pojazdu użytkownika
+    """
 
     BODY_COLOR_CHOICES = [
         ('Czarny', 'Czarny'),
@@ -183,8 +201,11 @@ class Vehicle(models.Model):
             raise ValidationError("VIN musi mieć 17 znaków")
         super().save(*args, **kwargs)
 
+
 class VehicleImage(models.Model):
-    """Obraz powiązany z pojazdem."""
+    """
+    Model obrazu powiązanego z pojazdem
+    """
 
     vehicle = models.ForeignKey(
         Vehicle, on_delete=models.CASCADE, related_name='images', verbose_name='Pojazd'
@@ -200,7 +221,11 @@ class VehicleImage(models.Model):
     def __str__(self):
         return f"Zdjęcie pojazdu {self.vehicle.vin}"
     
+
 class VehicleHistory:
+    """
+    Model który odpowiada za webscrape historii pojazdu
+    """
     def __init__(self, rejestracja, vin, rocznik, options=[]):
         self.registration_plate = rejestracja
         self.vin = vin
@@ -308,7 +333,10 @@ class VehicleHistory:
 
     
 class Message(models.Model):
-    """ Wiadomości między użytkownikami """
+    """
+    Wiadomości między użytkownikami 
+    """
+
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_messages")
     content = models.TextField()
@@ -320,3 +348,19 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Wiadomość od {self.sender} do {self.receiver}"
+    
+
+class ServiceEntry(models.Model):
+    """
+    Model wpisu serwisowego pojazdu
+    """
+
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    date = models.DateField()
+    mileage = models.PositiveIntegerField()
+    description = models.TextField(max_length=1000)
+    cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    invoice_image = models.ImageField(upload_to=vehicle_invoice_path, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.vehicle} - {self.date}"
