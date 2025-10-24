@@ -5,6 +5,8 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { getToken } from "../../services/auth";
 import styles from "../vehicleDetails.module.css";
+import DamageForm from "./DamageForm";
+import DamageHistory from "./DamageHistory";
 
 export default function carDetails() {
   const { vin } = useParams();
@@ -17,6 +19,8 @@ export default function carDetails() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [serviceEntries, setServiceEntries] = useState([]);
+  const [selectedMarker, setSelectedMarker] = useState(null); 
+  const [damageEntries, setDamageEntries] = useState([]);
 
 
   const getProductionYears = (generation) => {
@@ -437,8 +441,12 @@ export default function carDetails() {
                 <p className="text-gray-500">Brak wpisów serwisowych.</p>
               )}
             </div>
-          </div>
 
+            {/* Formularz dodawania uszkodzenia */}
+            <DamageForm></DamageForm>
+            { /* Lista uszkodzeń pojazdu */}
+            <DamageHistory></DamageHistory>
+          </div>
         </>
       )}
     </>

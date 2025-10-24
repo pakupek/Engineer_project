@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.forms import ValidationError
 from django.utils import timezone
-from .utils import vehicle_image_path, vehicle_invoice_path
+from .utils import vehicle_image_path, vehicle_invoice_path, damage_image_path
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -364,3 +364,41 @@ class ServiceEntry(models.Model):
 
     def __str__(self):
         return f"{self.vehicle} - {self.date}"
+
+
+class DamageEntry(models.Model):
+    """
+    Model uszkodzeń pojazdu
+    """
+
+    vehicle = models.ForeignKey("Vehicle", on_delete=models.CASCADE, related_name="Uszkodzenia")
+    date = models.DateField()
+    description = models.TextField(blank=True)
+    photos = models.ImageField(upload_to=damage_image_path, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.vehicle.vin} - {self.date}"
+
+
+class DamageMarker(models.Model):
+    """
+    Marker (punkt) na zdjęciu uszkodzenia
+    """
+
+    SEVERITY_CHOICES = [
+        ("drobne", "Drobne"),
+        ("umiarkowane", "Umiarkowane"),
+        ("poważne", "Poważne"),
+    ]
+    damage_entry = models.ForeignKey(DamageEntry, on_delete=models.CASCADE, related_name="markers")
+    x_percent = models.DecimalField(max_digits=5, decimal_places=2)
+    y_percent = models.DecimalField(max_digits=5, decimal_places=2)
+
+    severity = models.CharField(
+        max_length=11,
+        choices=SEVERITY_CHOICES,
+        default="drobne"
+    )
+
+    def __str__(self):
+        return f"Marker {self.id} ({self.severity}) - {self.x_percent}%, {self.y_percent}%"

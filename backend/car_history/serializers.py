@@ -1,3 +1,4 @@
+import json
 from rest_framework import serializers
 from .models import (
     User, 
@@ -9,7 +10,9 @@ from .models import (
     VehicleMake, 
     VehicleGeneration, 
     VehicleImage,
-    ServiceEntry
+    ServiceEntry,
+    DamageEntry,
+    DamageMarker
 )
 from django.contrib.auth.password_validation import validate_password
 import datetime
@@ -175,3 +178,43 @@ class ServiceEntrySerializer(serializers.ModelSerializer):
         if value and value < 0:
             raise serializers.ValidationError("Koszt nie może być ujemny")
         return value
+    
+
+class DamageMarkerSerializer(serializers.ModelSerializer):
+    """
+    Serializer do markerów (punktów) do zaznaczania
+    """
+    class Meta:
+        model = DamageMarker
+        fields = ['id', 'x_percent', 'y_percent', 'severity']
+
+
+class DamageEntrySerializer(serializers.ModelSerializer):
+    """
+    Serializer do uszkodzeń auta
+    """
+    
+    markers = DamageMarkerSerializer(many=True, read_only=True)
+    class Meta:
+        model = DamageEntry
+        fields = ['id','date','description','photos','markers']
+
+    def create(self, validated_data):
+        # Pobieramy vehicle z kontekstu
+        vehicle = self.context['vehicle']
+
+        # Tworzymy DamageEntry
+        damage_entry = DamageEntry.objects.create(vehicle=vehicle, **validated_data)
+
+        # Tworzymy markery
+        markers_data = self.context['request'].data.get('markers', '[]')
+        try:
+            markers_list = json.loads(markers_data)
+        except json.JSONDecodeError:
+            markers_list = []
+
+        for marker in markers_list:
+            DamageMarker.objects.create(damage_entry=damage_entry, **marker)
+
+        return damage_entry
+    

@@ -13,7 +13,8 @@ from .serializers import (
     VehicleModelSerializer,
     VehicleGenerationSerializer,
     VehicleImageSerializer,
-    ServiceEntrySerializer
+    ServiceEntrySerializer,
+    DamageEntrySerializer
 )
 from rest_framework.permissions import AllowAny
 from .models import (
@@ -27,7 +28,8 @@ from .models import (
     VehicleGeneration, 
     VehicleImage,
     VehicleHistory,
-    ServiceEntry
+    ServiceEntry,
+    DamageEntry
 )
 from rest_framework.response import Response
 from django.db.models import Q
@@ -38,6 +40,7 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from rest_framework.parsers import MultiPartParser, FormParser
 import logging
+from rest_framework.exceptions import ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -405,3 +408,26 @@ class ServiceEntryCreateView(generics.CreateAPIView):
                 "message": "Błąd walidacji danych",
                 "errors": serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DamageEntryCreateView(generics.CreateAPIView):
+    queryset = DamageEntry.objects.all()
+    serializer_class = DamageEntrySerializer  
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        vin = self.request.data.get("vin")
+        try:
+            vehicle = Vehicle.objects.get(vin=vin)
+        except Vehicle.DoesNotExist:
+            raise ValidationError({"vin": f"Pojazd o numerze VIN {vin} nie istnieje."})
+        context['vehicle'] = vehicle  # Przekazujemy vehicle do serializer
+        return context
+        
+
+class DamageEntryListView(generics.ListAPIView):
+    serializer_class = DamageEntrySerializer
+
+    def get_queryset(self):
+        vin = self.kwargs["vin"]
+        return DamageEntry.objects.filter(vehicle__vin=vin).prefetch_related("markers")

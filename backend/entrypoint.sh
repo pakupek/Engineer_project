@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "Makemigrations"
-poetry run python manage.py makemigrations core --noinput
+poetry run python manage.py makemigrations --noinput
 echo "==============================="
 
 echo "Migrate"
