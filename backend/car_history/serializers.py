@@ -45,9 +45,7 @@ class VehicleGenerationSerializer(serializers.ModelSerializer):
 
 
 class VehicleSerializer(serializers.ModelSerializer):
-    generation = serializers.PrimaryKeyRelatedField(
-        queryset=VehicleGeneration.objects.all()
-    )
+    generation = VehicleGenerationSerializer(read_only=True)
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     images = VehicleImageSerializer(many=True, read_only=True)
     class Meta:

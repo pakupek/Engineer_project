@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import styles from "./VehicleCard.module.css";
 
 export default function VehicleCard({ vehicle, onDelete, onViewDetails }) {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -13,70 +14,54 @@ export default function VehicleCard({ vehicle, onDelete, onViewDetails }) {
     }
   };
 
-  const vehicleModel = vehicle.generation || {};
+  const makeName = vehicle?.generation?.model?.make?.name || "Brak danych";
+  const modelName = vehicle?.generation?.model?.name || "Brak danych";
+  const generationName = vehicle?.generation?.name || "Brak danych"
+  const price = vehicle?.price ? `${vehicle.price} PLN` : "Brak danych";
+  const vin = vehicle?.vin || "Brak danych";
+  const odometer = vehicle?.odometer ? `${vehicle.odometer} km` : "Brak danych";
+  const productionYear = vehicle?.production_year || "Brak danych";
+  const imageSrc = vehicle?.images?.[0]?.image || "/car.jpg"; 
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow">
-      {/* Nagłówek */}
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-xl font-semibold text-gray-900">
-          {vehicleModel.make || "Nieznana marka"}{" "}
-          {vehicleModel.model || "Nieznany model"}
-        </h3>
+    <div className={styles["vehicle-card"]}>
+      <div className={styles["vehicle-card-image"]}>
+        <img src={imageSrc} alt={`${makeName} ${modelName}`} />
       </div>
 
-      {/* Dane pojazdu */}
-      <div className="space-y-2 text-gray-600">
-        <div className="flex justify-between">
-          <span>VIN:</span>
-          <span className="font-medium">{vehicle.vin}</span>
+      <div className={styles["vehicle-card-content"]}>
+        <div className={styles["vehicle-card-header"]}>
+          <h2 onClick={() => onViewDetails(vehicle.vin)}>
+            {productionYear} {makeName} {modelName} 
+          </h2>
+          <span className={styles["vehicle-card-price"]}>{price}</span>
         </div>
-        <div className="flex justify-between">
-          <span>Rok produkcji:</span>
-          <span className="font-medium">
-            {vehicle.production_year || "Brak danych"}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span>Przebieg:</span>
-          <span className="font-medium">
-            {vehicle.odometer
-              ? `${vehicle.odometer.toLocaleString()} km`
-              : "Brak danych"}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span>Typ paliwa:</span>
-          <span className="font-medium">
-            {vehicleModel.fuel_type || "Brak danych"}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span>Kolor nadwozia:</span>
-          <span className="font-medium">{vehicle.body_color || "Brak danych"}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Lokalizacja:</span>
-          <span className="font-medium">{vehicle.location || "Brak danych"}</span>
-        </div>
-      </div>
 
-      {/* Przyciski akcji */}
-      <div className="mt-6 flex space-x-3">
-        <button
-          onClick={() => onViewDetails(vehicle.vin)}
-          className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition-colors"
-        >
-          Szczegóły
-        </button>
+        <div className={styles["vehicle-card-parameters"]}>
+          <div><span className={styles["label"]}>VIN:</span> {vin}</div>
+          <div><span className={styles["label"]}>Przebieg:</span> {odometer}</div>
+          <div><span className={styles["label"]}>Rok prod:</span> {productionYear}</div>
+          <div><span className={styles["label"]}>Generacja:</span> {generationName}</div>
+        </div>
 
-        <button
-          className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors disabled:bg-red-300"
-          onClick={handleDelete}
-          disabled={isDeleting}
-        >
-          {isDeleting ? "Usuwanie..." : "Usuń"}
-        </button>
+        <div className={styles["vehicle-card-actions"]}>
+          <button
+            onClick={() => onViewDetails(vehicle.vin)}
+            title="Szczegóły pojazdu"
+            className={styles["icon-button"]}
+          >
+            <img src="/icons/info.png" alt="Szczegóły" className={styles["icon"]} />
+          </button>
+
+          <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            title="Usuń pojazd"
+            className={`${styles["icon-button"]} ${styles["delete"]}`}
+          >
+            <img src="/icons/delete.svg" alt="Usuń" className={styles["icon"]} />
+          </button>
+        </div>
       </div>
     </div>
   );

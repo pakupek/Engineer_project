@@ -1,4 +1,5 @@
 import VehicleCard from './VehicleCard';
+import styles from "./VehicleList.module.css"
 
 export default function VehicleList({ vehicles, onDeleteVehicle }) {
   if (vehicles.length === 0) {
@@ -18,7 +19,7 @@ export default function VehicleList({ vehicles, onDeleteVehicle }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className={styles["vehicle-list"]}>
       {vehicles.map(vehicle => (
         <VehicleCard 
           key={vehicle.vin} 

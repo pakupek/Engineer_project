@@ -1,11 +1,13 @@
 .container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%; /* zajmuje całą szerokość */
+  max-width: 100%;
   font-family: Arial, Helvetica, sans-serif;
   margin-top: 150px !important;
+  margin-left: 300px;
+  box-sizing: border-box;
 }
 
+/* Header */
 .header {
   margin-bottom: 2rem;
 }
@@ -22,6 +24,7 @@
   margin-top: 0.5rem;
 }
 
+/* Button section */
 .button-section {
   margin-bottom: 2rem;
 }
@@ -41,6 +44,7 @@
   background-color: #1d4ed8;
 }
 
+/* Message */
 .message {
   text-align: center;
   font-size: 1.2rem;
@@ -49,4 +53,54 @@
 
 .error {
   color: #dc2626;
+}
+
+/* RESPONSYWNE: mniejsze ekrany */
+@media (max-width: 1024px) {
+  .container {
+    margin-left: 160px;
+  }
+
+  .title {
+    font-size: 1.8rem;
+    margin-left: 80px;
+  }
+  .subtitle{
+    margin-left: 100px;
+  }
+  .add-button{
+    margin-left: 80px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin-left: 100px;
+  }
+
+  .title {
+    font-size: 1.6rem;
+  }
+
+  .add-button {
+    text-align: center;
+    margin-left: -20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0.8rem;
+    margin-top: 120px !important;
+  }
+
+  .title {
+    font-size: 1.4rem;
+    margin-left: -20px;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+    margin-left: 0px;
+  }
 }

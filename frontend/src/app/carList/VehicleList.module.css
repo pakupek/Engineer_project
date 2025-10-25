@@ -1,0 +1,20 @@
+.vehicle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  padding-left: 16px; 
+  box-sizing: border-box;
+}
+
+
+
+/* Małe tablety / duże telefony (640px - 768px) */
+@media (max-width: 768px) {
+  .vehicle-list {
+    margin-left: -140px;
+    padding-right: 16px;
+  }
+}
+
+
