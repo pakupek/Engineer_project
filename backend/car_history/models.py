@@ -165,6 +165,15 @@ class Vehicle(models.Model):
         ('22"', '22"'),
     ]
 
+    FUEL_TYPES = [
+        ('Benzyna', 'Benzyna'),
+        ('Diesel', 'Diesel'),
+        ('Hybryda', 'Hybryda'),
+        ('Elektryczny', 'Elektryczny'),
+        ('Benzyna+LPG', 'Benzyna+LPG'),
+        ('Benzyna+CNG', 'Benzyna+CNG'),
+    ]
+
     generation = models.ForeignKey(VehicleGeneration, on_delete=models.CASCADE, related_name='vehicles', null=True, blank=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='vehicles')
     vin = models.CharField(max_length=17, unique=True, primary_key=True, verbose_name='VIN')
@@ -178,6 +187,7 @@ class Vehicle(models.Model):
     wheel_size = models.CharField(default='', max_length=10, choices=WHEEL_SIZE_CHOICES, verbose_name='Rozmiar felg')
     for_sale = models.BooleanField(default=False, verbose_name='Na sprzedaż')
     registration = models.CharField(default='', verbose_name='Nr rejestracyjny')
+    fuel_type = models.CharField(max_length=20, choices=FUEL_TYPES, default='', verbose_name='Typ paliwa')
 
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)

@@ -45,12 +45,21 @@ class VehicleGenerationSerializer(serializers.ModelSerializer):
 
 
 class VehicleSerializer(serializers.ModelSerializer):
-    generation = VehicleGenerationSerializer(read_only=True)
+    generation_id = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleGeneration.objects.all(),
+        source='generation',  # Mapuje na pole generation w modelu
+        required=False,
+        allow_null=True,
+        write_only=True  # Tylko do zapisu
+    )
+    generation = VehicleGenerationSerializer(read_only=True)  # Tylko do odczytu
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     images = VehicleImageSerializer(many=True, read_only=True)
+
     class Meta:
         model = Vehicle
         fields = '__all__'
+    
 
 
 class ChangePasswordSerializer(serializers.Serializer):

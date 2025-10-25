@@ -22,9 +22,7 @@ export default function AddVehiclePage() {
   const [generations, setGenerations] = useState([]);
   const [selectedGeneration, setSelectedGeneration] = useState('');
   const [formData, setFormData] = useState({
-    make: '',
-    model: '',
-    generation: '',
+    generation_id: '',
     production_year: new Date().getFullYear(),
     vin: '',
     odometer: 0,
@@ -159,7 +157,18 @@ export default function AddVehiclePage() {
     setError('');
     setSuccess('');
 
-    console.log("Form data do wysłania:", formData);
+    const submitData = {
+      ...formData,
+      generation_id: selectedGeneration || null, // DODAJ TE LINIE
+    };
+    
+    console.log("📤 Form data do wysłania:", submitData);
+    console.log("🔍 Generation ID:", submitData.generation_id);
+
+    // USUŃ niepotrzebne pola które nie są w modelu Vehicle
+    delete submitData.make;
+    delete submitData.model;
+    delete submitData.generation; // USUŃ stare pole
 
     try {
       const token = getToken();
@@ -187,9 +196,7 @@ export default function AddVehiclePage() {
 
         // Reset form
         setFormData({
-          make: '',
-          model: '',
-          generation: '',
+          generation_id: '', // DODAJ
           production_year: new Date().getFullYear(),
           vin: '',
           odometer: 0,
@@ -205,6 +212,10 @@ export default function AddVehiclePage() {
           for_sale: false,
           registration:''
         });
+
+        setSelectedMake('');
+        setSelectedModel('');
+        setSelectedGeneration('');
         
         setTimeout(() => {
            window.location.href = '/carList';
@@ -303,7 +314,7 @@ export default function AddVehiclePage() {
                     value={selectedGeneration}
                     onChange={(e) => {
                       setSelectedGeneration(e.target.value);
-                      setFormData(prev => ({ ...prev, generation: e.target.value }));
+                      setFormData(prev => ({ ...prev, generation_id: e.target.value }));
                     }}
                     className={styles["form-control"]}
                   >

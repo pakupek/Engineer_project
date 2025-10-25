@@ -4,11 +4,13 @@ import VehicleList from './VehicleList';
 import { getToken } from "../services/auth";
 import styles from './carList.module.css'; 
 import DashboardLayout from '../DashboardLayout/page';
+import VehicleFilters from './VehicleFilters';
 
 export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [filteredVehicles, setFilteredVehicles] = useState(vehicles);
 
   // Pobieranie danych o pojazdach
   useEffect(() => {
@@ -87,6 +89,8 @@ export default function VehiclesPage() {
             Dodaj nowy pojazd
           </button>
         </div>
+
+        <VehicleFilters vehicles={vehicles} onFiltered={setFilteredVehicles} />
 
         <VehicleList 
           vehicles={vehicles} 

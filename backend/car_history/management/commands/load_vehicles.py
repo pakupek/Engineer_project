@@ -615,6 +615,23 @@ class Command(BaseCommand):
                 "DS7":[],
             },
 
+            "Ford":{
+                "Edge":[
+                    {"name": "I", "production_start": 2006, "production_end": 2014},
+                    {"name": "II", "production_start": 2014, "production_end": 2024},
+                    {"name": "III", "production_start": 2023, "production_end": None},
+                ],
+            },
+
+            "Renault":{
+                "Megane":[
+                    {"name": "I", "production_start": 1995, "production_end": 2003},
+                    {"name": "II", "production_start": 2002, "production_end": 2009},
+                    {"name": "III", "production_start": 2008, "production_end": 2016},
+                    {"name": "IV", "production_start": 2016, "production_end": 2024},
+                ],
+            },
+            
             "Toyota": {
                 "Corolla": [
                     {"name": "E150", "production_start": 2006, "production_end": 2013},
@@ -730,29 +747,43 @@ class Command(BaseCommand):
 
         for make_name, models in vehicle_data.items():
             try:
-                make_obj, created_make = VehicleMake.objects.get_or_create(name=make_name)
+                make_name_clean = make_name.strip()
+                make_obj, created_make = VehicleMake.objects.get_or_create(name=make_name_clean)
                 if created_make:
-                    print(f"Utworzono markę: {make_name}")
+                    print(f"✅ Utworzono markę: {make_name_clean}")
+                else:
+                    print(f"ℹ️ Marka już istnieje: {make_name_clean}")
+
                 for model_name, gens in models.items():
-                    model_obj, created_model = VehicleModel.objects.get_or_create(make=make_obj, name=model_name)
+                    model_name_clean = model_name.strip()
+                    model_obj, created_model = VehicleModel.objects.get_or_create(
+                        make=make_obj,
+                        name=model_name_clean
+                    )
                     if created_model:
-                        print(f"  Utworzono model: {make_name} {model_name}")
+                        print(f"  ✅ Utworzono model: {make_name_clean} {model_name_clean}")
+                    else:
+                        print(f"  ℹ️ Model już istnieje: {make_name_clean} {model_name_clean}")
+
                     for gen_data in gens:
-                        try:
-                            gen_name = gen_data.get("name")
-                            start = gen_data.get("production_start")
-                            end = gen_data.get("production_end")
-                            generation_obj, created_gen = VehicleGeneration.objects.get_or_create(
-                                model=model_obj,
-                                name=gen_name,
-                                defaults={
-                                    "production_start": start,
-                                    "production_end": end
-                                }
-                            )
-                            if created_gen:
-                                print(f"    Utworzono generację: {make_name} {model_name} {gen_name} ({start}–{end})")
-                        except Exception as e:
-                            print(f"    ❌ Błąd przy generacji {make_name} {model_name}: {e}")
+                        gen_name = gen_data.get("name").strip()
+                        start = gen_data.get("production_start")
+                        end = gen_data.get("production_end")
+
+                        # Używamy update_or_create, aby zapis działał także dla istniejących generacji
+                        generation_obj, created_gen = VehicleGeneration.objects.update_or_create(
+                            model=model_obj,
+                            name=gen_name,
+                            defaults={
+                                "production_start": start,
+                                "production_end": end
+                            }
+                        )
+
+                        if created_gen:
+                            print(f"    ✅ Utworzono generację: {make_name_clean} {model_name_clean} {gen_name} ({start}–{end})")
+                        else:
+                            print(f"    ℹ️ Generacja już istnieje: {make_name_clean} {model_name_clean} {gen_name}")
+
             except Exception as e:
                 print(f"❌ Błąd przy marce {make_name}: {e}")

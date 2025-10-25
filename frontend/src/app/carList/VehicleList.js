@@ -2,6 +2,7 @@ import VehicleCard from './VehicleCard';
 import styles from "./VehicleList.module.css"
 
 export default function VehicleList({ vehicles, onDeleteVehicle }) {
+
   if (vehicles.length === 0) {
     return (
       <div className="text-center py-12">

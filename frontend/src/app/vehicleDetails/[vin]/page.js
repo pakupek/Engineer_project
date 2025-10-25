@@ -27,11 +27,9 @@ export default function carDetails() {
     if (!generation) return "Brak danych";
     const start = generation.production_start;
     const end = generation.production_end;
-    if (start) {
-      return end ? `${start} – ${end}` : `${start}`;
-    }
-    return "Brak danych";
+    return start ? (end ? `${start} – ${end}` : `${start}`) : "Brak danych";
   };
+
 
 
   // Pobieranie wpisów serwisowych
@@ -121,6 +119,7 @@ export default function carDetails() {
     const fetchCar = async () => {
       try {
         const token = getToken();
+        console.log("Token JWT:", token);
         const response = await fetch(`http://localhost:8000/api/vehicles/${vin}/`, {
           headers: {
             "Content-Type": "application/json",
@@ -216,22 +215,22 @@ export default function carDetails() {
         {/* Overlay z podstawowymi danymi */}
         <div className={styles.overlay}>
           <div className="flex flex-col">
-            <span className={styles.leftSmall}>Model</span>
-            <span className={styles.left}>{car.name}</span>
+            <span className={styles.leftSmall}>Marka</span>
+            <span className={styles.left}>{car.generation?.model?.make?.name}</span>
           </div>
 
           <div className="flex gap-8">
             <div className="flex flex-col text-right">
-              <span className={styles.rightSmall}>Silnik</span>
-              <span className={styles.right}>{car.engine}</span>
+              <span className={styles.rightSmall}>Model</span>
+              <span className={styles.right}>{car.generation?.model?.name}</span>
             </div>
             <div className="flex flex-col text-right">
               <span className={styles.rightSmall}>Paliwo</span>
               <span className={styles.right}>{car.fuel_type}</span>
             </div>
             <div className="flex flex-col text-right">
-              <span className={styles.rightSmall}>Moc</span>
-              <span className={styles.right}>{car.power}</span>
+              <span className={styles.rightSmall}>Przebieg</span>
+              <span className={styles.right}>{car.odometer}</span>
             </div>
           </div>
         </div>

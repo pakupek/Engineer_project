@@ -273,6 +273,32 @@ class VehicleCreateView(generics.CreateAPIView):
     serializer_class = VehicleSerializer
     permission_classes = [permissions.IsAuthenticated] 
 
+    def create(self, request, *args, **kwargs):
+        print("=== VEHICLE CREATE DEBUG ===")
+        print("Request data:", request.data)
+        print("Generation value:", request.data.get('generation'))
+        print("Generation type:", type(request.data.get('generation')))
+        
+        # Sprawdź czy generation jest pustym stringiem i zamień na None
+        data = request.data.copy()
+        generation_value = data.get('generation')
+        
+        if generation_value == '' or generation_value == 'null':
+            data['generation'] = None
+            print("Converted empty generation to None")
+        
+        # Przekaż poprawione dane do serializera
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        
+        print("Vehicle created successfully")
+        print("Created vehicle generation:", serializer.instance.generation)
+        
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
