@@ -232,6 +232,7 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
     POST -> dodaje nowe zdjęcia dla danego pojazdu
     """
     serializer_class = VehicleImageSerializer
+    MAX_IMAGES = 30
 
     def get_queryset(self):
         vin = self.kwargs['vin']
@@ -244,6 +245,22 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
         files = request.FILES.getlist('images')
         if not files:
             return Response({"detail": "Nie wybrano żadnych plików."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Sprawdź czy nie przekracza limitu
+        current_image_count = vehicle.images.count()
+        if current_image_count >= self.MAX_IMAGES:
+            return Response(
+                {"detail": f"Osiągnięto limit {self.MAX_IMAGES} zdjęć dla tego pojazdu."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Sprawdź czy dodanie nowych zdjęć nie przekroczy limitu
+        if current_image_count + len(files) > self.MAX_IMAGES:
+            available_slots = self.MAX_IMAGES - current_image_count
+            return Response(
+                {"detail": f"Możesz dodać tylko {available_slots} więcej zdjęć (limit: {self.MAX_IMAGES})."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         created_images = []
         errors = []

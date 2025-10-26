@@ -40,13 +40,39 @@ export default function AddVehiclePage() {
   });
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files); // zamieniamy FileList na tablicę
-    setImages(files); // zapisujemy w stanie
+    const files = Array.from(e.target.files); 
+    // Sprawdź czy nie przekracza limitu
+    if (files.length > 30) {
+      alert("Możesz dodać maksymalnie 30 zdjęć");
+      return;
+    }
+    
+    // Sprawdź czy łączna liczba zdjęć nie przekracza limitu
+    if (images.length + files.length > 30) {
+      alert(`Możesz dodać maksymalnie 30 zdjęć. Masz już ${images.length} zdjęć.`);
+      return;
+    }
+    
+    setImages(prev => [...prev, ...files]);
+  };
+
+  const removeImage = (indexToRemove) => {
+    setImages(prev => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  const clearAllImages = () => {
+    setImages([]);
   };
 
 
   const uploadImages = async (vin, files) => {
     if (!files || files.length === 0) return;
+
+    // Sprawdź czy nie przekracza limitu
+    if (files.length > 30) {
+      console.error("Przekroczono limit 30 zdjęć");
+      return;
+    }
 
     const formData = new FormData();
     files.forEach((file) => formData.append("images", file));
@@ -156,6 +182,13 @@ export default function AddVehiclePage() {
     setLoading(true);
     setError('');
     setSuccess('');
+
+    // Walidacja liczby zdjęć
+    if (images.length > 30) {
+      setError("Możesz dodać maksymalnie 30 zdjęć");
+      setLoading(false);
+      return;
+    }
 
     const submitData = {
       ...formData,
@@ -504,47 +537,75 @@ export default function AddVehiclePage() {
             </div>
           </div>
 
-          {/* Sekcja 4: Opcje sprzedaży */}
-          <div className={styles["form-section checkbox-group"]}>
-            <input
-              type="checkbox"
-              name="for_sale"
-              checked={formData.for_sale}
-              onChange={handleChange}
-              id="for_sale"
-            />
-            <label htmlFor="for_sale">Wystawiony na sprzedaż</label>
-          </div>
 
           {/* Zdjęcia */}
-          <div className={styles["form-section"]}>
-            <h2 className={styles["section-title"]}>Zdjęcia pojazdu</h2>
+          <div className={styles.formSection}>
+            <h2 className={styles.sectionTitle}>
+              Zdjęcia pojazdu 
+              <span className={styles.imagesCount}>
+                ({images.length}/30)
+              </span>
+            </h2>
+            
+            <div className={styles.fileInputContainer}>
               <input
                 type="file"
                 multiple
                 accept="image/*"
                 onChange={handleImageChange}
-                className={styles["form-control"]}
+                className={styles.formControl}
+                disabled={images.length >= 30}
               />
+              <p className={styles.imagesInfo}>
+                Możesz dodać maksymalnie 30 zdjęć. Wybrano: {images.length}/30
+              </p>
+            </div>
 
-              {images.length > 0 && (
-                <div className="mt-4 grid grid-cols-3 gap-4">
+            {images.length > 0 && (
+              <div className={styles.imagesPreview}>
+                <div className={styles.previewHeader}>
+                  <span className={styles.previewTitle}>
+                    Podgląd zdjęć ({images.length})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={clearAllImages}
+                    className={styles.clearAllButton}
+                  >
+                    Usuń wszystkie
+                  </button>
+                </div>
+                
+                <div className={styles.imagesGrid}>
                   {images.map((img, i) => {
                     const objectUrl = URL.createObjectURL(img);
                     return (
-                      <img
-                        key={i}
-                        src={objectUrl}
-                        alt={`preview-${i}`}
-                        onLoad={() => URL.revokeObjectURL(objectUrl)}
-                        
-                      />
+                      <div key={i} className={styles.imageContainer}>
+                        <img
+                          src={objectUrl}
+                          alt={`preview-${i}`}
+                          className={styles.imagePreview}
+                          onLoad={() => URL.revokeObjectURL(objectUrl)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(i)}
+                          className={styles.removeButton}
+                        >
+                          ×
+                        </button>
+                      </div>
                     );
                   })}
                 </div>
-              )}
-           
+              </div>
+            )}
             
+            {images.length >= 30 && (
+              <p className={styles.limitWarning}>
+                Osiągnięto limit 30 zdjęć. Aby dodać nowe, usuń niektóre z istniejących.
+              </p>
+            )}
           </div>
 
 

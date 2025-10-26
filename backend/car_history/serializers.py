@@ -23,6 +23,14 @@ class VehicleImageSerializer(serializers.ModelSerializer):
         fields = ['id', 'vehicle', 'image', 'uploaded_at']
         read_only_fields = ['id', 'uploaded_at', 'vehicle']
 
+    def validate(self, attrs):
+        vehicle = self.context.get('vehicle')
+        if vehicle and vehicle.images.count() >= 30:
+            raise serializers.ValidationError(
+                "Można dodać maksymalnie 30 zdjęć do pojazdu"
+            )
+        return attrs
+
 
 class VehicleMakeSerializer(serializers.ModelSerializer):
     class Meta:

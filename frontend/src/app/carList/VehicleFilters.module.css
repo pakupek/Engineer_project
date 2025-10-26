@@ -81,7 +81,8 @@
 /* Responsywność */
 @media (max-width: 768px) {
     .filters-container{
-        max-width: 400px;
+        max-width: fit-content;
+        margin-left: -35px;
     }
     .filters-row {
         flex-direction: column;
