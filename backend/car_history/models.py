@@ -365,7 +365,7 @@ class ServiceEntry(models.Model):
     Model wpisu serwisowego pojazdu
     """
 
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE)
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='service_entries')
     date = models.DateField()
     mileage = models.PositiveIntegerField()
     description = models.TextField(max_length=1000)

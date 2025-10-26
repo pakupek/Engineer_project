@@ -44,19 +44,29 @@ export default function VehiclesPage() {
   }, []);
 
   // Funkcja do usuwania pojazdu
-  const handleDeleteVehicle = async (vehicleId) => {
+  const handleDeleteVehicle = async (vin) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/vehicles/${vehicleId}`, {
+      const token = getToken();
+      const response = await fetch(`http://localhost:8000/api/vehicles/${vin}/delete/`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
 
-      if (response.ok) {
-        setVehicles(vehicles.filter(vehicle => vehicle.id !== vehicleId));
-      } else {
-        alert('Błąd podczas usuwania pojazdu');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Błąd podczas usuwania pojazdu');
       }
+
+      const data = await response.json();
+      setVehicles((prev) => prev.filter((v) => v.vin !== vin));
+      setFilteredVehicles((prev) => prev.filter((v) => v.vin !== vin));
+      return data;
     } catch (error) {
-      alert('Wystąpił błąd podczas usuwania pojazdu');
+      console.error('Błąd usuwania pojazdu:', error);
+      throw error;
     }
   };
 

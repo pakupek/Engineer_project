@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import generics, permissions, status
 from .serializers import (
     UserRegistrationSerializer, 
@@ -14,7 +15,8 @@ from .serializers import (
     VehicleGenerationSerializer,
     VehicleImageSerializer,
     ServiceEntrySerializer,
-    DamageEntrySerializer
+    DamageEntrySerializer,
+    VehicleDeleteSerializer
 )
 from rest_framework.permissions import AllowAny
 from .models import (
@@ -37,11 +39,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from rest_framework.parsers import MultiPartParser, FormParser
-import logging
+import logging, shutil, os
 from rest_framework.exceptions import ValidationError
-
+from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
@@ -357,6 +359,70 @@ class VehicleDetailAPI(generics.RetrieveAPIView):
     queryset = Vehicle.objects.select_related('generation', 'generation__model', 'generation__model__make')
     serializer_class = VehicleSerializer
     lookup_field = 'vin'
+
+class VehicleDeleteView(generics.DestroyAPIView):
+    """
+    DELETE -> usuwa pojazd i wszystkie powiązane dane
+    """
+    queryset = Vehicle.objects.all()
+    serializer_class = VehicleDeleteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'vin'
+
+    def get_object(self):
+        vin = self.kwargs.get('vin')
+        try:
+            return Vehicle.objects.get(vin=vin)
+        except Vehicle.DoesNotExist:
+            raise Http404
+
+    
+    def destroy(self, request, *args, **kwargs):
+        try:
+            vehicle = self.get_object()
+            
+            # Sprawdź czy użytkownik ma uprawnienia (opcjonalnie)
+            if vehicle.owner != request.user:
+                return Response(
+                    {"error": "Nie masz uprawnień do usunięcia tego pojazdu"},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Zbierz informacje przed usunięciem
+            vehicle_vin = vehicle.vin
+            images_count = vehicle.images.count()
+            service_entries_count = vehicle.service_entries.count()
+            folder_path = os.path.join(settings.MEDIA_ROOT, 'vehicles', vehicle_vin)
+            
+            # usuń folder, jeśli istnieje
+            if os.path.exists(folder_path):
+                shutil.rmtree(folder_path)
+            
+            # Usuń pojazd (automatycznie usunie powiązane dane przez CASCADE)
+            vehicle.delete()
+            
+            # Zwróć informację o usuniętych danych
+            return Response(
+                {
+                    "message": "Pojazd został pomyślnie usunięty",
+                    "deleted_vehicle": vehicle_vin,
+                    "deleted_images_count": images_count,
+                    "deleted_service_entries_count": service_entries_count,
+                    "deleted_at": timezone.now().isoformat()
+                },
+                status=status.HTTP_200_OK
+            )
+            
+        except Http404:
+            return Response(
+                {"error": "Nie znaleziono pojazdu o podanym VIN"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {"error": f"Błąd podczas usuwania pojazdu: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 _vehicle_history_cache = {}
 

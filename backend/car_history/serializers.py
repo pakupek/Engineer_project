@@ -68,6 +68,14 @@ class VehicleSerializer(serializers.ModelSerializer):
         model = Vehicle
         fields = '__all__'
     
+class VehicleDeleteSerializer(serializers.Serializer):
+    """
+    Serializer dla odpowiedzi po usunięciu pojazdu
+    """
+    message = serializers.CharField()
+    deleted_vehicle = serializers.CharField()
+    deleted_images_count = serializers.IntegerField()
+    deleted_service_entries_count = serializers.IntegerField()
 
 
 class ChangePasswordSerializer(serializers.Serializer):
