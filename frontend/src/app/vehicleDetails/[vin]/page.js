@@ -7,6 +7,7 @@ import { getToken } from "../../services/auth";
 import styles from "../vehicleDetails.module.css";
 import DamageForm from "./DamageForm";
 import DamageHistory from "./DamageHistory";
+import Timeline from "./TimeLine";
 
 export default function carDetails() {
   const { vin } = useParams();
@@ -321,15 +322,8 @@ export default function carDetails() {
 
             {error && <p className="text-red-600 mt-3">{error}</p>}
 
-            {timeline && (
-              <div className="mt-6">
-                <h2 className="text-lg font-semibold">Oś czasu</h2>
-                <div
-                  className="border p-3 mt-2"
-                  dangerouslySetInnerHTML={{ __html: timeline.timeline_html }}
-                />
-              </div>
-            )}
+            <Timeline vin={vin}></Timeline>
+            
           </div>
 
           {/* Formularz dodawania wpisu serwisowego */}

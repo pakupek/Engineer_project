@@ -44,6 +44,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 import logging, shutil, os
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
+from bs4 import BeautifulSoup
+
 logger = logging.getLogger(__name__)
 
 
@@ -439,30 +441,59 @@ def get_vehicle_history(rejestracja, vin, rocznik):
         return result
     return None
 
-def vehicle_history(request,vin):
+def parse_timeline_html(html):
     """
-    Endpoint który zwraca oś czasu dla pojazdu
+    Parsuje HTML osi czasu i zwraca listę słowników
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    timeline = []
+
+    items = soup.select("app-axis-item .item")
+    for item in items:
+        date_elem = item.select_one(".item-timestamp-text")
+        title_elem = item.select_one(".item-content-header")
+        detail_elems = item.select(".item-content-details-row")
+
+        date = date_elem.get_text(strip=True) if date_elem else ""
+        title = title_elem.get_text(strip=True) if title_elem else ""
+
+        details = {}
+        for d in detail_elems:
+            key_elem = d.select_one(".item-content-details-row-key")
+            value_elem = d.select_one(".item-content-details-row-value")
+            if key_elem and value_elem:
+                key = key_elem.get_text(strip=True)
+                value = value_elem.get_text(strip=True)
+                details[key] = value
+
+        timeline.append({
+            "date": date,
+            "title": title,
+            "details": details
+        })
+
+    return timeline
+
+def vehicle_history(request, vin):
+    """
+    Endpoint który zwraca oś czasu dla pojazdu w JSON
     """
     try:
-        # Szukanie pojazdu po VIN
         vehicle = Vehicle.objects.filter(vin=vin).first()
         if not vehicle:
             return JsonResponse({"success": False, "message": "Nie znaleziono pojazdu o podanym VIN."})
 
-        timeline_data = get_vehicle_history(
+        timeline_html_data = get_vehicle_history(
             rejestracja=vehicle.registration,
             vin=vehicle.vin,
             rocznik=vehicle.first_registration.strftime("%d%m%Y")
         )
 
-        if timeline_data:
-            return JsonResponse({
-                "success": True,
-                "vin": vin,
-                "timeline_html": timeline_data.get("timeline_html"),
-            })
-        else:
-            return JsonResponse({"success": False, "message": "Brak danych dla tego pojazdu."})
+        if timeline_html_data and timeline_html_data.get("timeline_html"):
+            timeline = parse_timeline_html(timeline_html_data["timeline_html"])
+            return JsonResponse({"success": True, "vin": vin, "timeline": timeline})
+
+        return JsonResponse({"success": False, "message": "Brak danych dla tego pojazdu."})
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)})
     

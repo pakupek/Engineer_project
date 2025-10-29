@@ -1,5 +1,8 @@
 from django.core.management.base import BaseCommand
 from car_history.models import VehicleMake, VehicleModel, VehicleGeneration
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = "Skrypt który dodaje do bazy danych marki i modele pojazdów"
@@ -749,10 +752,12 @@ class Command(BaseCommand):
             try:
                 make_name_clean = make_name.strip()
                 make_obj, created_make = VehicleMake.objects.get_or_create(name=make_name_clean)
+
                 if created_make:
-                    print(f"✅ Utworzono markę: {make_name_clean}")
+                    logger.info(f"✅ Utworzono markę: {make_name_clean}")
                 else:
-                    print(f"ℹ️ Marka już istnieje: {make_name_clean}")
+                    logger.info(f"ℹ️ Marka już istnieje: {make_name_clean}. Pomijam modele tej marki.")
+                    continue  
 
                 for model_name, gens in models.items():
                     model_name_clean = model_name.strip()
@@ -761,16 +766,15 @@ class Command(BaseCommand):
                         name=model_name_clean
                     )
                     if created_model:
-                        print(f"  ✅ Utworzono model: {make_name_clean} {model_name_clean}")
+                        logger.info(f"Utworzono model: {make_name_clean} {model_name_clean}")
                     else:
-                        print(f"  ℹ️ Model już istnieje: {make_name_clean} {model_name_clean}")
+                        logger.info(f"Model już istnieje: {make_name_clean} {model_name_clean}")
 
                     for gen_data in gens:
                         gen_name = gen_data.get("name").strip()
                         start = gen_data.get("production_start")
                         end = gen_data.get("production_end")
 
-                        # Używamy update_or_create, aby zapis działał także dla istniejących generacji
                         generation_obj, created_gen = VehicleGeneration.objects.update_or_create(
                             model=model_obj,
                             name=gen_name,
@@ -781,9 +785,9 @@ class Command(BaseCommand):
                         )
 
                         if created_gen:
-                            print(f"    ✅ Utworzono generację: {make_name_clean} {model_name_clean} {gen_name} ({start}–{end})")
+                            logger.info(f"Utworzono generację: {make_name_clean} {model_name_clean} {gen_name} ({start}–{end})")
                         else:
-                            print(f"    ℹ️ Generacja już istnieje: {make_name_clean} {model_name_clean} {gen_name}")
+                            logger.info(f"Generacja już istnieje: {make_name_clean} {model_name_clean} {gen_name}")
 
             except Exception as e:
-                print(f"❌ Błąd przy marce {make_name}: {e}")
+                logger.error(f"Błąd przy marce {make_name}: {e}")
