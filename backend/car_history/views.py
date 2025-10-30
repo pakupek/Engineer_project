@@ -429,22 +429,32 @@ class VehicleDeleteView(generics.DestroyAPIView):
 _vehicle_history_cache = {}
 
 def get_vehicle_history(rejestracja, vin, rocznik):
+    """
+    Zwraca dane historii i danych technicznych pojazdu — z cache lub scrapując.
+    """
     if vin in _vehicle_history_cache:
+        logger.debug(f"Dane VIN={vin} pobrane z cache.")
         return _vehicle_history_cache[vin]
 
     historia = VehicleHistory(rejestracja, vin, rocznik, ['--headless', '--no-sandbox'])
     result = historia.search()
-    historia.closeBrowser()
 
     if result:
         _vehicle_history_cache[vin] = result
+        logger.debug(f"Zapisano dane VIN={vin} do cache.")
         return result
+
+    logger.warning(f"Nie udało się pobrać danych dla VIN={vin}")
     return None
+
 
 def parse_timeline_html(html):
     """
-    Parsuje HTML osi czasu i zwraca listę słowników
+    Parsuje HTML osi czasu
     """
+    if not html:
+        return []
+
     soup = BeautifulSoup(html, "html.parser")
     timeline = []
 
@@ -456,8 +466,8 @@ def parse_timeline_html(html):
 
         date = date_elem.get_text(strip=True) if date_elem else ""
         title = title_elem.get_text(strip=True) if title_elem else ""
-
         details = {}
+
         for d in detail_elems:
             key_elem = d.select_one(".item-content-details-row-key")
             value_elem = d.select_one(".item-content-details-row-value")
@@ -472,30 +482,52 @@ def parse_timeline_html(html):
             "details": details
         })
 
+    logger.info(f"Sparsowano {len(timeline)} elementów osi czasu.")
     return timeline
+
 
 def vehicle_history(request, vin):
     """
-    Endpoint który zwraca oś czasu dla pojazdu w JSON
+    Endpoint zwraca dane techniczne i oś czasu pojazdu w JSON.
     """
     try:
         vehicle = Vehicle.objects.filter(vin=vin).first()
         if not vehicle:
-            return JsonResponse({"success": False, "message": "Nie znaleziono pojazdu o podanym VIN."})
+            return JsonResponse({
+                "success": False,
+                "message": "Nie znaleziono pojazdu o podanym VIN."
+            })
 
-        timeline_html_data = get_vehicle_history(
+        # Sprawdź cache lub pobierz 
+        data = get_vehicle_history(
             rejestracja=vehicle.registration,
             vin=vehicle.vin,
             rocznik=vehicle.first_registration.strftime("%d%m%Y")
         )
 
-        if timeline_html_data and timeline_html_data.get("timeline_html"):
-            timeline = parse_timeline_html(timeline_html_data["timeline_html"])
-            return JsonResponse({"success": True, "vin": vin, "timeline": timeline})
+        if not data:
+            return JsonResponse({
+                "success": False,
+                "message": "Nie udało się pobrać danych pojazdu."
+            })
 
-        return JsonResponse({"success": False, "message": "Brak danych dla tego pojazdu."})
+        # Parsowanie osi czasu
+        timeline = parse_timeline_html(data.get("timeline_html"))
+        
+
+        return JsonResponse({
+            "success": True,
+            "vin": vin,
+            "technical_data": data.get("technical_data",{}),
+            "timeline": timeline
+        })
+
     except Exception as e:
-        return JsonResponse({"success": False, "error": str(e)})
+        logger.error(f"Błąd w endpointcie vehicle_history: {e}", exc_info=True)
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        })
     
 
 class ServiceEntryListView(generics.ListAPIView):

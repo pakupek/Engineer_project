@@ -3,7 +3,7 @@ import ImageDamageCreate from "./ImageDamageCreate";
 import { getToken } from "../../services/auth";
 import { useParams } from "next/navigation";
 
-export default function DamageForm({ vehicleImage, vehicleId }) {
+export default function DamageForm() {
   const [markers, setMarkers] = useState([]);
   const [selectedSeverity, setSelectedSeverity] = useState("drobne");
   const { vin } = useParams();

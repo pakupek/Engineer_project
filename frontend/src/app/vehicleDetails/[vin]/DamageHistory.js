@@ -8,8 +8,8 @@ export default function DamageHistory() {
   const [loading, setLoading] = useState(true);
   const { vin } = useParams();
 
-  useEffect(() => {
-    const fetchDamageHistory = async () => {
+  
+  const fetchDamageHistory = async () => {
       try {
         const token = getToken();
         const response = await fetch(
@@ -33,7 +33,8 @@ export default function DamageHistory() {
       }
     };
 
-    fetchDamageHistory();
+    useEffect(() => {
+      if (vin) fetchDamageHistory();
   }, [vin]);
 
   if (loading) return <p>Ładowanie historii szkód...</p>;

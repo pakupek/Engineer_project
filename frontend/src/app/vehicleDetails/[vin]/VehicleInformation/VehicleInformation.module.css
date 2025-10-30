@@ -1,11 +1,3 @@
-.hero {
-  position: relative;
-  width: 100%;
-  height: 75vh;
-  overflow: hidden;
-  border-radius: 0 !important;
-}
-
 /* Slider */
 .slider {
   position: relative;
@@ -63,15 +55,6 @@
 }
 
 @media (max-width: 1024px) {
-
-  .hero {
-    position: relative;
-    width: 100%;
-    height: 50vh;
-    overflow: hidden;
-
-  }
-
   .overlay {
     font-size: 22px;
     padding: 0 24px;
