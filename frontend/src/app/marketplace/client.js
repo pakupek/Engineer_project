@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import api from "../services/api";
+import api from "../Services/api";
 import Filters from "./Filters";
 import CarCard from "./CarCard";
 

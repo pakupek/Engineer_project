@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { authService, getCurrentUser } from '../services/auth';
+import { authService, getCurrentUser } from '../Services/auth';
 
 export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);

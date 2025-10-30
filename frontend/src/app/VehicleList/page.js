@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect } from 'react';
 import VehicleList from './VehicleList';
-import { getToken } from "../services/auth";
-import styles from './carList.module.css'; 
+import { getToken } from "../Services/auth";
+import styles from './VehiclePage.module.css'; 
 import DashboardLayout from '../DashboardLayout/page';
 import VehicleFilters from './VehicleFilters';
 
@@ -95,7 +95,7 @@ export default function VehiclesPage() {
         </div>
 
         <div className={styles["button-section"]}>
-          <button className={styles["add-button"]} onClick={() => window.location.href = '/addCar'}>
+          <button className={styles["add-button"]} onClick={() => window.location.href = '/AddVehicle'}>
             Dodaj nowy pojazd
           </button>
         </div>
@@ -105,7 +105,7 @@ export default function VehiclesPage() {
         <VehicleList 
           vehicles={vehicles} 
           onDeleteVehicle={handleDeleteVehicle}
-          onViewDetails={(vehicleVin) => window.location.href = `/vehicleDetails/${vehicleVin}`} 
+          onViewDetails={(vehicleVin) => window.location.href = `/VehicleDetails/${vehicleVin}`} 
         />
       </main>
     </DashboardLayout>

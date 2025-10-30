@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createDiscussion } from "../../services/api";
+import { createDiscussion } from "../../Services/api";
 import styles from './CreateDiscussion.module.css';
 
 export default function CreateDiscussion() {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getToken } from "../../../services/auth";
+import { getToken } from "../../../Services/auth";
 
 export default function ServiceEntryCreate({ vin }){
 

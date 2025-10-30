@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import authService from "../services/auth";
+import authService from "../Services/auth";
 import styles from "./Login.module.css";
 
 export default function Login() {

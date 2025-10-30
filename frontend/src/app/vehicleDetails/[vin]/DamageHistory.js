@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ImageDamageShow from "./ImageDamageCreate";
 import { useParams } from "next/navigation";
-import { getToken } from "../../services/auth";
+import { getToken } from "../../Services/auth";
 
 export default function DamageHistory() {
   const [damageEntries, setDamageEntries] = useState([]);

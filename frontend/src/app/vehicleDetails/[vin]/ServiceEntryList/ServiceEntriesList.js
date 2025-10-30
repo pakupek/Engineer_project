@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getToken } from "../../../services/auth";
+import { getToken } from "../../../Services/auth";
 
 export default function ServiceEntriesList({ vin }) {
     const [serviceEntries, setServiceEntries] = useState([]);

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getToken } from "../services/auth";
-import styles from "./AddCar.module.css"
+import { getToken } from "../Services/auth";
+import styles from "./AddVehicle.module.css"
 import DashboardLayout from '../DashboardLayout/page';
 
 export default function AddVehiclePage() {
@@ -251,7 +251,7 @@ export default function AddVehiclePage() {
         setSelectedGeneration('');
         
         setTimeout(() => {
-           window.location.href = '/carList';
+           window.location.href = '/VehicleList';
         }, 3000);
 
       } else {
@@ -288,7 +288,7 @@ export default function AddVehiclePage() {
     <DashboardLayout>
       <div className={styles["add-vehicle-container"]}>
         <div className={styles["header-section"]}>
-          <Link href="/carList" className={styles["back-link"]}>
+          <Link href="/VehicleList" className={styles["back-link"]}>
             &larr; Powrót do listy pojazdów
           </Link>
           <h1 className={styles["page-title"]}>Dodaj nowy pojazd</h1>

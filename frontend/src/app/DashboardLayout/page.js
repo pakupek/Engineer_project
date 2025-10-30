@@ -24,7 +24,7 @@ export default function DashboardLayout({ onLogout, loading, user, children }) {
             <Settings size={20} /> <span>Edytuj profil</span>
           </a>
 
-          <a href="/carList" className={`${styles.navLink} ${ pathname === "/carList" ? styles.active : "" }`}>
+          <a href="/VehicleList" className={`${styles.navLink} ${ pathname === "/VehicleList" ? styles.active : "" }`}>
             <Settings size={20} /> <span>Moje pojazdy</span>
           </a>
         </nav>

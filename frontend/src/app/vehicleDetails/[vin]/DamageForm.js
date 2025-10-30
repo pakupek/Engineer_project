@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import ImageDamageCreate from "./ImageDamageCreate";
-import { getToken } from "../../services/auth";
+import { getToken } from "../../Services/auth";
 import { useParams } from "next/navigation";
 
 export default function DamageForm() {

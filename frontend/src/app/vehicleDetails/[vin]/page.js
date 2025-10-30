@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { getToken } from "../../services/auth";
-import styles from "./vehicleDetails.module.css";
+import { getToken } from "../../Services/auth";
+import styles from "./VehicleDetails.module.css";
 
 // Importy komponentów
 import DamageForm from "./DamageForm";
