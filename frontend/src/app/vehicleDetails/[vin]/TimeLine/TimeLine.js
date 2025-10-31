@@ -4,9 +4,6 @@ import React, { useEffect, useState } from "react";
 import "./TimeLine.css"; 
 
 
-
-gsap.registerPlugin(ScrollTrigger);
-
 const Timeline = ({ vin }) => {
   const [timeline, setTimeline] = useState([]);
   const [loading, setLoading] = useState(false);

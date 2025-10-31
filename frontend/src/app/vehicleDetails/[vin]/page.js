@@ -8,10 +8,10 @@ import sectionStyle from "./SectionStyle.module.css"
 
 // Importy komponentów
 import DamageForm from "./DamageForm/DamageForm";
-import DamageHistory from "./DamageHistory";
+import DamageHistory from "./DamageHistory/DamageHistory";
 import Timeline from "./TimeLine/TimeLine";
 import TechnicalData from "./TechnicalData/TechnicalData";
-import ServiceEntriesList from "./ServiceEntryList/ServiceEntriesList";
+import ServiceEntriesList from "./ServiceEntryList/ServiceEntryList";
 import ServiceEntryCreate from "./ServiceEntryCreate/ServiceEntryCreate";
 import VehicleImages from "./VehicleImages/VehicleImages";
 import { VehicleInformation, VehicleInformationOverlay } from "./VehicleInformation/VehicleInformation";
@@ -123,7 +123,6 @@ export default function CarDetails() {
               <div className={sectionStyle["vehicle-right"]}>
                 {/* Suwak: Serwis */}
                 <div className={sectionStyle["card-section dark"]}>
-                  <h3 className={sectionStyle["card-title"]}>Historia serwisowa</h3>
                   <div className={sectionStyle["scroll-container"]}>
                     <ServiceEntriesList vin={vin} />
                   </div>
@@ -131,7 +130,6 @@ export default function CarDetails() {
 
                 {/* Suwak: Uszkodzenia */}
                 <div className={sectionStyle["card-section yellow"]}>
-                  <h3 className={sectionStyle["card-title"]}>Historia szkód</h3>
                   <div className={sectionStyle["scroll-container"]}>
                     <DamageHistory vin={vin} />
                   </div>
