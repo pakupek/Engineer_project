@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { getToken } from "../../../Services/auth";
+import style from "./ServiceEntry.module.css";
 
 export default function ServiceEntryCreate({ vin }){
 
@@ -43,75 +44,41 @@ export default function ServiceEntryCreate({ vin }){
 
     return(
         
-        <div className="max-w-xl mx-auto p-6 mt-10 bg-white rounded-2xl shadow-md">
-        {/* Formularz dodawania wpisu serwisowego */}
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Dodaj wpis serwisowy</h2>
+        <div className={style["service-form"]}>
+            <h2 className={style["form-title"]}>Dodaj wpis serwisowy</h2>
 
-            <form onSubmit={handleAddServiceEntry} className="space-y-4">
-                {/* Pole opisu */}
-                <div>
-                    <label className="block font-medium text-gray-700 mb-1">Opis serwisu *</label>
-                    <textarea
-                    name="description"
-                    rows="3"
-                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
-                    placeholder="Wymiana oleju, filtrów, klocków hamulcowych..."
-                    required
-                />
+            <form onSubmit={handleAddServiceEntry} className={style["form-container"]}>
+                {/* Opis serwisu */}
+                <div className={style["form-group"]}>
+                    <label>Opis serwisu *</label>
+                    <textarea name="description" rows="3" placeholder="Wymiana oleju, filtrów, klocków hamulcowych..." required></textarea>
                 </div>
 
-                {/* Pole przebiegu */}
-                <div>
-                    <label className="block font-medium text-gray-700 mb-1">Przebieg (km) *</label>
-                    <input
-                    type="number"
-                    name="mileage"
-                    min="0"
-                    required
-                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
-                    />
+                {/* Przebieg */}
+                <div className={style["form-group"]}>
+                    <label>Przebieg (km) *</label>
+                    <input type="number" name="mileage" min="0" required />
                 </div>
 
-                {/* Pole daty */}
-                <div>
-                    <label className="block font-medium text-gray-700 mb-1">Data wykonania *</label>
-                    <input
-                    type="date"
-                    name="date"
-                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
-                    required
-                    />
+                {/* Data */}
+                <div className={style["form-group"]}>
+                    <label>Data wykonania *</label>
+                    <input type="date" name="date" required />
                 </div>
 
-                {/* Pole kosztu */}
-                <div>
-                    <label className="block font-medium text-gray-700 mb-1">Koszt (PLN)</label>
-                    <input
-                    type="number"
-                    name="cost"
-                    min="0"
-                    step="0.01"
-                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
-                    />
+                {/* Koszt */}
+                <div className={style["form-group"]}>
+                    <label>Koszt (PLN)</label>
+                    <input type="number" name="cost" min="0" step="0.01" />
                 </div>
 
-                {/* Pole zdjęcia faktury */}
-                <div>
-                    <label className="block font-medium text-gray-700 mb-1">Zdjęcie faktury</label>
-                    <input
-                    type="file"
-                    name="invoice_image"
-                    accept="image/*"
-                    className="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-500"
-                    />
+                {/* Faktura */}
+                <div className={style["form-group"]}>
+                    <label>Zdjęcie faktury</label>
+                    <input type="file" name="invoice_image" accept="image/*" />
                 </div>
 
-                <button
-                    type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg"
-                >
-                    Dodaj wpis
-                </button>
+                <button type="submit" className={style["submit-btn"]}> Dodaj wpis </button>
             </form>
         </div>
     )

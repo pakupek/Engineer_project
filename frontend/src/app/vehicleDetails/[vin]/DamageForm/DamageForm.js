@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import ImageDamageCreate from "./ImageDamageCreate";
-import { getToken } from "../../Services/auth";
+import ImageDamageCreate from "../ImageDamageCreate";
+import { getToken } from "../../../Services/auth";
 import { useParams } from "next/navigation";
+import style from "./DamageForm.module.css"
 
 export default function DamageForm() {
   const [markers, setMarkers] = useState([]);
@@ -52,14 +53,15 @@ export default function DamageForm() {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6 mt-8 bg-white rounded-2xl shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Zgłoś uszkodzenie</h2>
+    <div className={style["damage-form"]}>
+      <h2 className={style["form-title"]}>Zgłoś uszkodzenie</h2>
 
-      <div className="mb-4">
-        <label className="mr-2 font-medium">Stopień uszkodzenia:</label>
+      <div className={style["form-group"]}>
+        <label>Stopień uszkodzenia:</label>
         <select
           value={selectedSeverity}
           onChange={(e) => setSelectedSeverity(e.target.value)}
+          className={style["severity-select"]}
         >
           <option value="drobne">Drobne</option>
           <option value="umiarkowane">Umiarkowane</option>
@@ -67,33 +69,35 @@ export default function DamageForm() {
         </select>
       </div>
 
-      <p className="text-sm text-gray-600 mb-2">
+      <p className={style["info-text"]}>
         Kliknij na obraz poniżej, aby wskazać miejsce uszkodzenia.
       </p>
 
-      <ImageDamageCreate
-        src="https://previews.123rf.com/images/galimovma79/galimovma791605/galimovma79160500023/58812879-auto-linienziehbaren-versicherungssch%C3%A4den-zustand-form.jpg"
-        markers={markers}
-        onClickPosition={handleAddMarker}
-      />
+      <div className={style["image-container"]}>
+        <ImageDamageCreate
+          src="https://previews.123rf.com/images/galimovma79/galimovma791605/galimovma79160500023/58812879-auto-linienziehbaren-versicherungssch%C3%A4den-zustand-form.jpg"
+          markers={markers}
+          onClickPosition={handleAddMarker}
+        />
+      </div>
 
-      <form onSubmit={handleAddDamage} className="space-y-4 mt-4">
-        <div>
-          <label className="block text-sm font-medium">Data</label>
-          <input type="date" name="date" required className="w-full border rounded p-2" />
+      <form onSubmit={handleAddDamage} className={style["form-container"]}>
+        <div className={style["form-group"]}>
+          <label>Data</label>
+          <input type="date" name="date" required />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium">Opis</label>
-          <textarea name="description" rows="3" className="w-full border rounded p-2" />
+        <div className={style["form-group"]}>
+          <label>Opis</label>
+          <textarea name="description" rows="3" placeholder="Opisz uszkodzenie..." />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium">Zdjęcie</label>
-          <input type="file" name="photos" accept="image/*" className="w-full" />
+        <div className={style["form-group"]}>
+          <label>Zdjęcie</label>
+          <input type="file" name="photos" accept="image/*" />
         </div>
 
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
+        <button type="submit" className={style["submit-btn"]}>
           Zgłoś uszkodzenie
         </button>
       </form>

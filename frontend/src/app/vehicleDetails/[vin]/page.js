@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { getToken } from "../../Services/auth";
 import styles from "./VehicleDetails.module.css";
+import sectionStyle from "./SectionStyle.module.css"
 
 // Importy komponentów
-import DamageForm from "./DamageForm";
+import DamageForm from "./DamageForm/DamageForm";
 import DamageHistory from "./DamageHistory";
 import Timeline from "./TimeLine/TimeLine";
 import TechnicalData from "./TechnicalData/TechnicalData";
@@ -21,6 +22,11 @@ export default function CarDetails() {
   const [loading, setLoading] = useState(true);
   const [showMore, setShowMore] = useState(false);
   const [error, setError] = useState(null);
+  const [openSection, setOpenSection] = useState(null);
+
+  const toggleSection = (section) => {
+    setOpenSection(openSection === section ? null : section);
+  };
 
   // Jedno zapytanie do API
   useEffect(() => {
@@ -68,10 +74,71 @@ export default function CarDetails() {
         <>
           <TechnicalData vin={vin} />
           <Timeline vin={vin} />
-          <ServiceEntriesList vin={vin} />
-          <ServiceEntryCreate vin={vin} />
-          <DamageForm/>
-          <DamageHistory/>
+          
+          
+          <section className={sectionStyle["vehicle-history"]}>
+            <div className={sectionStyle["vehicle-history-container"]}>
+              {/* LEWA STRONA */}
+              <div className={sectionStyle["vehicle-left"]}>
+                <h2 className={sectionStyle["vehicle-title"]}>Historia pojazdu</h2>
+                <p className={sectionStyle["vehicle-subtitle"]}>
+                  Sprawdź przeszłość swojego auta — naprawy, przeglądy i uszkodzenia.
+                  Dodawaj nowe wpisy i śledź stan pojazdu w jednym miejscu.
+                </p>
+
+                {/* Sekcja serwisowa */}
+                <div className={sectionStyle["accordion"]}>
+                  <button
+                    onClick={() => toggleSection("service")}
+                    className={sectionStyle["accordion-button"]}
+                  >
+                    <span className={sectionStyle["accordion-title"]}>🧰 Historia serwisowa</span>
+                    <span>{openSection === "service" ? "−" : "+"}</span>
+                  </button>
+                  {openSection === "service" && (
+                    <div className={sectionStyle["accordion-content"]}>
+                      <ServiceEntryCreate vin={vin} />
+                    </div>
+                  )}
+                </div>
+
+                {/* Sekcja uszkodzeń */}
+                <div className={sectionStyle["accordion"]}>
+                  <button
+                    onClick={() => toggleSection("damage")}
+                    className={sectionStyle["accordion-button"]}
+                  >
+                    <span className={sectionStyle["accordion-title"]}>🚗 Historia szkód</span>
+                    <span>{openSection === "damage" ? "−" : "+"}</span>
+                  </button>
+                  {openSection === "damage" && (
+                    <div className={sectionStyle["accordion-content"]}>
+                      <DamageForm vin={vin} />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* PRAWA STRONA */}
+              <div className={sectionStyle["vehicle-right"]}>
+                {/* Suwak: Serwis */}
+                <div className={sectionStyle["card-section dark"]}>
+                  <h3 className={sectionStyle["card-title"]}>Historia serwisowa</h3>
+                  <div className={sectionStyle["scroll-container"]}>
+                    <ServiceEntriesList vin={vin} />
+                  </div>
+                </div>
+
+                {/* Suwak: Uszkodzenia */}
+                <div className={sectionStyle["card-section yellow"]}>
+                  <h3 className={sectionStyle["card-title"]}>Historia szkód</h3>
+                  <div className={sectionStyle["scroll-container"]}>
+                    <DamageHistory vin={vin} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </>
       )}
     </>

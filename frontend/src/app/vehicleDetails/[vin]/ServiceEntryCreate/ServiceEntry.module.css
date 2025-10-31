@@ -1,0 +1,83 @@
+.service-form {
+  background: linear-gradient(180deg, #0d0d0d 0%, #1a1a1a 100%);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  max-width: 600px;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+}
+
+.form-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #333;
+  padding-bottom: 8px;
+  text-align: center;
+  color: #ffcc00;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Pola formularza */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #ccc;
+}
+
+.form-group input,
+.form-group textarea {
+  background-color: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #fff;
+  font-size: 15px;
+  transition: border 0.2s ease, background-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #ffcc00;
+  background-color: #141414;
+  outline: none;
+}
+
+.form-group input[type="file"] {
+  border: none;
+  padding: 0;
+}
+
+/* Przycisk */
+.submit-btn {
+  background-color: #ffcc00;
+  color: #000;
+  font-weight: 700;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.submit-btn:hover {
+  background-color: #e6b800;
+  transform: translateY(-2px);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
