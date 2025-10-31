@@ -1,5 +1,11 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
-import styles from "./TimeLine.module.css"; 
+import "./TimeLine.css"; 
+
+
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Timeline = ({ vin }) => {
   const [timeline, setTimeline] = useState([]);
@@ -30,19 +36,48 @@ const Timeline = ({ vin }) => {
     fetchHistory();
   }, [vin]);
 
+
   if (loading) return <p>Ładowanie osi czasu...</p>;
   if (error) return <p className="error">{error}</p>;
   if (!timeline.length) return <p>Brak danych do wyświetlenia.</p>;
 
   return (
-    <div className={styles["timeline-container"]}>
+    <section id="cd-timeline" className="cd-container">
       {timeline.map((item, index) => (
-        <div key={index} className={styles["timeline-item"]}>
-          <div className={styles["timeline-date"]}>{item.date}</div>
-          <div className={styles["timeline-content"]}>
-            <div className={styles["timeline-title"]}>{item.title}</div>
+        <div key={index} className="cd-timeline-block">
+          
+          
+          <div className={`cd-timeline-img ${item.iconClass || "cd-picture"}`}>
+          </div>
+
+          <div className="cd-timeline-content">
+         
+            <h2>{item.title}</h2>
+
+          
+            {item.info && (
+              <div className="timeline-content-info">
+                {item.info.title && (
+                  <span className="timeline-content-info-title">
+                    <i className="fa fa-certificate" aria-hidden="true"></i>
+                    {item.info.title}
+                  </span>
+                )}
+                {item.info.date && (
+                  <span className="timeline-content-info-date">
+                    <i className="fa fa-calendar-o" aria-hidden="true"></i>
+                    {item.info.date}
+                  </span>
+                )}
+              </div>
+            )}
+
+          
+            <p>{item.description}</p>
+
+            
             {item.details && Object.keys(item.details).length > 0 && (
-              <ul className={styles["timeline-details"]}>
+              <ul className="content-skills">
                 {Object.entries(item.details).map(([key, value], idx) => (
                   <li key={idx}>
                     <strong>{key}:</strong> {value}
@@ -50,10 +85,14 @@ const Timeline = ({ vin }) => {
                 ))}
               </ul>
             )}
+
+            {item.date && !item.info?.date && (
+              <span className="cd-date">{item.date}</span>
+            )}
           </div>
         </div>
       ))}
-    </div>
+    </section>
   );
 };
 
