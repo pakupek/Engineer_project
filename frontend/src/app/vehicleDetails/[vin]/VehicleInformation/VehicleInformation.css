@@ -1,0 +1,149 @@
+.car-info-section {
+  display: flex;
+  flex-wrap: wrap;
+  border-radius: 20px;
+  padding: 30px;
+  gap: 25px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  justify-content: space-between;
+  align-items: flex-start;
+  color: #f1f1f1;
+  transition: all 0.3s ease;
+}
+
+.car-info-section:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
+}
+
+.car-info-block {
+  flex: 1 1 200px;
+  min-width: 220px;
+}
+
+.car-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+.car-description {
+  font-size: 0.95rem;
+  color: #cccccc;
+  margin-bottom: 10px;
+}
+
+.car-loadmore-btn {
+  background: none;
+  border: none;
+  color: #4fc3f7;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.car-loadmore-btn:hover {
+  color: #81d4fa;
+  text-decoration: underline;
+}
+
+.car-subtitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #e0e0e0;
+}
+
+.car-subtext {
+  font-size: 0.9rem;
+  color: #a9a9a9;
+  margin-bottom: 8px;
+}
+
+.car-color-list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.car-color-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #2a2a2a;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.car-color-circle:hover {
+  transform: scale(1.1);
+}
+
+.car-interior-tag {
+  display: inline-block;
+  background-color: #1c1c1c;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #d6d6d6;
+}
+
+.car-wheel-size {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-top: 10px;
+}
+
+.car-value-block {
+  flex: 1 1 200px;
+  text-align: right;
+}
+
+.car-price {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-top: 5px;
+  color: #fc0;
+}
+
+.car-btn-group {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.car-btn {
+  background: transparent;
+  border: 1px solid #3a3a3a;
+  color: #ffffff;
+  padding: 8px 14px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.car-btn:hover {
+  background-color: #222;
+  border-color: #fc0;
+  color: #fc0;
+}
+
+.car-btn.danger:hover {
+  border-color: #ff5252;
+  color: #ff5252;
+}
+
+@media (max-width: 1024px) {
+  .car-info-section {
+    flex-direction: column;
+    text-align: left;
+  }
+
+  .car-value-block {
+    text-align: left;
+  }
+}

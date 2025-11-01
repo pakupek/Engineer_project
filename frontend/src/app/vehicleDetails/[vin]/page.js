@@ -59,7 +59,14 @@ export default function CarDetails() {
   if (!car) return <div className="p-6 text-gray-500">Nie znaleziono danych pojazdu.</div>;
 
   return (
-    <>
+    
+    <div style={{ background: "linear-gradient(to bottom, white, black)",
+      minHeight: "100vh",
+      backgroundAttachment: "fixed",
+      backgroundRepeat: "no-repeat",
+      backgroundSize: "cover",
+      paddingBottom: "40px", }}>
+
       {/* Slider z obrazami auta */}
       <div className={styles.hero}>
         <VehicleImages car={car} />
@@ -139,6 +146,6 @@ export default function CarDetails() {
           </section>
         </>
       )}
-    </>
+    </div>
   );
 }

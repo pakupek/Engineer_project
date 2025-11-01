@@ -1,7 +1,7 @@
 .vehicle-history {
   width: 100%;
   min-height: 100vh;
-  background-color: #000;
+  background-color: transparent;
   color: #fff;
   padding: 80px 40px;
   overflow: hidden;
@@ -26,6 +26,12 @@
 .vehicle-left {
   display: flex;
   flex-direction: column;
+  border-radius: 16px;
+  padding: 32px;
+  overflow: hidden;
+  box-shadow: 0 0 20px #00000080;
+  max-height: fit-content;
+  background: linear-gradient(#0d0d0d 0%, #1a1a1a 100%);
 }
 
 .vehicle-title {

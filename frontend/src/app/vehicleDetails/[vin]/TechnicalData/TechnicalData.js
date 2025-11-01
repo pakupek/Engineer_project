@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import "./TechnicalData.css";
 
 export default function TechnicalData({ vin }) {
     const [technicalData, setTechnicalData] = useState(null);
@@ -23,22 +24,28 @@ export default function TechnicalData({ vin }) {
       }, [vin]);
 
     return (
-        <div className="w-full mt-6 bg-gray-50 rounded-2xl shadow p-6">
-            <h3 className="text-xl font-semibold mb-4">Dane techniczne pojazdu</h3>
-            {technicalData ? (
-              <ul className="list-disc pl-6 text-gray-600 space-y-2">
-                <li>Pojemność silnika: {technicalData.engine_capacity}</li>
-                <li>Moc silnika: {technicalData.engine_power}</li>
-                <li>Norma euro: {technicalData.euro_norm}</li>
-                <li>Liczba miejsc ogółem: {technicalData.seats_total}</li>
-                <li>Masa własna pojazdu: {technicalData.mass_own}</li>
-                <li>Dopuszczalna masa całkowita: {technicalData.mass_total}</li>
-                <li>Maks. masa całkowita przyczepy z hamulcem: {technicalData.trailer_with_brake}</li>
-                <li>Maks. masa całkowita przyczepy bez hamulca: {technicalData.trailer_without_brake}</li>
-              </ul>
-            ) : (
-              <p>Ładowanie danych technicznych...</p>
-            )}
+        <div className="technical-section">
+          <h3 className="technical-title">Dane techniczne pojazdu</h3>
+          {technicalData ? (
+            <ul className="technical-list">
+              <li>Pojemność silnika: {technicalData.engine_capacity}</li>
+              <li>Moc silnika: {technicalData.engine_power}</li>
+              <li>Norma euro: {technicalData.euro_norm}</li>
+              <li>Liczba miejsc ogółem: {technicalData.seats_total}</li>
+              <li>Masa własna pojazdu: {technicalData.mass_own}</li>
+              <li>Dopuszczalna masa całkowita: {technicalData.mass_total}</li>
+              <li>
+                Maks. masa całkowita przyczepy z hamulcem:{" "}
+                {technicalData.trailer_with_brake}
+              </li>
+              <li>
+                Maks. masa całkowita przyczepy bez hamulca:{" "}
+                {technicalData.trailer_without_brake}
+              </li>
+            </ul>
+          ) : (
+            <p className="technical-loading">Ładowanie danych technicznych...</p>
+          )}
         </div>
     );
 }
