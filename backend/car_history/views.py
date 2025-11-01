@@ -40,7 +40,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.shortcuts import get_object_or_404
 from django.http import Http404, JsonResponse
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import logging, shutil, os
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
@@ -530,45 +530,37 @@ def vehicle_history(request, vin):
         })
     
 
-class ServiceEntryListView(generics.ListAPIView):
+class ServiceEntryView(generics.GenericAPIView):
     """
-    Widok do pobierania listy wpisów serwisowych
+    - GET: pobranie listy wpisów serwisowych dla danego VIN
+    - POST: dodanie nowego wpisu
+    - PATCH: edycję istniejącego wpisu
+    - DELETE: usunięcie wpisu
     """
 
     serializer_class = ServiceEntrySerializer
-    
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
+
     def get_queryset(self):
         vin = self.kwargs.get("vin")
-        return ServiceEntry.objects.filter(vehicle__vin=vin).order_by('-date')
+        return ServiceEntry.objects.filter(vehicle__vin=vin).order_by("-date")
 
+    # GET
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
-class ServiceEntryCreateView(generics.CreateAPIView):
-    """
-    Widok do tworzenia wpisów serwisowych
-    """
-
-    serializer_class = ServiceEntrySerializer
-    parser_classes = (MultiPartParser, FormParser)
-
-
-    def create(self, request, *args, **kwargs):
+    # POST
+    def post(self, request, *args, **kwargs):
         vin = self.kwargs.get("vin")
         logger.info(f"Creating service entry for VIN: {vin}")
-        
-        try:
-            vehicle = Vehicle.objects.get(vin=vin)
-        except Vehicle.DoesNotExist:
-            return Response(
-                {"success": False, "message": "Nie znaleziono pojazdu o podanym VIN"},
-                status=status.HTTP_404_NOT_FOUND
-            )
+
+        vehicle = get_object_or_404(Vehicle, vin=vin)
 
         serializer = self.get_serializer(data=request.data)
-        
         if serializer.is_valid():
-            # Zapisujemy z vehicle
             service_entry = serializer.save(vehicle=vehicle)
-            
             return Response({
                 "success": True,
                 "message": "Wpis serwisowy został dodany pomyślnie",
@@ -581,6 +573,44 @@ class ServiceEntryCreateView(generics.CreateAPIView):
                 "errors": serializer.errors
             }, status=status.HTTP_400_BAD_REQUEST)
 
+    # PATCH
+    def patch(self, request, *args, **kwargs):
+        vin = self.kwargs.get("vin")
+        entry_id = self.kwargs.get("entry_id")
+
+        try:
+            entry = ServiceEntry.objects.get(id=entry_id, vehicle__vin=vin)
+        except ServiceEntry.DoesNotExist:
+            return Response({"success": False, "message": "Nie znaleziono wpisu"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(entry, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+
+        print("❌ Błędy walidacji PATCH:", serializer.errors)  # 🔍 DODAJ TO
+        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    # DELETE
+    def delete(self, request, *args, **kwargs):
+        vin = self.kwargs.get("vin")
+        entry_id = self.kwargs.get("entry_id")
+
+        try:
+            entry = ServiceEntry.objects.get(id=entry_id, vehicle__vin=vin)
+        except ServiceEntry.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Nie znaleziono wpisu serwisowego dla podanego VIN i ID"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        entry.delete()
+        return Response(
+            {"success": True, "message": "Wpis serwisowy został usunięty"},
+            status=status.HTTP_200_OK
+        )
+
+        
 
 class DamageEntryCreateView(generics.CreateAPIView):
     queryset = DamageEntry.objects.all()

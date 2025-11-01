@@ -23,6 +23,15 @@ export default function CarDetails() {
   const [showMore, setShowMore] = useState(false);
   const [error, setError] = useState(null);
   const [openSection, setOpenSection] = useState(null);
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0); 
+
+  const handleEditEntry = (entry) => setEditingEntry(entry);
+
+  const handleSave = () => {
+    setEditingEntry(null);
+    setReloadKey((prev) => prev + 1);
+  };
 
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section);
@@ -104,7 +113,7 @@ export default function CarDetails() {
                   </button>
                   {openSection === "service" && (
                     <div className={sectionStyle["accordion-content"]}>
-                      <ServiceEntryCreate vin={vin} />
+                      <ServiceEntryCreate vin={vin} editingEntry={editingEntry} onSave={handleSave} />
                     </div>
                   )}
                 </div>
@@ -131,7 +140,7 @@ export default function CarDetails() {
                 {/* Suwak: Serwis */}
                 <div className={sectionStyle["card-section dark"]}>
                   <div className={sectionStyle["scroll-container"]}>
-                    <ServiceEntriesList vin={vin} />
+                    <ServiceEntriesList vin={vin} key={reloadKey} onEditEntry={handleEditEntry} />
                   </div>
                 </div>
 

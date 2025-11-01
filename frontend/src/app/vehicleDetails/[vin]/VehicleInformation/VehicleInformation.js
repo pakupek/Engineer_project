@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "./VehicleInformationOverlay.module.css";
+import styles from "./VehicleInformation.module.css";
 import "./VehicleInformation.css";
 
 export function VehicleInformationOverlay({ car }){
