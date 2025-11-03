@@ -25,52 +25,45 @@ export default function RootLayout({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 
         {/* CSS */}
+        <link rel="stylesheet" href="/css/mobirise2.css" />
+
         <link
           rel="stylesheet"
-          href="https://ai.mobirise.com/assets/startm5/web/assets/mobirise-icons2/mobirise2.css?v=m3frcrn2"
+          href="/css/jarallax.css"
         />
         <link
           rel="stylesheet"
-          href="https://ai.mobirise.com/assets/startm5/parallax/jarallax.css?v=m3frcrn2"
+          href="/css/bootstrap.min.css"
         />
         <link
           rel="stylesheet"
-          href="https://ai.mobirise.com/assets/startm5/bootstrap/css/bootstrap.min.css?v=m3frcrn2"
+          href="/css/bootstrap-grid.min.css"
         />
         <link
           rel="stylesheet"
-          href="https://ai.mobirise.com/assets/startm5/bootstrap/css/bootstrap-grid.min.css?v=m3frcrn2"
+          href="/css/bootstrap-reboot.min.css"
         />
         <link
           rel="stylesheet"
-          href="https://ai.mobirise.com/assets/startm5/bootstrap/css/bootstrap-reboot.min.css?v=m3frcrn2"
+          href="/css/style.css"
         />
         <link
           rel="stylesheet"
-          href="https://ai.mobirise.com/assets/startm5/dropdown/css/style.css?v=m3frcrn2"
+          href="/css/styles.css"
         />
         <link
           rel="stylesheet"
-          href="https://ai.mobirise.com/assets/startm5/socicon/css/styles.css?v=m3frcrn2"
+          href="/css/animate.css"
         />
         <link
           rel="stylesheet"
-          href="https://ai.mobirise.com/assets/startm5/animatecss/animate.css?v=m3frcrn2"
+          href="/css/style2.css"
         />
         <link
           rel="stylesheet"
-          href="https://ai.mobirise.com/assets/startm5/theme/css/style.css?v=m3frcrn2"
+          href="/css/css2.css"
         />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;700&display=swap"
-        />
-        <noscript>
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;700&display=swap"
-          />
-        </noscript>
+        
         <link
           rel="stylesheet"
           href="/css/additional.css"

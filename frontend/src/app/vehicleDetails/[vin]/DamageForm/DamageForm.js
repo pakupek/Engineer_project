@@ -47,7 +47,7 @@ export default function DamageForm({
 
       <div className={style["image-container"]}>
         <ImageDamageCreate
-          src="https://previews.123rf.com/images/galimovma79/galimovma791605/galimovma79160500023/58812879-auto-linienziehbaren-versicherungssch%C3%A4den-zustand-form.jpg"
+          src="/images/auto-linienziehbaren.jpg"
           markers={markers}
           onClickPosition={handleAddMarker}
         />

@@ -32,7 +32,7 @@ export default function DamageHistoryForm({ damageEntries, handleDelete, onEditD
         
                         <div className="damage-image">
                           <ImageDamageShow
-                            src="https://previews.123rf.com/images/galimovma79/galimovma791605/galimovma79160500023/58812879-auto-linienziehbaren-versicherungssch%C3%A4den-zustand-form.jpg"
+                            src="/images/auto-linienziehbaren.jpg"
                             markers={markers}
                           />
                         </div>
