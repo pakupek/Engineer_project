@@ -1,7 +1,7 @@
 import "./DamageHistory.css";
 import ImageDamageShow from "../ImageDamageCreate";
 
-export default function DamageHistoryForm({ damageEntries, handleDelete}){
+export default function DamageHistoryForm({ damageEntries, handleDelete, onEditDamage}){
     return(
         <div className="damage-history">
               <h2 className="history-title">Historia uszkodzeń</h2>
@@ -39,6 +39,7 @@ export default function DamageHistoryForm({ damageEntries, handleDelete}){
         
                         <div className="actions">
                           <button onClick={() => handleDelete(entry.id)}>🗑 Usuń</button>
+                          <button onClick={() => onEditDamage(entry)}>✏️ Edytuj</button>
                         </div>
                       </div>
                     </div>

@@ -1,13 +1,27 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { getToken } from "../../../Services/auth";
 import DamageForm from "./DamageForm";
 
-export default function DamageFormContainer() {
+export default function DamageFormContainer({ damageToEdit, onEditComplete}) {
   const { vin } = useParams();
   const [markers, setMarkers] = useState([]);
   const [selectedSeverity, setSelectedSeverity] = useState("drobne");
+
+  // 📌 Wczytaj istniejące markery przy edycji
+  useEffect(() => {
+    if (damageToEdit) {
+      // Głębokie skopiowanie tablicy markerów (aby zachować referencje)
+      const existingMarkers = damageToEdit.markers
+        ? JSON.parse(JSON.stringify(damageToEdit.markers))
+        : [];
+      setMarkers(existingMarkers);
+      setSelectedSeverity(existingMarkers?.[0]?.severity || "drobne");
+    } else {
+      setMarkers([]);
+    }
+  }, [damageToEdit]);
 
   // Dodawanie markera (kliknięcie na obrazku)
   const handleAddMarker = ({ x, y }) => {
@@ -25,29 +39,37 @@ export default function DamageFormContainer() {
     const formData = new FormData(e.target);
 
     formData.append("vin", vin);
-    formData.append("markers", JSON.stringify(markers));
+    formData.append("markers", JSON.stringify(markers)); // zawsze wysyłamy aktualne markery
+
+    const token = getToken();
+    const isEditing = Boolean(damageToEdit);
+
+    const url = isEditing
+      ? `http://localhost:8000/api/damage-entry/${vin}/${damageToEdit.id}/`
+      : `http://localhost:8000/api/damage-entry/${vin}/`;
+
+    const method = isEditing ? "PATCH" : "POST";
 
     try {
-      const token = getToken();
-      const response = await fetch(`http://localhost:8000/api/damage-entry/${vin}/`, {
-        method: "POST",
+      const response = await fetch(url, {
+        method,
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error(errorData);
-        alert("❌ Nie udało się dodać szkody");
+        const err = await response.json();
+        console.error("❌ Błąd API:", err);
+        alert("❌ Operacja nie powiodła się");
         return;
       }
 
-      alert("✅ Szkoda została dodana!");
+      alert(isEditing ? "✅ Zmiany zapisane!" : "✅ Szkoda dodana!");
       e.target.reset();
       setMarkers([]);
-      
+      onEditComplete?.(); // odświeżenie listy szkód
     } catch (err) {
-      console.error(err);
+      console.error("❌ Błąd połączenia:", err);
       alert("❌ Błąd połączenia z serwerem");
     }
   };
@@ -59,6 +81,7 @@ export default function DamageFormContainer() {
       markers={markers}
       selectedSeverity={selectedSeverity}
       setSelectedSeverity={setSelectedSeverity}
+      damageToEdit={damageToEdit}
     />
   );
 }

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import ImageDamageCreate from "../ImageDamageCreate";
-import style from "./DamageForm.module.css"
+import style from "./DamageForm.module.css";
 
 export default function DamageForm({
   handleAddDamage,
@@ -8,11 +8,25 @@ export default function DamageForm({
   markers,
   selectedSeverity,
   setSelectedSeverity,
+  damageToEdit,
 }) {
+  const dateRef = useRef(null);
+  const descriptionRef = useRef(null);
+
+  // Ustaw dane edycji w polach formularza
+  useEffect(() => {
+    if (damageToEdit) {
+      if (dateRef.current) dateRef.current.value = damageToEdit.date || "";
+      if (descriptionRef.current)
+        descriptionRef.current.value = damageToEdit.description || "";
+    }
+  }, [damageToEdit]);
 
   return (
     <div className={style["damage-form"]}>
-      <h2 className={style["form-title"]}>Zgłoś uszkodzenie</h2>
+      <h2 className={style["form-title"]}>
+        {damageToEdit ? "Edytuj uszkodzenie" : "Zgłoś uszkodzenie"}
+      </h2>
 
       <div className={style["form-group"]}>
         <label>Stopień uszkodzenia:</label>
@@ -42,12 +56,17 @@ export default function DamageForm({
       <form onSubmit={handleAddDamage} className={style["form-container"]}>
         <div className={style["form-group"]}>
           <label>Data</label>
-          <input type="date" name="date" required />
+          <input type="date" name="date" ref={dateRef} required />
         </div>
 
         <div className={style["form-group"]}>
           <label>Opis</label>
-          <textarea name="description" rows="3" placeholder="Opisz uszkodzenie..." />
+          <textarea
+            name="description"
+            rows="3"
+            placeholder="Opisz uszkodzenie..."
+            ref={descriptionRef}
+          />
         </div>
 
         <div className={style["form-group"]}>
@@ -56,7 +75,7 @@ export default function DamageForm({
         </div>
 
         <button type="submit" className={style["submit-btn"]}>
-          Zgłoś uszkodzenie
+          {damageToEdit ? "Zapisz zmiany" : "Zgłoś uszkodzenie"}
         </button>
       </form>
     </div>

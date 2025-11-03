@@ -3,10 +3,11 @@ import { useParams } from "next/navigation";
 import { getToken } from "../../../Services/auth";
 import DamageHistoryForm from "./DamageHistoryForm";
 
-export default function DamageHistory() {
+export default function DamageHistory({ onEditDamage }) {
   const [damageEntries, setDamageEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const { vin } = useParams();
+  const [editingDamage, setEditingDamage] = useState(null);
   
 
   const fetchDamageHistory = async () => {
@@ -58,12 +59,25 @@ export default function DamageHistory() {
     }
   };
 
+
+  // Obsługa kliknięcia "Edytuj"
+  const handleEdit = (damage) => {
+    setEditingDamage(damage);
+  };
+
+  // Po zakończeniu edycji — odśwież listę
+  const handleEditComplete = () => {
+    setEditingDamage(null);
+    fetchDamages();
+  };
+
   if (loading) return <p>Ładowanie historii szkód...</p>;
 
   return (
       <DamageHistoryForm
         damageEntries={damageEntries}
         handleDelete={handleDelete}
+        onEditDamage={onEditDamage}
       />
   );
 }

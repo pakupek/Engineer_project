@@ -27,6 +27,7 @@ export default function CarDetails() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [reloadKey, setReloadKey] = useState(0); 
   const [damageReloadKey, setDamageReloadKey] = useState(0);
+  const [editingDamage, setEditingDamage] = useState(null);
   const handleEditEntry = (entry) => setEditingEntry(entry);
 
   const handleSave = () => {
@@ -41,6 +42,13 @@ export default function CarDetails() {
 
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section);
+  };
+
+  const handleEditDamage = (damage) => setEditingDamage(damage);
+
+  const handleEditComplete = () => {
+    setEditingDamage(null);
+    setDamageReloadKey((prev) => prev + 1); 
   };
 
   // Jedno zapytanie do API
@@ -135,7 +143,8 @@ export default function CarDetails() {
                   </button>
                   {openSection === "damage" && (
                     <div className={sectionStyle["accordion-content"]}>
-                      <DamageFormContainer onDamageAdded={handleDamageAdded} />
+                      <DamageFormContainer onDamageAdded={handleDamageAdded} damageToEdit={editingDamage}
+                        onEditComplete={handleEditComplete}/>
                     </div>
                   )}
                 </div>
@@ -153,7 +162,8 @@ export default function CarDetails() {
                 {/* Suwak: Uszkodzenia */}
                 <div className={sectionStyle["card-section yellow"]}>
                   <div className={sectionStyle["scroll-container"]}>
-                    <DamageHistory />
+                    <DamageHistory key={damageReloadKey}
+                      onEditDamage={handleEditDamage}/>
                   </div>
                 </div>
               </div>

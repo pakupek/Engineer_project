@@ -41,7 +41,7 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.shortcuts import get_object_or_404
 from django.http import Http404, JsonResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-import logging, shutil, os
+import logging, shutil, os, json
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from bs4 import BeautifulSoup
@@ -650,13 +650,44 @@ class DamageEntryView(generics.GenericAPIView):
 
     # PATCH – aktualizuj wpis
     def patch(self, request, *args, **kwargs):
+
         entry_id = kwargs.get("entry_id")
         entry = get_object_or_404(DamageEntry, id=entry_id)
-        serializer = self.get_serializer(entry, data=request.data, partial=True)
+        data = request.data.copy()
+
+
+        markers_data = None
+        if "markers" in data:
+            try:
+                markers_data = json.loads(data["markers"])
+            except json.JSONDecodeError:
+                pass
+
+        serializer = self.get_serializer(entry, data=data, partial=True)
+
         if serializer.is_valid():
             serializer.save()
-            return Response({"success": True, "message": "Wpis został zaktualizowany", "data": serializer.data})
+
+            # Aktualizacja markerów
+            if markers_data is not None:
+                entry.markers.all().delete()  # usuń stare
+                for marker in markers_data:
+                    entry.markers.create(
+                        x_percent=marker.get("x_percent"),
+                        y_percent=marker.get("y_percent"),
+                        severity=marker.get("severity"),
+                    )
+               
+
+            return Response({
+                "success": True,
+                "message": "Wpis został zaktualizowany",
+                "data": self.get_serializer(entry).data
+            })
+
+        print("⚠️ Validation errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     # DELETE – usuń wpis
     def delete(self, request, *args, **kwargs):
