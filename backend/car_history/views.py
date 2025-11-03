@@ -611,25 +611,56 @@ class ServiceEntryView(generics.GenericAPIView):
         )
 
         
+class DamageEntryView(generics.GenericAPIView):
+    """
+    Widok obsługujący listę, tworzenie, edycję i usuwanie wpisów o szkodach pojazdu
+    """
 
-class DamageEntryCreateView(generics.CreateAPIView):
-    queryset = DamageEntry.objects.all()
-    serializer_class = DamageEntrySerializer  
+    serializer_class = DamageEntrySerializer
+    parser_classes = (MultiPartParser, FormParser, JSONParser)
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        vin = self.request.data.get("vin")
+    def get_queryset(self):
+        vin = self.kwargs.get("vin")
+        return DamageEntry.objects.filter(vehicle__vin=vin).order_by('-date')
+
+    # GET – pobierz listę szkód
+    def get(self, request, *args, **kwargs):
+        vin = self.kwargs.get("vin")
+        entries = self.get_queryset()
+        serializer = self.get_serializer(entries, many=True)
+        return Response(serializer.data)
+
+    # POST – utwórz nowy wpis
+    def post(self, request, *args, **kwargs):
+        vin = self.kwargs.get("vin")
         try:
             vehicle = Vehicle.objects.get(vin=vin)
         except Vehicle.DoesNotExist:
-            raise ValidationError({"vin": f"Pojazd o numerze VIN {vin} nie istnieje."})
-        context['vehicle'] = vehicle  # Przekazujemy vehicle do serializer
-        return context
-        
+            return Response({"error": "Pojazd nie istnieje"}, status=status.HTTP_404_NOT_FOUND)
 
-class DamageEntryListView(generics.ListAPIView):
-    serializer_class = DamageEntrySerializer
+        serializer = self.get_serializer(data=request.data, context={"vehicle": vehicle, "request": request})
+        if serializer.is_valid():
+            damage_entry = serializer.save()
+            return Response({
+                "success": True,
+                "message": "Wpis o szkodzie dodany pomyślnie",
+                "data": DamageEntrySerializer(damage_entry).data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get_queryset(self):
-        vin = self.kwargs["vin"]
-        return DamageEntry.objects.filter(vehicle__vin=vin).prefetch_related("markers")
+    # PATCH – aktualizuj wpis
+    def patch(self, request, *args, **kwargs):
+        entry_id = kwargs.get("entry_id")
+        entry = get_object_or_404(DamageEntry, id=entry_id)
+        serializer = self.get_serializer(entry, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"success": True, "message": "Wpis został zaktualizowany", "data": serializer.data})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # DELETE – usuń wpis
+    def delete(self, request, *args, **kwargs):
+        entry_id = kwargs.get("entry_id")
+        entry = get_object_or_404(DamageEntry, id=entry_id)
+        entry.delete()
+        return Response({"success": True, "message": "Wpis o szkodzie został usunięty"}, status=status.HTTP_204_NO_CONTENT)

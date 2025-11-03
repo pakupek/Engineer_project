@@ -15,6 +15,7 @@ import ServiceEntriesList from "./ServiceEntryList/ServiceEntryList";
 import ServiceEntryCreate from "./ServiceEntryCreate/ServiceEntryCreate";
 import VehicleImages from "./VehicleImages/VehicleImages";
 import { VehicleInformation, VehicleInformationOverlay } from "./VehicleInformation/VehicleInformation";
+import DamageFormContainer from "./DamageForm/DamageFormContainer";
 
 export default function CarDetails() {
   const { vin } = useParams();
@@ -25,13 +26,18 @@ export default function CarDetails() {
   const [openSection, setOpenSection] = useState(null);
   const [editingEntry, setEditingEntry] = useState(null);
   const [reloadKey, setReloadKey] = useState(0); 
-
+  const [damageReloadKey, setDamageReloadKey] = useState(0);
   const handleEditEntry = (entry) => setEditingEntry(entry);
 
   const handleSave = () => {
     setEditingEntry(null);
     setReloadKey((prev) => prev + 1);
   };
+
+  const handleDamageAdded = () => {
+    setDamageReloadKey((prev) => prev + 1);
+  };
+
 
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section);
@@ -129,7 +135,7 @@ export default function CarDetails() {
                   </button>
                   {openSection === "damage" && (
                     <div className={sectionStyle["accordion-content"]}>
-                      <DamageForm vin={vin} />
+                      <DamageFormContainer onDamageAdded={handleDamageAdded} />
                     </div>
                   )}
                 </div>
@@ -147,7 +153,7 @@ export default function CarDetails() {
                 {/* Suwak: Uszkodzenia */}
                 <div className={sectionStyle["card-section yellow"]}>
                   <div className={sectionStyle["scroll-container"]}>
-                    <DamageHistory vin={vin} />
+                    <DamageHistory />
                   </div>
                 </div>
               </div>

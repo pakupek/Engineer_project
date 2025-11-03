@@ -23,8 +23,7 @@ from .views import (
     VehicleImageListCreateView,
     vehicle_history,
     ServiceEntryView,
-    DamageEntryListView,
-    DamageEntryCreateView,
+    DamageEntryView,
     VehicleDeleteView
 )
 from rest_framework_simplejwt.views import (
@@ -64,8 +63,8 @@ urlpatterns = [
     path('vehicle-history/<str:vin>/', vehicle_history, name='vehicle_history_by_vin'),
     path('service-entry/<str:vin>/', ServiceEntryView.as_view(), name='service_entry'),
     path('service-entry/<str:vin>/<int:entry_id>/', ServiceEntryView.as_view(), name='service_entry_detail'),
-    path('damage-entry/<str:vin>/', DamageEntryListView.as_view(), name='vehicle_list_damage'),
-    path('damage-entry/', DamageEntryCreateView.as_view(), name='vehicle_damage_entry_create'),
+    path("damage-entry/<str:vin>/", DamageEntryView.as_view(), name="damage_entry_list"),
+    path("damage-entry/<str:vin>/<int:entry_id>/", DamageEntryView.as_view(), name="damage_entry_detail"),
     path('vehicles/<str:vin>/delete/', VehicleDeleteView.as_view(), name='vehicle_delete'),
 ]
 

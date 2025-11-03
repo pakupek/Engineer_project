@@ -1,56 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 import ImageDamageCreate from "../ImageDamageCreate";
-import { getToken } from "../../../Services/auth";
-import { useParams } from "next/navigation";
 import style from "./DamageForm.module.css"
 
-export default function DamageForm() {
-  const [markers, setMarkers] = useState([]);
-  const [selectedSeverity, setSelectedSeverity] = useState("drobne");
-  const { vin } = useParams();
-
-  const handleAddMarker = ({ x, y }) => {
-    const newMarker = {
-      x_percent: x,
-      y_percent: y,
-      severity: selectedSeverity,
-    };
-    setMarkers([...markers, newMarker]);
-  };
-
-  const handleAddDamage = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-
-    // Dodajemy ID pojazdu i markery
-    formData.append("vin", vin);
-    formData.append("markers", JSON.stringify(markers));
-
-    try {
-      const token = getToken();
-      const response = await fetch("http://localhost:8000/api/damage-entry/", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error(errorData);
-        alert("Nie udało się zapisać uszkodzenia");
-        return;
-      }
-
-      alert("Uszkodzenie zapisane!");
-      e.target.reset();
-      setMarkers([]);
-    } catch (error) {
-      console.error(error);
-      alert("Nie udało się zapisać uszkodzenia");
-    }
-  };
+export default function DamageForm({
+  handleAddDamage,
+  handleAddMarker,
+  markers,
+  selectedSeverity,
+  setSelectedSeverity,
+}) {
 
   return (
     <div className={style["damage-form"]}>
