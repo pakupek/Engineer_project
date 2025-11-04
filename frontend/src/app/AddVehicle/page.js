@@ -434,7 +434,7 @@ export default function AddVehiclePage() {
 
               <div className={styles["form-group"]}>
                 <label>Skrzynia biegów</label>
-                <select name="transmission" value={formData.transmission} onChange={handleChange} className={styles["form-control"]}>
+                <select name="transmission" value={formData.transmission_type} onChange={handleChange} className={styles["form-control"]}>
                   <option value="Manual">Manual</option>
                   <option value="Automat">Automat</option>
                 </select>
@@ -447,21 +447,6 @@ export default function AddVehiclePage() {
                   <option value="RWD">Napęd na tył</option>
                   <option value="AWD">Napęd na wszystkie koła</option>
                   <option value="4WD">4x4 / 4WD</option>
-                </select>
-              </div>
-
-              <div className={styles["form-group"]}>
-                <label>Rozmiar felg</label>
-                <select name="wheel_size" value={formData.wheel_size} onChange={handleChange} className={styles["form-control"]}>
-                  <option value="">Wybierz rozmiar</option>
-                  <option value='15"'>15"</option>
-                  <option value='16"'>16"</option>
-                  <option value='17"'>17"</option>
-                  <option value='18"'>18"</option>
-                  <option value='19"'>19"</option>
-                  <option value='20"'>20"</option>
-                  <option value='21"'>21"</option>
-                  <option value='22"'>22"</option>
                 </select>
               </div>
             </div>

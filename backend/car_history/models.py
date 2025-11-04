@@ -157,15 +157,20 @@ class Vehicle(models.Model):
         ('Inny', 'Inny'),
     ]
 
-    WHEEL_SIZE_CHOICES = [
-        ('15"', '15"'),
-        ('16"', '16"'),
-        ('17"', '17"'),
-        ('18"', '18"'),
-        ('19"', '19"'),
-        ('20"', '20"'),
-        ('21"', '21"'),
-        ('22"', '22"'),
+    DRIVE_TYPE_CHOICES = [
+        ('FWD', 'Przedni (FWD)'),
+        ('RWD', 'Tylny (RWD)'),
+        ('AWD', 'Na wszystkie koła (AWD)'),
+        ('4x4', '4x4'),
+    ]
+
+
+    TRANSMISSION_CHOICES = [
+        ('Manualna', 'Manualna'),
+        ('Automatyczna', 'Automatyczna'),
+        ('Półautomatyczna', 'Półautomatyczna'),
+        ('CVT', 'CVT (bezstopniowa)'),
+        ('Dwusprzęgłowa', 'Dwusprzęgłowa (DSG/DCT)'),
     ]
 
     FUEL_TYPES = [
@@ -187,7 +192,8 @@ class Vehicle(models.Model):
     price = models.DecimalField(max_digits=8, default=0.0, decimal_places=2, editable=True, verbose_name='Cena (PLN)')
     first_registration = models.DateField(default=timezone.now, blank=True, null=True, verbose_name='Data pierwszej rejestracji')
     location = models.CharField(default='', max_length=100, verbose_name='Lokalizacja')
-    wheel_size = models.CharField(default='', max_length=10, choices=WHEEL_SIZE_CHOICES, verbose_name='Rozmiar felg')
+    drive_type = models.CharField(default='FWD', max_length=10, choices=DRIVE_TYPE_CHOICES, verbose_name='Rodzaj napędu')
+    transmission_type = models.CharField(default='Manualna', max_length=20, choices=TRANSMISSION_CHOICES, verbose_name='Skrzynia biegów')
     for_sale = models.BooleanField(default=False, verbose_name='Na sprzedaż')
     registration = models.CharField(default='', verbose_name='Nr rejestracyjny')
     fuel_type = models.CharField(max_length=20, choices=FUEL_TYPES, default='', verbose_name='Typ paliwa')

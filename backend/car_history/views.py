@@ -1,5 +1,7 @@
 from django.utils import timezone
 from rest_framework import generics, permissions, status
+from django_filters.rest_framework import DjangoFilterBackend
+import django_filters
 from .serializers import (
     UserRegistrationSerializer, 
     DiscussionSerializer, 
@@ -304,11 +306,6 @@ class VehicleCreateView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated] 
 
     def create(self, request, *args, **kwargs):
-        print("=== VEHICLE CREATE DEBUG ===")
-        print("Request data:", request.data)
-        print("Generation value:", request.data.get('generation'))
-        print("Generation type:", type(request.data.get('generation')))
-        
         # Sprawdź czy generation jest pustym stringiem i zamień na None
         data = request.data.copy()
         generation_value = data.get('generation')
@@ -323,9 +320,6 @@ class VehicleCreateView(generics.CreateAPIView):
         
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        
-        print("Vehicle created successfully")
-        print("Created vehicle generation:", serializer.instance.generation)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -705,10 +699,24 @@ class DamageEntryView(generics.GenericAPIView):
         return Response({"success": True, "message": "Wpis o szkodzie został usunięty"}, status=status.HTTP_204_NO_CONTENT)
     
 
+
+class VehicleSaleFilter(django_filters.FilterSet):
+    price_min = django_filters.NumberFilter(field_name="price", lookup_expr="gte")
+    price_max = django_filters.NumberFilter(field_name="price", lookup_expr="lte")
+    make = django_filters.CharFilter(field_name="vehicle__generation__model__make__name", lookup_expr="icontains")
+    model = django_filters.CharFilter(field_name="vehicle__generation__model__name", lookup_expr="icontains")
+
+    class Meta:
+        model = VehicleSale
+        fields = ["price_min", "price_max", "make", "model"]
+
+
 class VehicleSaleView(generics.ListCreateAPIView):
     queryset = VehicleSale.objects.all().order_by('-created_at')
     serializer_class = VehicleSaleSerializer
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = VehicleSaleFilter
 
     def perform_create(self, serializer):
         # Tworzymy ogłoszenie i przypisujemy właściciela
@@ -722,37 +730,40 @@ class VehicleSaleView(generics.ListCreateAPIView):
 
 class VehicleSaleDetailView(generics.RetrieveDestroyAPIView):
     """
-    Endpoint do usuwania ogłoszenia sprzedaży auta
+    Endpoint do pobierania i usuwania ogłoszenia sprzedaży auta.
     """
-    
     queryset = VehicleSale.objects.all()
     serializer_class = VehicleSaleSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # inkrementacja statystyk oglądalności
+        stats, created = VehicleSaleStats.objects.get_or_create(sale=instance)
+        stats.views += 1
+        stats.last_viewed = timezone.now()
+        stats.save()
+
+        return super().retrieve(request, *args, **kwargs)
+
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
+
         # sprawdzamy, czy użytkownik jest właścicielem ogłoszenia
         if instance.owner != request.user:
-            return Response({"detail": "Nie masz uprawnień do usunięcia tego ogłoszenia."},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"detail": "Nie masz uprawnień do usunięcia tego ogłoszenia."},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
-        # zmieniamy status pojazdu na nie na sprzedaż
+        # zmieniamy status pojazdu
         vehicle = instance.vehicle
         vehicle.for_sale = False
         vehicle.save()
 
         instance.delete()
-        return Response({"detail": "Ogłoszenie zostało usunięte."}, status=status.HTTP_204_NO_CONTENT)
-    
-
-class VehicleSaleDetailView(generics.RetrieveAPIView):
-    serializer_class = VehicleSaleSerializer
-    queryset = VehicleSale.objects.all()
-
-    def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        stats, created = VehicleSaleStats.objects.get_or_create(sale=instance)
-        stats.views += 1
-        stats.last_viewed = timezone.now()
-        stats.save()
-        return super().retrieve(request, *args, **kwargs)
+        return Response(
+            {"detail": "Ogłoszenie zostało usunięte."},
+            status=status.HTTP_204_NO_CONTENT
+        )

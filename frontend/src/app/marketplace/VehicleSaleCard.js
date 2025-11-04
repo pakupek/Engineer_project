@@ -27,13 +27,16 @@ export default function VehicleSaleCard({ sale }) {
       {/* Informacje o pojeździe */}
       <div className={styles.info}>
         <h3 className={styles.title}>{sale.title}</h3>
-        <p className={styles.details}>{sale.description}</p>
-        <p className={styles.location}><strong>Lokalizacja:</strong> {v.location || "Brak danych"}</p>
+        <p className={styles.location}><strong>Marka: </strong>{v.make}</p>
+        <p className={styles.location}><strong>Model: </strong>{v.model}</p>
+        <p className={styles.location}><strong>Rok produkcji: </strong>{v.production_year}</p>
+        <p className={styles.location}><strong>Przebieg: </strong>{v.odometer}</p>
+        
       </div>
 
       {/* Cena i akcje */}
       <div className={styles.priceBlock}>
-        <span className={styles.price}>${sale.price}</span>
+        <span className={styles.price}>{sale.price}</span>
         <button className={styles.favorite}>☆</button>
       </div>
     </div>

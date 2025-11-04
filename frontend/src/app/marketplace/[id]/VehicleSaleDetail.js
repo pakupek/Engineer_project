@@ -59,25 +59,19 @@ export default function VehicleSaleDetail({ saleId }) {
       {/* Informacje o aucie */}
       <div className={styles.info}>
         <h1>{sale.title}</h1>
-        <p className={styles.price}>${sale.price}</p>
-        <p className={styles.meta}>
-          {sale.vehicle_info?.production_year} • {sale.vehicle_info?.odometer} miles •{" "}
-          {sale.vehicle_info?.generation_name} • {sale.vehicle_info?.fuel_type}
-        </p>
+        <p className={styles.price}>{sale.price} zł</p>
+        
 
         {/* Statystyki i szczegóły */}
         <div className={styles.detailsGrid}>
-          <div><strong>Make:</strong> {sale.vehicle_info?.make}</div>
+          <div><strong>Marka:</strong> {sale.vehicle_info?.make}</div>
           <div><strong>Model:</strong> {sale.vehicle_info?.model}</div>
-          <div><strong>Color:</strong> {sale.vehicle_info?.body_color}</div>
-          <div><strong>Drive Type:</strong> {sale.vehicle_info?.drive_type}</div>
-          <div><strong>Transmission:</strong> {sale.vehicle_info?.transmission}</div>
-          <div><strong>Condition:</strong> {sale.vehicle_info?.condition}</div>
-          <div><strong>Year:</strong> {sale.vehicle_info?.production_year}</div>
-          <div><strong>Mileage:</strong> {sale.vehicle_info?.odometer}</div>
-          <div><strong>Fuel Type:</strong> {sale.vehicle_info?.fuel_type}</div>
-          <div><strong>Engine Size:</strong> {sale.vehicle_info?.engine_size}</div>
-          <div><strong>Doors:</strong> {sale.vehicle_info?.doors}</div>
+          <div><strong>Kolor nadwozia:</strong> {sale.vehicle_info?.body_color}</div>
+          <div><strong>Napęd:</strong> {sale.vehicle_info?.drive_type}</div>
+          <div><strong>Skrzynia biegów:</strong> {sale.vehicle_info?.transmission}</div>
+          <div><strong>Rok produkcji:</strong> {sale.vehicle_info?.production_year}</div>
+          <div><strong>Przebig:</strong> {sale.vehicle_info?.odometer}</div>
+          <div><strong>Paliwo:</strong> {sale.vehicle_info?.fuel_type}</div>
         </div>
       </div>
     </div>

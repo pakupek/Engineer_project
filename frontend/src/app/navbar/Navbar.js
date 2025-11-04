@@ -149,6 +149,9 @@ export default function Navbar() {
                 <li className="nav-item">
                   <a className="nav-link link text-black display-4" href="/messages">Wiadomości</a>
                 </li>
+                <li className="nav-item">
+                  <a className="nav-link link text-black display-4" href="/marketplace">Ogłoszenia</a>
+                </li>
               </ul>
 
               <div className="navbar-buttons mbr-section-btn">

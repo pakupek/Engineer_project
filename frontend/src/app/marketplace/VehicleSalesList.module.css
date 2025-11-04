@@ -1,5 +1,180 @@
-.listContainer {
-  max-width: 1200px;
+/* =============================== */
+/* 💠 KARTA OGŁOSZENIA             */
+/* =============================== */
+.card {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 1.2rem;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
+  max-width: 1000px; /* 🔹 SZERSZA KARTA */
   margin: 0 auto;
-  padding: 20px;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.imageWrapper {
+  position: relative;
+  flex: 0 0 280px; /* 🔹 większe zdjęcie */
+  height: 180px;
+  margin-right: 20px;
+}
+
+.imageWrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: #222;
+}
+
+.details {
+  color: #666;
+  margin: 5px 0;
+}
+
+.location {
+  font-size: 14px;
+  color: #444;
+}
+
+.priceBlock {
+  text-align: right;
+  margin-left: 20px;
+  min-width: 120px;
+}
+
+.price {
+  display: block;
+  font-size: 22px;
+  color: #ff5722;
+  font-weight: bold;
+}
+
+.favorite {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  margin-top: 8px;
+  color: #888;
+}
+
+/* =============================== */
+/* 💠 UKŁAD STRONY (filtry + lista) */
+/* =============================== */
+.pageContainer {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  padding: 2rem;
+  margin-top: 100px;
+  max-width: 1400px; /* 🔹 ograniczenie szerokości całej strony */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Panel filtrów po lewej */
+.filters {
+  width: 280px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+  position: sticky;
+  top: 100px;
+}
+
+.filterRow {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.filterRow label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.filters select,
+.filters input[type="range"] {
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.resetBtn {
+  margin-top: 1rem;
+  width: 100%;
+  background: #ddd;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.resetBtn:hover {
+  background: #ccc;
+}
+
+/* Lista ogłoszeń po prawej */
+.listContainer {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr; 
+  gap: 1.5rem;
+}
+
+/* Responsywność */
+@media (max-width: 900px) {
+  .pageContainer {
+    flex-direction: column;
+  }
+
+  .filters {
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 100%;
+  }
+
+  .imageWrapper {
+    width: 100%;
+    height: 200px;
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+
+  .priceBlock {
+    text-align: left;
+    margin-left: 0;
+    margin-top: 1rem;
+  }
 }
