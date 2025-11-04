@@ -87,7 +87,7 @@ class ChangePasswordSerializer(serializers.Serializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username']
+        fields = ['id', 'username', 'email','phone_number']
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -96,9 +96,16 @@ class MessageSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Message
-        fields = ['id', 'sender', 'sender_name', 'receiver', 'receiver_name', 
+        fields = ['id', 'sender', 'sender_name', 'receiver', 'receiver_name', 'sale',
                  'content', 'timestamp', 'is_read']
         read_only_fields = ['sender', 'timestamp', 'is_read']
+
+    def create(self, validated_data):
+        # ustal sender po stronie serwera
+        request = self.context.get('request')
+        if request and request.user and request.user.is_authenticated:
+            validated_data['sender'] = request.user
+        return super().create(validated_data)
 
 
 class MessageCreateSerializer(serializers.ModelSerializer):
@@ -248,14 +255,26 @@ class VehicleSaleSerializer(serializers.ModelSerializer):
     history = serializers.SerializerMethodField()
     owner_info = serializers.SerializerMethodField()
     current_user = serializers.SerializerMethodField()
+    stats = serializers.SerializerMethodField()
 
     class Meta:
         model = VehicleSale
         fields = [
-            "id", "vehicle", "vehicle_info", "owner_info","owner","current_user",
+            "id", "vehicle", "vehicle_info", "owner_info","owner","current_user","stats",
             "title", "description", "price", "is_active", "created_at", "history"
         ]
         read_only_fields = ["owner", "created_at", "history"]
+
+
+    def get_stats(self, obj):
+        stats = getattr(obj, "stats", None)
+        if not stats:
+            return {"views": 0, "messages_sent": 0, "favorites": 0}
+        return {
+            "views": stats.views,
+            "messages_sent": stats.messages_sent,
+            "favorites": stats.favorites,
+        }
 
     
     def get_current_user(self, obj):
@@ -332,5 +351,6 @@ class VehicleSaleSerializer(serializers.ModelSerializer):
             for s in vehicle.service_entries.all().order_by("-date")
         ]
         return {"damages": damages, "services": services}
+    
 
     

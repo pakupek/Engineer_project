@@ -133,12 +133,15 @@ export default function VehicleSaleDetail({ saleId }) {
                 },
                 body: JSON.stringify({
                   receiver: sale.owner,
+                  sale: sale.id,
                   content: message,
                 }),
               });
 
               if (res.ok) {
                 alert("Wiadomość wysłana pomyślnie!");
+                const data = await res.json();
+                console.log('message create response', res.status, data);
                 e.target.reset();
               } else {
                 const err = await res.json();

@@ -183,19 +183,6 @@ export default function EditProfile() {
                     <div className={styles.epPreviewValue}>{user.phone_number || "—"}</div>
                 </div>
 
-                <div className={styles.epPreviewItem}>
-                    <div className={styles.epPreviewLabel}>Ostatnie logowanie</div>
-                    <div className={styles.epPreviewValue}>
-                    {user.last_login || "Brak danych"}
-                    </div>
-                </div>
-
-                <div className={styles.epPreviewItem}>
-                    <div className={styles.epPreviewLabel}>Konto utworzono</div>
-                    <div className={styles.epPreviewValue}>
-                    {user.created_at || "Nieznane"}
-                    </div>
-                </div>
                 </div>
             </aside>
             </div>

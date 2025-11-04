@@ -34,6 +34,7 @@ from .models import (
     ServiceEntry,
     DamageEntry,
     VehicleSale,
+    VehicleSaleStats,
 )
 from rest_framework.response import Response
 from django.db.models import Q
@@ -97,12 +98,21 @@ class MessageListCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         receiver = self.request.data.get("receiver")
+        sale_id = self.request.data.get("sale")  # ← pobieramy ID ogłoszenia
 
-        # Blokada wysyłania wiadomości do samego siebie
+        # 1️Blokada wysyłania wiadomości do siebie
         if str(self.request.user.id) == str(receiver):
             raise ValidationError("Nie możesz wysłać wiadomości do samego siebie.")
         
-        serializer.save(sender=self.request.user)
+        # Zapisz wiadomość z przypisanym ogłoszeniem (jeśli istnieje)
+        sale_instance = None
+        if sale_id:
+            try:
+                sale_instance = VehicleSale.objects.get(id=sale_id)
+            except VehicleSale.DoesNotExist:
+                raise ValidationError("Nie znaleziono ogłoszenia o podanym ID.")
+
+        message = serializer.save(sender=self.request.user, sale=sale_instance)
 
 class ConversationListView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -733,3 +743,16 @@ class VehicleSaleDetailView(generics.RetrieveDestroyAPIView):
 
         instance.delete()
         return Response({"detail": "Ogłoszenie zostało usunięte."}, status=status.HTTP_204_NO_CONTENT)
+    
+
+class VehicleSaleDetailView(generics.RetrieveAPIView):
+    serializer_class = VehicleSaleSerializer
+    queryset = VehicleSale.objects.all()
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        stats, created = VehicleSaleStats.objects.get_or_create(sale=instance)
+        stats.views += 1
+        stats.last_viewed = timezone.now()
+        stats.save()
+        return super().retrieve(request, *args, **kwargs)

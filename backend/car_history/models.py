@@ -394,6 +394,7 @@ class Message(models.Model):
 
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_messages")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_messages")
+    sale = models.ForeignKey("VehicleSale", on_delete=models.CASCADE, null=True, blank=True, related_name="messages")
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False) 
@@ -477,3 +478,17 @@ class VehicleSale(models.Model):
             "damages": list(self.vehicle.damage_entries.values()),
             "services": list(self.vehicle.service_entries.values())
         }
+
+
+class VehicleSaleStats(models.Model):
+    """
+    Model statystyk ogłoszenia auta
+    """
+    
+    sale = models.OneToOneField("VehicleSale", on_delete=models.CASCADE, related_name="stats")
+    views = models.PositiveIntegerField(default=0)
+    messages_sent = models.PositiveIntegerField(default=0)
+    favorites = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"Statystyki dla ogłoszenia {self.sale.title}"

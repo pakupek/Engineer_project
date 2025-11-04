@@ -43,13 +43,13 @@ export default function VehicleSaleCard({ sale, onDelete }) {
 
         <div className={styles.info}>
             <h3 className={styles.title}>{sale.title}</h3>
-            <p className={styles.details}>{sale.description}</p>
-            <p className={styles.price}>${sale.price}</p>
+            <p className={styles.price}>{sale.price}</p>
 
             {/* Statystyki */}
             <div className={styles.stats}>
-            <span>Wyświetlenia: {sale.views_count ?? 0}</span>
-            <span>Zainteresowani: {sale.interested_count ?? 0}</span>
+            <span>Wyświetlenia: {sale.stats?.views || 0}</span>
+            <span>✉️ Wiadomości: {sale.stats?.messages_sent || 0}</span>
+            <span>⭐ Ulubione: {sale.stats?.favorites || 0}</span> 
             <span>Utworzono: {new Date(sale.created_at).toLocaleDateString()}</span>
             <span>Status: {sale.is_active ? "Aktywne" : "Nieaktywne"}</span>
             </div>
