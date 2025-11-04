@@ -40,6 +40,19 @@ export default function CarDetails() {
   };
 
 
+  const [showSaleForm, setShowSaleForm] = useState(false);
+
+  const openSaleForm = () => setShowSaleForm(true);
+  const closeSaleForm = () => setShowSaleForm(false);
+
+  const handleSaleCreated = () => {
+    alert("Ogłoszenie zostało wystawione!");
+    closeSaleForm();
+  };
+
+
+
+
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section);
   };
@@ -97,7 +110,7 @@ export default function CarDetails() {
       </div>
 
       {/* Podstawowe informacje */}
-      <VehicleInformation car={car} showMore={showMore} setShowMore={setShowMore} />
+      <VehicleInformation car={car} showMore={showMore} setShowMore={setShowMore}/>
 
       {/* Dodatkowe sekcje po kliknięciu */}
       {showMore && (

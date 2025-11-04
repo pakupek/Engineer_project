@@ -426,7 +426,7 @@ class DamageEntry(models.Model):
     Model uszkodzeń pojazdu
     """
 
-    vehicle = models.ForeignKey("Vehicle", on_delete=models.CASCADE, related_name="Uszkodzenia")
+    vehicle = models.ForeignKey("Vehicle", on_delete=models.CASCADE, related_name="damage_entries")
     date = models.DateField()
     description = models.TextField(blank=True)
     photos = models.ImageField(upload_to=damage_image_path, null=True, blank=True)
@@ -457,3 +457,23 @@ class DamageMarker(models.Model):
 
     def __str__(self):
         return f"Marker {self.id} ({self.severity}) - {self.x_percent}%, {self.y_percent}%"
+
+
+class VehicleSale(models.Model):
+    """
+    Model ogłoszenia auta na sprzedaż
+    """
+
+    vehicle = models.ForeignKey("Vehicle", on_delete=models.CASCADE, related_name="sale_listings")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sale_listings")
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    def history(self):
+        return {
+            "damages": list(self.vehicle.damage_entries.values()),
+            "services": list(self.vehicle.service_entries.values())
+        }

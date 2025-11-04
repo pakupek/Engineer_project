@@ -24,7 +24,8 @@ from .views import (
     vehicle_history,
     ServiceEntryView,
     DamageEntryView,
-    VehicleDeleteView
+    VehicleDeleteView,
+    VehicleSaleView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -66,6 +67,7 @@ urlpatterns = [
     path("damage-entry/<str:vin>/", DamageEntryView.as_view(), name="damage_entry_list"),
     path("damage-entry/<str:vin>/<int:entry_id>/", DamageEntryView.as_view(), name="damage_entry_detail"),
     path('vehicles/<str:vin>/delete/', VehicleDeleteView.as_view(), name='vehicle_delete'),
+    path('sales/', VehicleSaleView.as_view(), name='vehicle_sale'),
 ]
 
 if settings.DEBUG:

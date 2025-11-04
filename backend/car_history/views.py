@@ -16,7 +16,8 @@ from .serializers import (
     VehicleImageSerializer,
     ServiceEntrySerializer,
     DamageEntrySerializer,
-    VehicleDeleteSerializer
+    VehicleDeleteSerializer,
+    VehicleSaleSerializer,
 )
 from rest_framework.permissions import AllowAny
 from .models import (
@@ -31,7 +32,8 @@ from .models import (
     VehicleImage,
     VehicleHistory,
     ServiceEntry,
-    DamageEntry
+    DamageEntry,
+    VehicleSale,
 )
 from rest_framework.response import Response
 from django.db.models import Q
@@ -685,7 +687,6 @@ class DamageEntryView(generics.GenericAPIView):
                 "data": self.get_serializer(entry).data
             })
 
-        print("⚠️ Validation errors:", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -695,3 +696,18 @@ class DamageEntryView(generics.GenericAPIView):
         entry = get_object_or_404(DamageEntry, id=entry_id)
         entry.delete()
         return Response({"success": True, "message": "Wpis o szkodzie został usunięty"}, status=status.HTTP_204_NO_CONTENT)
+    
+
+class VehicleSaleView(generics.ListCreateAPIView):
+    queryset = VehicleSale.objects.all().order_by('-created_at')
+    serializer_class = VehicleSaleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Tworzymy ogłoszenie i przypisujemy właściciela
+        serializer.save(owner=self.request.user)
+
+        # Oznaczamy pojazd jako wystawiony na sprzedaż
+        vehicle = serializer.instance.vehicle
+        vehicle.for_sale = True
+        vehicle.save()

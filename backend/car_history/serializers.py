@@ -12,7 +12,8 @@ from .models import (
     VehicleImage,
     ServiceEntry,
     DamageEntry,
-    DamageMarker
+    DamageMarker,
+    VehicleSale,
 )
 from django.contrib.auth.password_validation import validate_password
 import datetime
@@ -240,4 +241,70 @@ class DamageEntrySerializer(serializers.ModelSerializer):
             DamageMarker.objects.create(damage_entry=damage_entry, **marker)
 
         return damage_entry
+    
+
+class VehicleSaleSerializer(serializers.ModelSerializer):
+    vehicle_info = serializers.SerializerMethodField()
+    history = serializers.SerializerMethodField()
+
+    class Meta:
+        model = VehicleSale
+        fields = [
+            "id", "vehicle", "vehicle_info", "owner",
+            "title", "description", "price", "is_active", "created_at", "history"
+        ]
+        read_only_fields = ["owner", "created_at", "history"]
+
+    def get_vehicle_info(self, obj):
+        vehicle = obj.vehicle
+        generation = vehicle.generation
+
+        # Pobieramy listę URL-i zdjęć pojazdu
+        images = [
+            f"http://localhost:8000{img.image.url}"  # dodaj host, żeby frontend mógł pobrać
+            for img in vehicle.images.all()
+        ]
+
+        return {
+            "vin": vehicle.vin,
+            "make": generation.model.make.name if generation and generation.model and generation.model.make else None,
+            "model": generation.model.name if generation and generation.model else None,
+            "generation": generation.name if generation else None,
+            "production_year": vehicle.production_year or (generation.production_start if generation else None),
+            "odometer": vehicle.odometer,
+            "body_color": vehicle.body_color,
+            "interior_color": vehicle.interior_color,
+            "fuel_type": vehicle.fuel_type,
+            "wheel_size": vehicle.wheel_size,
+            "location": vehicle.location,
+            "registration": vehicle.registration,
+            "first_registration": vehicle.first_registration.isoformat() if vehicle.first_registration else None,
+            "images": images,
+        }
+
+
+    def get_history(self, obj):
+        vehicle = obj.vehicle
+        damages = [
+            {
+                "id": d.id,
+                "date": d.date.isoformat() if d.date else None,
+                "description": d.description,
+                "photos": d.photos.url if d.photos else None,
+            }
+            for d in vehicle.damage_entries.all().order_by("-date")
+        ]
+        services = [
+            {
+                "id": s.id,
+                "date": s.date.isoformat() if s.date else None,
+                "mileage": s.mileage,
+                "description": s.description,
+                "cost": float(s.cost) if s.cost else None,
+                "invoice_image": s.invoice_image.url if s.invoice_image else None,
+            }
+            for s in vehicle.service_entries.all().order_by("-date")
+        ]
+        return {"damages": damages, "services": services}
+
     

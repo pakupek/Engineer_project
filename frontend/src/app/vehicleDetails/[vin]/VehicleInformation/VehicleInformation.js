@@ -2,6 +2,8 @@
 
 import styles from "./VehicleInformation.module.css";
 import "./VehicleInformation.css";
+import VehicleSaleForm from "../../../VehicleSale/VehicleSaleForm.js";
+import { useState } from "react";
 
 export function VehicleInformationOverlay({ car }){
     return (
@@ -30,7 +32,9 @@ export function VehicleInformationOverlay({ car }){
     );
 }
 
-export function VehicleInformation({ car, showMore, setShowMore }){
+export function VehicleInformation({ car, showMore, setShowMore}){
+  const [showSaleForm, setShowSaleForm] = useState(false);
+
     return(
         
       <div className="car-info-section">
@@ -83,8 +87,22 @@ export function VehicleInformation({ car, showMore, setShowMore }){
         <div className="car-btn-group">
           <button className="car-btn">Aktualizuj dane →</button>
           <button className="car-btn danger">Usuń pojazd →</button>
+          <button onClick={() => setShowSaleForm(true)}>🏷 Wystaw na sprzedaż</button>
         </div>
       </div>
+
+      {showSaleForm && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <button onClick={() => setShowSaleForm(false)}>✖ Zamknij</button>
+            <VehicleSaleForm
+              vin={car.vin}
+              onSaleCreated={() => setShowSaleForm(false)}
+            />
+          </div>
+        </div>
+      )}
+
     </div>
     );
 }

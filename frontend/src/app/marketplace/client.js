@@ -10,7 +10,7 @@ export default function MarketPlaceClient({ initialCars }) {
   const [tab, setTab] = useState("all");
 
   const fetchCars = async (params = {}) => {
-    const res = await api.get("vehicles/for-sale/", { params });
+    const res = await api.get("sales/", { params });
     setCars(res.data);
   };
   return (
