@@ -246,14 +246,40 @@ class DamageEntrySerializer(serializers.ModelSerializer):
 class VehicleSaleSerializer(serializers.ModelSerializer):
     vehicle_info = serializers.SerializerMethodField()
     history = serializers.SerializerMethodField()
+    owner_info = serializers.SerializerMethodField()
+    current_user = serializers.SerializerMethodField()
 
     class Meta:
         model = VehicleSale
         fields = [
-            "id", "vehicle", "vehicle_info", "owner",
+            "id", "vehicle", "vehicle_info", "owner_info","owner","current_user",
             "title", "description", "price", "is_active", "created_at", "history"
         ]
         read_only_fields = ["owner", "created_at", "history"]
+
+    
+    def get_current_user(self, obj):
+        """Zwróć ID aktualnie zalogowanego użytkownika"""
+        user = self.context["request"].user
+        return user.id if user.is_authenticated else None
+
+    def get_owner_info(self, obj):
+        """Zwraca dane właściciela pojazdu."""
+        owner = obj.owner
+        if not owner:
+            return None
+
+        # Zakładamy, że model użytkownika ma pola: username, avatar, phone_number, email
+        avatar_url = None
+        if hasattr(owner, "avatar") and owner.avatar:
+            avatar_url = f"http://localhost:8000{owner.avatar.url}"
+
+        return {
+            "username": owner.username,
+            "email": owner.email,
+            "phone_number": getattr(owner, "phone_number", None),
+            "avatar": avatar_url,
+        }
 
     def get_vehicle_info(self, obj):
         vehicle = obj.vehicle

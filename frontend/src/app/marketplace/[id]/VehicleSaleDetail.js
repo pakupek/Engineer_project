@@ -7,6 +7,7 @@ import { getToken } from "../../Services/auth";
 export default function VehicleSaleDetail({ saleId }) {
   const [sale, setSale] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [showPhone, setShowPhone] = useState(false);
 
   useEffect(() => {
     const fetchSale = async () => {
@@ -16,6 +17,7 @@ export default function VehicleSaleDetail({ saleId }) {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
+        console.log(token);
         setSale(data);
       } catch (error) {
         console.error("Błąd ładowania szczegółów ogłoszenia:", error);
@@ -130,7 +132,7 @@ export default function VehicleSaleDetail({ saleId }) {
                   Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                  receiver: sale.owner_data.id,
+                  receiver: sale.owner,
                   content: message,
                 }),
               });
@@ -165,7 +167,7 @@ export default function VehicleSaleDetail({ saleId }) {
       <div className={styles.ownerCard}>
         <div className={styles.ownerHeader}>
           <div>
-            <h3>{sale.owner_data?.username || "Nieznany użytkownik"}</h3>
+            <h3>{sale.owner_info?.username || "Nieznany użytkownik"}</h3>
             <p className={styles.ownerRole}>Sprzedający</p>
             <p className={styles.ownerAddress}>
               📍 {sale.vehicle_info?.location || "Brak lokalizacji"}
@@ -173,7 +175,7 @@ export default function VehicleSaleDetail({ saleId }) {
           </div>
           <img
             src={
-              sale.owner_data?.avatar
+              sale.owner_info?.avatar
                 ? sale.owner_data.avatar
                 : "/default-avatar.png"
             }
@@ -183,13 +185,17 @@ export default function VehicleSaleDetail({ saleId }) {
         </div>
 
         <div className={styles.ownerContactBox}>
-          <p>📧 {sale.owner_data?.email || "Brak adresu e-mail"}</p>
+          <p>📧 {sale.owner_info?.email || "Brak adresu e-mail"}</p>
+
           <button
             className={styles.revealBtn}
-            onClick={() => alert(sale.owner_data?.phone_number || "Brak numeru")}
+            onClick={() => setShowPhone((prev) => !prev)}
           >
-            📞 {sale.owner_data?.phone_number
-              ? "123 *** *** — reveal"
+            📞{" "}
+            {sale.owner_info?.phone_number
+              ? showPhone
+                ? sale.owner_info.phone_number
+                : "123 *** *** - Pokaż numer"
               : "Brak numeru telefonu"}
           </button>
         </div>
