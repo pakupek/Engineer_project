@@ -198,7 +198,7 @@ function MessagesContent() {
               </div>
               <div className={styles.userInfo}>
                 <h3>GaraZero Chat</h3>
-                <p>Online</p>
+                
               </div>
             </div>
             
@@ -206,7 +206,7 @@ function MessagesContent() {
               <div className={styles.searchIcon}>🔍</div>
               <input
                 type="text"
-                placeholder="Szukaj w Messengerze"
+                placeholder="Szukaj w wiadomościach"
                 className={styles.searchInput}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -217,7 +217,7 @@ function MessagesContent() {
           <div className={styles.conversationsList}>
             {filteredUsers.map((user) => (
               <div
-                key={generateUUID()} // Użyj naszej funkcji generującej UUID
+                key={generateUUID()} 
                 className={`${styles.conversationItem} ${
                   selectedUser?.id === user.id ? styles.active : ''
                 }`}
@@ -279,18 +279,6 @@ function MessagesContent() {
                     <p>Online</p>
                   </div>
                 </div>
-                
-                <div className={styles.chatActions}>
-                  <button className={styles.actionButton} title="Połączenie wideo">
-                    📹
-                  </button>
-                  <button className={styles.actionButton} title="Połączenie głosowe">
-                    📞
-                  </button>
-                  <button className={styles.actionButton} title="Informacje">
-                    ⓘ
-                  </button>
-                </div>
               </div>
 
               <div className={styles.messagesArea}>
@@ -302,7 +290,7 @@ function MessagesContent() {
                 ) : messages.length > 0 ? (
                   messages.map((message) => (
                     <div
-                      key={generateUUID()} // Użyj naszej funkcji generującej UUID
+                      key={generateUUID()} 
                       className={`${styles.message} ${
                         message.sender === selectedUser.id ? styles.received : styles.sent
                       }`}
@@ -334,9 +322,7 @@ function MessagesContent() {
 
               <div className={styles.messageInputArea}>
                 <div className={styles.inputContainer}>
-                  <button className={styles.attachmentButton} title="Załącznik">
-                    📎
-                  </button>
+                  
                   
                   <textarea
                     value={newMessage}
