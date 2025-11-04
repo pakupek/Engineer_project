@@ -164,8 +164,17 @@ export default function Navbar() {
                       onClick={toggleDropdown}
                       onMouseEnter={() => setIsDropdownOpen(true)}
                     >
-                      {getUserInitials()}
+                      {user?.avatar ? (
+                        <img 
+                          src={user.avatar}  
+                          alt="Avatar" 
+                          style={{ width: '40px', height: '40px', borderRadius: '50%' }} 
+                        />
+                      ) : (
+                        <span>{getUserInitials()}</span>
+                      )}
                     </button>
+
 
                     {/* Dropdown Menu */}
                     {isDropdownOpen && (

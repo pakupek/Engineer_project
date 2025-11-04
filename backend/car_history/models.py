@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.forms import ValidationError
 from django.utils import timezone
-from .utils import vehicle_image_path, vehicle_invoice_path, damage_image_path
+from .utils import vehicle_image_path, vehicle_invoice_path, damage_image_path, default_avatar_path, user_avatar_path
 import time, logging
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -26,6 +26,14 @@ class User(AbstractUser):
     joined_date = models.DateField(auto_now_add=True,null=True)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
+    avatar = models.ImageField(
+        upload_to=user_avatar_path,
+        default=default_avatar_path,
+        blank=True,
+        null=True,
+        verbose_name="Zdjęcie profilowe"
+    )
+    
 
     def __str__(self):
         return f"{self.username}"

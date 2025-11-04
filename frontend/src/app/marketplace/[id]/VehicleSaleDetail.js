@@ -171,13 +171,9 @@ export default function VehicleSaleDetail({ saleId }) {
             </p>
           </div>
           <img
-            src={
-              sale.owner_info?.avatar
-                ? sale.owner_data.avatar
-                : "/default-avatar.png"
-            }
-            alt="Avatar właściciela"
-            className={styles.ownerAvatar}
+            src={sale.owner_info.avatar}
+            alt={sale.owner_info.username}
+            style={{ width: '40px', height: '40px', borderRadius: '50%' }}
           />
         </div>
 

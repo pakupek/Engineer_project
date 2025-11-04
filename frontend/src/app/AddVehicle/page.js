@@ -435,8 +435,11 @@ export default function AddVehiclePage() {
               <div className={styles["form-group"]}>
                 <label>Skrzynia biegów</label>
                 <select name="transmission" value={formData.transmission_type} onChange={handleChange} className={styles["form-control"]}>
-                  <option value="Manual">Manual</option>
-                  <option value="Automat">Automat</option>
+                  <option value="Manualna">Manualna</option>
+                  <option value="Automatyczna">Automatyczna</option>
+                  <option value="Półautomatyczna">Półautomatyczna</option>
+                  <option value="CVT">CVT</option>
+                  <option value="Dwusprzęgłowa">Dwusprzęgłowa</option>
                 </select>
               </div>
 
@@ -446,7 +449,7 @@ export default function AddVehiclePage() {
                   <option value="FWD">Napęd na przód</option>
                   <option value="RWD">Napęd na tył</option>
                   <option value="AWD">Napęd na wszystkie koła</option>
-                  <option value="4WD">4x4 / 4WD</option>
+                  <option value="4x4">4x4</option>
                 </select>
               </div>
             </div>

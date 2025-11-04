@@ -176,16 +176,6 @@ function MessagesContent() {
     }
   };
 
-  // Pobierz inicjały użytkownika
-  const getUserInitials = (user) => {
-    if (!user) return '??';
-    
-    if (user.first_name && user.last_name) {
-      return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
-    }
-    return user.username ? user.username.substring(0, 2).toUpperCase() : '??';
-  };
-
   return (
     <div className={styles.messagesContainer}>
       <div className={styles.chatApp}>
@@ -193,12 +183,9 @@ function MessagesContent() {
         <div className={styles.conversationsPanel}>
           <div className={styles.conversationsHeader}>
             <div className={styles.userProfile}>
-              <div className={styles.userAvatar}>
-                AU
-              </div>
+          
               <div className={styles.userInfo}>
                 <h3>GaraZero Chat</h3>
-                
               </div>
             </div>
             
@@ -224,7 +211,11 @@ function MessagesContent() {
                 onClick={() => handleUserSelect(user)}
               >
                 <div className={styles.conversationAvatar}>
-                  {getUserInitials(user)}
+                  <img
+                    src={selectedUser?.avatar ? selectedUser.avatar : '/images/default-avatar.png'}
+                    alt={selectedUser?.username || 'Avatar'}
+                    style={{ width: '40px', height: '40px', borderRadius: '50%' }}
+                  />
                   <div className={styles.onlineStatus}></div>
                 </div>
                 
@@ -266,7 +257,11 @@ function MessagesContent() {
                     ←
                   </button>
                   <div className={styles.conversationAvatar}>
-                    {getUserInitials(selectedUser)}
+                    <img
+                      src={selectedUser?.avatar ? selectedUser.avatar : '/images/default-avatar.png'}
+                      alt={selectedUser?.username || 'Avatar'}
+                      style={{ width: '40px', height: '40px', borderRadius: '50%' }}
+                    />
                     <div className={styles.onlineStatus}></div>
                   </div>
                   <div className={styles.chatPartnerInfo}>

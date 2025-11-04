@@ -7,6 +7,7 @@ import DashboardLayout from "../DashboardLayout/page";
 
 export default function EditProfile() {
   const [user, setUser] = useState(null);
+  const [avatarFile, setAvatarFile] = useState(null);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -48,9 +49,14 @@ export default function EditProfile() {
     setMessage("");
 
     try {
-      const dataToUpdate = { ...formData };
-      if (!dataToUpdate.password) delete dataToUpdate.password;
-      await authService.updateProfile(dataToUpdate);
+      const formDataToSend = new FormData();
+      formDataToSend.append("username", formData.username);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone_number", formData.phone);
+      if (formData.password) formDataToSend.append("password", formData.password);
+      if (avatarFile) formDataToSend.append("avatar", avatarFile);
+
+      await authService.updateProfile(formDataToSend, true); 
       setMessage("✅ Profil został zaktualizowany!");
       await loadProfile();
     } catch (error) {
@@ -60,6 +66,7 @@ export default function EditProfile() {
       setLoading(false);
     }
   };
+
 
   const handleLogout = async () => {
       try {
@@ -150,6 +157,24 @@ export default function EditProfile() {
                     className={styles.epInput}
                     />
                 </div>
+
+                <div className={styles.epFormRow}>
+                  <label className={styles.epLabel}>Zdjęcie profilowe</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setAvatarFile(e.target.files[0])}
+                    className={styles.epInput}
+                  />
+                  {user.avatar && (
+                    <img
+                      src={`http://localhost:8000${user.avatar}`}
+                      alt="Avatar"
+                      className={styles.epAvatarPreview}
+                    />
+                  )}
+                </div>
+
 
                 <div className={styles.epFormActions}>
                     <button

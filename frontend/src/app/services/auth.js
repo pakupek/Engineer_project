@@ -136,12 +136,32 @@ export const authService = {
   },
 
   // Aktualizacja profilu użytkownika
-  async updateProfile(userData) {
+  async updateProfile(userData, isFormData = false) {
     try {
-      const response = await api.patch('http://localhost:8000/api/profile/', userData);
+      const config = {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      };
+
+      // jeśli wysyłamy plik (FormData) — nie ustawiamy Content-Type, axios zrobi to automatycznie
+      if (!isFormData) {
+        config.headers["Content-Type"] = "application/json";
+      }
+
+      const response = await api.patch(
+        "http://localhost:8000/api/profile/",
+        userData,
+        config
+      );
+
       return response.data;
     } catch (error) {
-      throw new Error(error.response?.data || 'Błąd aktualizacji profilu');
+      console.error("Błąd aktualizacji profilu:", error);
+      throw new Error(
+        error.response?.data?.detail ||
+          "❌ Wystąpił błąd podczas aktualizacji profilu"
+      );
     }
   },
 
