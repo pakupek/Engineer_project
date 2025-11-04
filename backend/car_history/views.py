@@ -90,21 +90,18 @@ def check_auth_status(request):
     }, status=status.HTTP_200_OK)
 
 
-class MessageListCreateView(generics.ListCreateAPIView):
+class MessageListCreateView(generics.CreateAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return MessageCreateSerializer
-        return MessageSerializer
-    
-    def get_queryset(self):
-        # Pokaż tylko wiadomości gdzie użytkownik jest nadawcą lub odbiorcą
-        return Message.objects.filter(
-            Q(sender=self.request.user) | Q(receiver=self.request.user)
-        ).select_related('sender', 'receiver')
-    
+
     def perform_create(self, serializer):
+        receiver = self.request.data.get("receiver")
+
+        # Blokada wysyłania wiadomości do samego siebie
+        if str(self.request.user.id) == str(receiver):
+            raise ValidationError("Nie możesz wysłać wiadomości do samego siebie.")
+        
         serializer.save(sender=self.request.user)
 
 class ConversationListView(generics.ListAPIView):
