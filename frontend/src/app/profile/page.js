@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { User, LogOut, Settings, Home, Loader2 } from "lucide-react";
 import { authService, logout } from "../Services/auth";
 import styles from "./Profile.module.css"
+import UserVehicleSalesList from "./UserVehicleSalesList";
 
 import DashboardLayout from "../DashboardLayout/page";
 
@@ -86,6 +87,7 @@ export default function UserDashboard() {
             </p>
           </div>
 
+
           <div className={styles.statCard}>
             <h3 className={styles.statLabel}>Ostatnia aktywność</h3>
             <p className={styles.statValueGray}>
@@ -100,6 +102,10 @@ export default function UserDashboard() {
             </p>
           </div>
         </div>
+        {/* Sekcja z autami użytkownika */}
+          <section className={styles.userSalesSection}>
+            <UserVehicleSalesList />
+          </section>
       </main>
     </DashboardLayout>
   );

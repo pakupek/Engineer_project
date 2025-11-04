@@ -711,3 +711,28 @@ class VehicleSaleView(generics.ListCreateAPIView):
         vehicle = serializer.instance.vehicle
         vehicle.for_sale = True
         vehicle.save()
+
+
+class VehicleSaleDetailView(generics.RetrieveDestroyAPIView):
+    """
+    Endpoint do usuwania ogłoszenia sprzedaży auta
+    """
+    
+    queryset = VehicleSale.objects.all()
+    serializer_class = VehicleSaleSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # sprawdzamy, czy użytkownik jest właścicielem ogłoszenia
+        if instance.owner != request.user:
+            return Response({"detail": "Nie masz uprawnień do usunięcia tego ogłoszenia."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        # zmieniamy status pojazdu na nie na sprzedaż
+        vehicle = instance.vehicle
+        vehicle.for_sale = False
+        vehicle.save()
+
+        instance.delete()
+        return Response({"detail": "Ogłoszenie zostało usunięte."}, status=status.HTTP_204_NO_CONTENT)
