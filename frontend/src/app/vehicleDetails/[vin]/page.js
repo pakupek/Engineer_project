@@ -29,6 +29,7 @@ export default function CarDetails() {
   const [damageReloadKey, setDamageReloadKey] = useState(0);
   const [editingDamage, setEditingDamage] = useState(null);
   const handleEditEntry = (entry) => setEditingEntry(entry);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   const handleSave = () => {
     setEditingEntry(null);
@@ -38,6 +39,47 @@ export default function CarDetails() {
   const handleDamageAdded = () => {
     setDamageReloadKey((prev) => prev + 1);
   };
+
+
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloadingPdf(true);
+      const token = getToken();
+      
+      const response = await fetch(
+        `http://localhost:8000/api/vehicles/${vin}/history/pdf/`,
+        {
+          method: "GET",
+          headers: { 
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Błąd serwera: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${vin}_historia.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error("Błąd pobierania PDF:", error);
+      alert("Nie udało się wygenerować PDF. Sprawdź czy pojazd ma komplet danych.");
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
+
 
 
   const [showSaleForm, setShowSaleForm] = useState(false);
@@ -161,6 +203,53 @@ export default function CarDetails() {
                     </div>
                   )}
                 </div>
+                {/* ✅ PRZYCISK POBIERANIA PDF */}
+                <button
+                  onClick={handleDownloadPdf}
+                  disabled={downloadingPdf}
+                  className={sectionStyle["download-btn"]}
+                  style={{
+                    marginTop: "20px",
+                    padding: "12px 20px",
+                    background: downloadingPdf ? "#6b7280" : "#1f2937",
+                    color: "white",
+                    borderRadius: "8px",
+                    border: "none",
+                    cursor: downloadingPdf ? "not-allowed" : "pointer",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    transition: "all 0.2s ease",
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                  }}
+                  onMouseOver={(e) => {
+                    if (!downloadingPdf) {
+                      e.target.style.background = "#374151";
+                      e.target.style.transform = "translateY(-1px)";
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!downloadingPdf) {
+                      e.target.style.background = "#1f2937";
+                      e.target.style.transform = "translateY(0)";
+                    }
+                  }}
+                >
+                  {downloadingPdf ? (
+                    <>
+                      <span>⏳</span>
+                      Generowanie PDF...
+                    </>
+                  ) : (
+                    <>
+                      <span>📄</span>
+                      Pobierz historię pojazdu (PDF)
+                    </>
+                  )}
+                </button>
               </div>
 
               {/* PRAWA STRONA */}

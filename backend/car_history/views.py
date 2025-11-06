@@ -44,12 +44,16 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.shortcuts import get_object_or_404
-from django.http import Http404, JsonResponse
+from django.http import Http404, JsonResponse, HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 import logging, shutil, os, json
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from bs4 import BeautifulSoup
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+from io import BytesIO
+
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +95,94 @@ def check_auth_status(request):
             'email': user.email
         }
     }, status=status.HTTP_200_OK)
+
+
+class VehicleHistoryPDFView(generics.RetrieveAPIView):
+    lookup_field = "vin"
+    queryset = Vehicle.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, vin, *args, **kwargs):
+        try:
+            logger.info(f"Generating PDF for VIN: {vin}")
+            
+            # Pobierz pojazd
+            try:
+                vehicle = Vehicle.objects.get(vin=vin)
+            except Vehicle.DoesNotExist:
+                logger.error(f"Vehicle with VIN {vin} not found")
+                return Response({"error": "Pojazd nie istnieje"}, status=404)
+
+            # Pobierz powiązane dane
+            service_entries = ServiceEntry.objects.filter(vehicle=vehicle).order_by('-date')
+            damage_entries = DamageEntry.objects.filter(vehicle=vehicle).order_by('-date')
+
+            logger.info(f"Found {service_entries.count()} service entries, {damage_entries.count()} damage entries")
+
+            # Renderuj template
+            try:
+                html_string = render_to_string('vehicle_history_pdf.html', {
+                    'vehicle': vehicle,
+                    'service_entries': service_entries,
+                    'damage_entries': damage_entries,
+                })
+                logger.info("HTML template rendered successfully")
+            except Exception as e:
+                logger.error(f"Template rendering error: {str(e)}")
+                return Response({"error": "Błąd renderowania szablonu"}, status=500)
+
+            # Utwórz response
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{vin}_historia.pdf"'
+            
+            # Konwertuj HTML do PDF z polskim fontem
+            pisa_status = pisa.CreatePDF(
+                html_string, 
+                dest=response,
+                encoding='UTF-8',
+                link_callback=self._link_callback
+            )
+            
+            if pisa_status.err:
+                logger.error(f"PDF generation error: {pisa_status.err}")
+                return Response({"error": "Błąd generowania PDF"}, status=500)
+
+            logger.info("PDF generated successfully")
+            return response
+
+        except Exception as e:
+            logger.error(f"Unexpected error in PDF view: {str(e)}")
+            return Response(
+                {"error": f"Wewnętrzny błąd serwera: {str(e)}"}, 
+                status=500
+            )
+
+    def _link_callback(self, uri, rel):
+        """
+        Callback do obsługi fontów w xhtml2pdf
+        """
+        # Jeśli to font, zwróć ścieżkę do fonta z polskimi znakami
+        if uri.endswith('.ttf'):
+            font_path = self._get_polish_font_path()
+            if font_path:
+                return font_path
+        return uri
+
+    def _get_polish_font_path(self):
+        """
+        Zwraca ścieżkę do fonta z polskimi znakami
+        """
+        font_paths = [
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+            "C:/Windows/Fonts/arial.ttf",
+            "/Library/Fonts/Arial Unicode.ttf",
+        ]
+        
+        for path in font_paths:
+            if os.path.exists(path):
+                return path
+        return None
 
 
 class MessageListCreateView(generics.CreateAPIView):

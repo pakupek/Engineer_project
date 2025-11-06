@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap');
+        
+       
+        body {
+            font-family: 'Roboto', 'Open Sans', 'DejaVu Sans', Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        * {
+            -pdf-encoding: Unicode;
+        }
+        
+        .header { text-align: center; margin-bottom: 30px; }
+        .section { margin-bottom: 25px; }
+        .section-title { 
+            background: #4b4b4b; 
+            color: white; 
+            padding: 8px 12px; 
+            margin-bottom: 15px; 
+            font-size: 14px; 
+            font-weight: bold; 
+        }
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 8px 10px; border-bottom: 1px solid #ddd; }
+        .label { width: 30%; color: #555; font-weight: bold; }
+        
+        .no-data {
+            text-align: center;
+            color: #777;
+            font-style: italic;
+            padding: 20px;
+        }
+        
+        .entry-item {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            border-radius: 4px;
+        }
+        
+        .damage-item {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Raport historii pojazdu</h1>
+        <h2>VIN: {{ vehicle.vin }}</h2>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Dane pojazdu</div>
+        <table>
+            <tr>
+                <td class="label">Marka:</td>
+                <td>{{ vehicle.generation.model.make.name }}</td>
+            </tr>
+            <tr>
+                <td class="label">Model:</td>
+                <td>{{ vehicle.generation.model.name }}</td>
+            </tr>
+            <tr>
+                <td class="label">Generacja:</td>
+                <td>{{ vehicle.generation.name }}</td>
+            </tr>
+            <tr>
+                <td class="label">Rok produkcji:</td>
+                <td>{{ vehicle.production_year }}</td>
+            </tr>
+            <tr>
+                <td class="label">VIN:</td>
+                <td>{{ vehicle.vin }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Dane techniczne</div>
+        <table>
+            <tr>
+                <td class="label">Przebieg:</td>
+                <td>{{ vehicle.odometer }} km</td>
+            </tr>
+            <tr>
+                <td class="label">Typ paliwa:</td>
+                <td>{{ vehicle.fuel_type }}</td>
+            </tr>
+            <tr>
+                <td class="label">Kolor nadwozia:</td>
+                <td>{{ vehicle.body_color }}</td>
+            </tr>
+            <tr>
+                <td class="label">Kolor wnętrza:</td>
+                <td>{{ vehicle.interior_color }}</td>
+            </tr>
+            <tr>
+                <td class="label">Skrzynia biegów:</td>
+                <td>{{ vehicle.transmission_type }}</td>
+            </tr>
+            <tr>
+                <td class="label">Napęd:</td>
+                <td>{{ vehicle.drive_type }}</td>
+            </tr>
+            <tr>
+                <td class="label">Cena:</td>
+                <td>{{ vehicle.price }} PLN</td>
+            </tr>
+            <tr>
+                <td class="label">Lokalizacja:</td>
+                <td>{{ vehicle.location }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Historia serwisowa</div>
+        {% if service_entries %}
+            {% for service in service_entries %}
+                <div class="entry-item">
+                    <strong>{{ service.date }}</strong><br>
+                    {{ service.description }}
+                    {% if service.cost %}
+                        <br><span style="color: #27ae60;">Koszt: {{ service.cost }} PLN</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-data">Brak wpisów serwisowych</div>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Historia szkód</div>
+        {% if damage_entries %}
+            {% for damage in damage_entries %}
+                <div class="entry-item damage-item">
+                    <strong>{{ damage.date }}</strong><br>
+                    {{ damage.description }}
+                    {% if damage.repair_cost %}
+                        <br><span style="color: #e74c3c;">Koszt naprawy: {{ damage.repair_cost }} PLN</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-data">Brak zgłoszonych szkód</div>
+        {% endif %}
+    </div>
+
+    <div style="text-align: center; margin-top: 40px; color: #777; font-size: 10px;">
+        Wygenerowano: {% now "Y-m-d H:i" %}
+    </div>
+</body>
+</html>
