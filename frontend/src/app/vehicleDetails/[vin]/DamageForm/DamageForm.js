@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import ImageDamageCreate from "../ImageDamageCreate";
+import ImageDamageCreate from "../ImageDamage/ImageDamageCreate";
 import style from "./DamageForm.module.css";
 
 export default function DamageForm({

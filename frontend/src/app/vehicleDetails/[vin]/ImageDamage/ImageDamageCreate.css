@@ -1,0 +1,27 @@
+.damage-container {
+  position: relative;
+  display: inline-block;   /* kontener dopasowuje się do rozmiaru obrazka */
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: crosshair;
+  background: #000;
+}
+
+.damage-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  pointer-events: none;    /* klik łapie kontener */
+}
+
+.damage-marker {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 2px #000;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}

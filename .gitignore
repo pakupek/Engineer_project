@@ -7,9 +7,8 @@ __pycache__/
 *.so
 
 # Backend media files
+media/
 
-vehicles/
-user_1/
 
 # Distribution / packaging
 .Python

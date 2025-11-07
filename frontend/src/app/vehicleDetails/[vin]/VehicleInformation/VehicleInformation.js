@@ -9,21 +9,21 @@ export function VehicleInformationOverlay({ car }){
     return (
         <div className={styles.overlay}>
         {/* Overlay z podstawowymi danymi */}
-            <div className="flex flex-col">
+            <div className={styles.leftColumn}>
                 <span className={styles.leftSmall}>Marka</span>
                 <span className={styles.left}>{car.generation?.model?.make?.name}</span>
             </div>
 
-            <div className="flex gap-8">
-                <div className="flex flex-col text-right">
+            <div className={styles.rightGroup}>
+                <div className={styles.rightColumn}>
                     <span className={styles.rightSmall}>Model</span>
                     <span className={styles.right}>{car.generation?.model?.name}</span>
                 </div>
-                <div className="flex flex-col text-right">
+                <div className={styles.rightColumn}>
                     <span className={styles.rightSmall}>Paliwo</span>
                     <span className={styles.right}>{car.fuel_type}</span>
                 </div>
-                <div className="flex flex-col text-right">
+                <div className={styles.rightColumn}>
                     <span className={styles.rightSmall}>Przebieg</span>
                     <span className={styles.right}>{car.odometer}</span>
                 </div>

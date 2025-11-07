@@ -36,8 +36,24 @@
   text-shadow: 0px 2px 6px rgba(0, 0, 0, 0.6);
 }
 
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+}
+
 .left {
   text-align: left;
+}
+
+.rightGroup {
+  display: flex;
+  gap: 32px; 
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
 }
 
 .leftSmall{

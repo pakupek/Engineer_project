@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import styles from "./VehicleSaleDetail.module.css";
 import { getToken } from "../../Services/auth";
+import PDFView from "./PDFView";
 
 export default function VehicleSaleDetail({ saleId }) {
   const [sale, setSale] = useState(null);
@@ -81,6 +82,13 @@ export default function VehicleSaleDetail({ saleId }) {
       <h2>Opis ogłoszenia</h2>
       <p>{sale.description || "Brak opisu dla tego ogłoszenia."}</p>
     </div>
+
+    {/* PODGLĄD PDF Z HISTORIĄ POJAZDU */}
+    {sale.history_pdf && (
+      <PDFView url={sale.history_pdf} />
+    )}
+
+
 
     {/* MAPA LOKALIZACJI */}
     {sale.vehicle_info?.location && (

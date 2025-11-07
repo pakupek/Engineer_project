@@ -1,5 +1,5 @@
 import "./DamageHistory.css";
-import ImageDamageShow from "../ImageDamageCreate";
+import ImageDamageShow from "../ImageDamage/ImageDamageCreate";
 
 export default function DamageHistoryForm({ damageEntries, handleDelete, onEditDamage}){
     return(
@@ -38,8 +38,8 @@ export default function DamageHistoryForm({ damageEntries, handleDelete, onEditD
                         </div>
         
                         <div className="actions">
-                          <button onClick={() => handleDelete(entry.id)}>🗑 Usuń</button>
-                          <button onClick={() => onEditDamage(entry)}>✏️ Edytuj</button>
+                          <button className="delete-button" onClick={() => handleDelete(entry.id)}>🗑️ Usuń</button>
+                          <button className="edit-button" onClick={() => onEditDamage(entry)}>✏️ Edytuj</button>
                         </div>
                       </div>
                     </div>

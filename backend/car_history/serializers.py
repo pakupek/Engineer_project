@@ -256,14 +256,23 @@ class VehicleSaleSerializer(serializers.ModelSerializer):
     owner_info = serializers.SerializerMethodField()
     current_user = serializers.SerializerMethodField()
     stats = serializers.SerializerMethodField()
+    history_pdf = serializers.SerializerMethodField()
 
     class Meta:
         model = VehicleSale
         fields = [
-            "id", "vehicle", "vehicle_info", "owner_info","owner","current_user","stats",
+            "id", "vehicle", "vehicle_info", "history_pdf","owner_info","owner","current_user","stats",
             "title", "description", "price", "is_active", "created_at", "history"
         ]
         read_only_fields = ["owner", "created_at", "history"]
+
+    
+
+    def get_history_pdf(self, obj):
+        if obj.vehicle.history_pdf:
+            return obj.vehicle.history_pdf.url
+        return None
+
 
 
     def get_stats(self, obj):

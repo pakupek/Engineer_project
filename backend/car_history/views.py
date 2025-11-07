@@ -104,58 +104,59 @@ class VehicleHistoryPDFView(generics.RetrieveAPIView):
 
     def get(self, request, vin, *args, **kwargs):
         try:
-            logger.info(f"Generating PDF for VIN: {vin}")
-            
             # Pobierz pojazd
             try:
                 vehicle = Vehicle.objects.get(vin=vin)
             except Vehicle.DoesNotExist:
-                logger.error(f"Vehicle with VIN {vin} not found")
                 return Response({"error": "Pojazd nie istnieje"}, status=404)
 
-            # Pobierz powiązane dane
-            service_entries = ServiceEntry.objects.filter(vehicle=vehicle).order_by('-date')
-            damage_entries = DamageEntry.objects.filter(vehicle=vehicle).order_by('-date')
+            # Pobierz wpisy serwisowe i uszkodzenia
+            service_entries = ServiceEntry.objects.filter(vehicle=vehicle).order_by("-date")
+            damage_entries = DamageEntry.objects.filter(vehicle=vehicle).order_by("-date")
 
-            logger.info(f"Found {service_entries.count()} service entries, {damage_entries.count()} damage entries")
+            # Render HTML
+            html_string = render_to_string("vehicle_history_pdf.html", {
+                "vehicle": vehicle,
+                "service_entries": service_entries,
+                "damage_entries": damage_entries,
+            })
 
-            # Renderuj template
-            try:
-                html_string = render_to_string('vehicle_history_pdf.html', {
-                    'vehicle': vehicle,
-                    'service_entries': service_entries,
-                    'damage_entries': damage_entries,
-                })
-                logger.info("HTML template rendered successfully")
-            except Exception as e:
-                logger.error(f"Template rendering error: {str(e)}")
-                return Response({"error": "Błąd renderowania szablonu"}, status=500)
-
-            # Utwórz response
-            response = HttpResponse(content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="{vin}_historia.pdf"'
-            
-            # Konwertuj HTML do PDF z polskim fontem
+            # ✅ Tworzymy PDF w pamięci → będzie zwrócony jako response
+            pdf_memory = BytesIO()
             pisa_status = pisa.CreatePDF(
-                html_string, 
-                dest=response,
-                encoding='UTF-8',
+                html_string,
+                dest=pdf_memory,
+                encoding="UTF-8",
                 link_callback=self._link_callback
             )
-            
+
             if pisa_status.err:
-                logger.error(f"PDF generation error: {pisa_status.err}")
+                logger.error("PDF generation error")
                 return Response({"error": "Błąd generowania PDF"}, status=500)
 
-            logger.info("PDF generated successfully")
+            # ✅ Zapisujemy również PDF do MEDIA/pdf_exports/
+            export_dir = os.path.join(settings.MEDIA_ROOT, "pdf_exports")
+            os.makedirs(export_dir, exist_ok=True)
+
+            pdf_filename = f"{vin}_historia.pdf"
+            pdf_path = os.path.join(export_dir, pdf_filename)
+
+            with open(pdf_path, "wb") as f:
+                f.write(pdf_memory.getvalue())
+
+            # ✅ Zapis ścieżki PDF do modelu
+            vehicle.history_pdf = f"pdf_exports/{pdf_filename}"
+            vehicle.save(update_fields=["history_pdf"])
+
+            # ✅ Zwracamy PDF użytkownikowi
+            pdf_memory.seek(0)
+            response = HttpResponse(pdf_memory.getvalue(), content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename="{pdf_filename}"'
             return response
 
         except Exception as e:
-            logger.error(f"Unexpected error in PDF view: {str(e)}")
-            return Response(
-                {"error": f"Wewnętrzny błąd serwera: {str(e)}"}, 
-                status=500
-            )
+            logger.exception("Unexpected server error")
+            return Response({"error": str(e)}, status=500)
 
     def _link_callback(self, uri, rel):
         """

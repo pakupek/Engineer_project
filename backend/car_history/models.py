@@ -205,6 +205,7 @@ class Vehicle(models.Model):
     for_sale = models.BooleanField(default=False, verbose_name='Na sprzedaż')
     registration = models.CharField(default='', verbose_name='Nr rejestracyjny')
     fuel_type = models.CharField(max_length=20, choices=FUEL_TYPES, default='', verbose_name='Typ paliwa')
+    history_pdf = models.FileField(upload_to="pdf_exports/", null=True, blank=True)
 
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
