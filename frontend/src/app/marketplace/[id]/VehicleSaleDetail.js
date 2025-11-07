@@ -5,6 +5,7 @@ import styles from "./VehicleSaleDetail.module.css";
 import { getToken } from "../../Services/auth";
 import PDFView from "./PDFView";
 
+
 export default function VehicleSaleDetail({ saleId }) {
   const [sale, setSale] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -69,7 +70,7 @@ export default function VehicleSaleDetail({ saleId }) {
           <div><strong>Model:</strong> {sale.vehicle_info?.model}</div>
           <div><strong>Kolor nadwozia:</strong> {sale.vehicle_info?.body_color}</div>
           <div><strong>Napęd:</strong> {sale.vehicle_info?.drive_type}</div>
-          <div><strong>Skrzynia biegów:</strong> {sale.vehicle_info?.transmission}</div>
+          <div><strong>Skrzynia biegów:</strong> {sale.vehicle_info?.transmission_type}</div>
           <div><strong>Rok produkcji:</strong> {sale.vehicle_info?.production_year}</div>
           <div><strong>Przebig:</strong> {sale.vehicle_info?.odometer}</div>
           <div><strong>Paliwo:</strong> {sale.vehicle_info?.fuel_type}</div>
@@ -85,7 +86,7 @@ export default function VehicleSaleDetail({ saleId }) {
 
     {/* PODGLĄD PDF Z HISTORIĄ POJAZDU */}
     {sale.history_pdf && (
-      <PDFView url={sale.history_pdf} />
+      <PDFView fileUrl={sale.history_pdf} />
     )}
 
 
