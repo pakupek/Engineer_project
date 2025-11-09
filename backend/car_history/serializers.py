@@ -18,6 +18,17 @@ from .models import (
 from django.contrib.auth.password_validation import validate_password
 import datetime
 
+
+# Serializer do artykułów motoryzacyjnych
+class ArticleSerializer(serializers.Serializer):
+    id = serializers.CharField(allow_blank=True, required=False)
+    title = serializers.CharField()
+    summary = serializers.CharField(allow_blank=True, required=False)
+    image_url = serializers.CharField(allow_blank=True, required=False)
+    published_at = serializers.CharField(allow_blank=True, required=False)
+    url = serializers.CharField(allow_blank=True, required=False)
+    source = serializers.CharField(allow_blank=True, required=False)
+
 class VehicleImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = VehicleImage

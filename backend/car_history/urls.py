@@ -28,6 +28,7 @@ from .views import (
     VehicleSaleView,
     VehicleSaleDetailView,
     VehicleHistoryPDFView,
+    AutomotiveNewsView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -72,6 +73,7 @@ urlpatterns = [
     path('sales/', VehicleSaleView.as_view(), name='vehicle_sale'),
     path("sales/<int:pk>/", VehicleSaleDetailView.as_view(), name="vehicle_sale_detail"),
     path("vehicles/<str:vin>/history/pdf/", VehicleHistoryPDFView.as_view(), name="vehicle_history_pdf"),
+    path("automotive-news/", AutomotiveNewsView.as_view(), name="automotive_news"),
 ]
 
 if settings.DEBUG:

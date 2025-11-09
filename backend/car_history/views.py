@@ -20,6 +20,7 @@ from .serializers import (
     DamageEntrySerializer,
     VehicleDeleteSerializer,
     VehicleSaleSerializer,
+    ArticleSerializer,
 )
 from rest_framework.permissions import AllowAny
 from .models import (
@@ -46,14 +47,15 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.shortcuts import get_object_or_404
 from django.http import Http404, JsonResponse, HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-import logging, shutil, os, json
+import logging, shutil, os, json, requests
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from bs4 import BeautifulSoup
 from django.template.loader import render_to_string
 from xhtml2pdf import pisa
 from io import BytesIO
-
+from rest_framework.throttling import UserRateThrottle
+from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +68,72 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+    
+# Rate limit do 5 zapytań na minute    
+class AutomotiveNewsThrottle(UserRateThrottle):
+    rate = '5/min'
+
+# Widok do pobrania artykułów motoryzacyjnych
+# Cache: 5 minut (300 sek)
+CACHE_TIME = 60 * 15
+MAX_SUMMARY_LENGTH = 200
+class AutomotiveNewsView(generics.GenericAPIView):
+    throttle_classes = [AutomotiveNewsThrottle]
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        cache_key = "automotive_news_articles"
+        cached_articles = cache.get(cache_key)
+        if cached_articles:
+            return Response({"articles": cached_articles})
+
+        api_key = getattr(settings, "APITUBE_KEY", None)
+        if not api_key:
+            return Response(
+                {"error": "API key missing"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        url = (
+            "https://api.apitube.io/v1/news/everything"
+            "?topic.id=industry.automotive_news"
+            "&sort.order=desc"
+            "&per_page=4"
+            "&page=1"
+            f"&api_key={api_key}"
+        )
+
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            data = response.json().get("results", [])
+        except requests.RequestException as e:
+            # Jeśli API zawiedzie, sprawdzamy cache
+            if cached_articles:
+                return Response(
+                    {"articles": cached_articles, "warning": "Serving cached articles due to API error."}
+                )
+            return Response(
+                {"error": "APITube error", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        articles = [
+            {
+                "id": item.get("id"),
+                "title": item.get("title"),
+                "summary": item.get("description")[:MAX_SUMMARY_LENGTH] + "..." or item.get("summary")[:MAX_SUMMARY_LENGTH] + "...",
+                "image_url": item.get("image") or item.get("thumbnail"),
+                "published_at": item.get("published_at") or item.get("published"),
+                "url": item.get("href"),
+                "source": item.get("source"),
+            }
+            for item in data
+        ]
+
+        serializer = ArticleSerializer(articles, many=True)
+        cache.set(cache_key, serializer.data, CACHE_TIME)
+        return Response({"articles": serializer.data})
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

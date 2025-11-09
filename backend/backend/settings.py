@@ -27,6 +27,10 @@ MEDIA_ROOT = MEDIA_ROOT = '/app/backend/media'
 MEDIA_URL = '/media/'
 
 
+# Pobranie klucza API 
+APITUBE_KEY = os.getenv("APITUBE_KEY")
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -72,6 +76,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
 ]
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
 
 # Konfiguracja REST Framework
 REST_FRAMEWORK = {

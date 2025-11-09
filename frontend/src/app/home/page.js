@@ -1,4 +1,5 @@
 import ClientScripts from "../components/ClientScripts";
+import AutomotiveNewsSection from "./AutomotiveNews/AutomotiveNewsSection";
 
 export default function HomePage() {
   return (
@@ -65,76 +66,7 @@ export default function HomePage() {
 
       
       {/* ----- Sekcja Tematów Motoryzacyjnych ------------*/}
-      <section className="news08 cid-uXZuRd8YdW" id="blog-5-uXZuRd8YdW">
-        <div className="container">
-          <div className="row justify-content-center mb-5">
-            <div className="col-12 content-head">
-              <div className="mbr-section-head">
-                <h4 className="mbr-section-title mbr-fonts-style align-center mb-0 display-2" >
-                  <strong>Gorące Tematy Motoryzacji</strong>
-                </h4>
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="item features-image col-12 col-md-6 col-lg-6 active">
-              <div className="item-wrapper">
-                <div className="item-img mb-3">
-                  <img alt="Mobirise Website Builder" title="" data-slide-to="0" data-bs-slide-to="0" src="https://proxy.electricblaze.com/?u&#x3D;https%3A%2F%2Fimages.unsplash.com%2Fphoto-1758354973020-4d76f42e104e%3Fixid%3DM3w0Mzc5fDB8MXxzZWFyY2h8MTR8fGNhciUyMGNvbW11bml0eXxlbnwwfDB8fHwxNzU4OTY3NTM1fDA%26ixlib%3Drb-4.1.0%26auto%3Dformat%26fit%3Dcrop%26w%3D1200%26q%3D50&amp;e&#x3D;1762560000&amp;s&#x3D;deXt_ShecB338qiC4EfQzEoxrOGHYbnzJ8FfgiX3az8"/>
-                </div>
-                <div className="item-content align-left">
-                  <h5 className="item-title mbr-fonts-style mt-0 mb-3 display-7" >2025-09-26</h5>
-                  <h6 className="item-subtitle mbr-fonts-style mb-3 display-5" >
-                    <strong>Nowości ze świata aut</strong>
-                  </h6>
-                  <p className="mbr-text mbr-fonts-style mb-3 display-7" >Najnowsze premiery i zapowiedzi ze świata motoryzacji. Bądź na bieżąco z trendami.</p>
-                  
-                </div>
-              </div>
-            </div><div className="item features-image col-12 col-md-6 col-lg-6">
-              <div className="item-wrapper">
-                <div className="item-img mb-3">
-                  <img alt="Mobirise Website Builder" title="" data-slide-to="1" data-bs-slide-to="1" src="https://proxy.electricblaze.com/?u&#x3D;https%3A%2F%2Fimages.unsplash.com%2Fphoto-1517213830215-ad88cda1f131%3Fixid%3DM3w0Mzc5fDB8MXxzZWFyY2h8MjZ8fGNhciUyMGNvbW11bml0eXxlbnwwfDB8fHwxNzU4OTY3NTM1fDA%26ixlib%3Drb-4.1.0%26auto%3Dformat%26fit%3Dcrop%26w%3D1200%26q%3D50&amp;e&#x3D;1762560000&amp;s&#x3D;8peCzKNqjUQplz1ZcmQihFSAAS6uiufmUGYo_A9mo2k"/>
-                </div>
-                <div className="item-content align-left">
-                  <h5 className="item-title mbr-fonts-style mt-0 mb-3 display-7" >2025-09-25</h5>
-                  <h6 className="item-subtitle mbr-fonts-style mb-3 display-5" >
-                    <strong>Porady ekspertów</strong>
-                  </h6>
-                  <p className="mbr-text mbr-fonts-style mb-3 display-7" >Praktyczne wskazówki dotyczące konserwacji i napraw Twojego pojazdu.</p>
-                </div>
-              </div>
-            </div><div className="item features-image col-12 col-md-6 col-lg-6">
-              <div className="item-wrapper">
-                <div className="item-img mb-3">
-                  <img alt="Mobirise Website Builder" title="" data-slide-to="2" data-bs-slide-to="3" src="https://proxy.electricblaze.com/?u&#x3D;https%3A%2F%2Fimages.unsplash.com%2Fphoto-1671613653711-3f74665835d1%3Fixid%3DM3w0Mzc5fDB8MXxzZWFyY2h8MjF8fGNhciUyMGNvbW11bml0eXxlbnwwfDB8fHwxNzU4OTY3NTM1fDA%26ixlib%3Drb-4.1.0%26auto%3Dformat%26fit%3Dcrop%26w%3D1200%26q%3D50&amp;e&#x3D;1762560000&amp;s&#x3D;uqHryE2wfG9mxA2L29OJ6ZE0KMxWjpIBbl5VPr8QGc8"/>
-                </div>
-                <div className="item-content align-left">
-                  <h5 className="item-title mbr-fonts-style mt-0 mb-3 display-7" >2025-09-24</h5>
-                  <h6 className="item-subtitle mbr-fonts-style mb-3 display-5" >
-                    <strong>Testy drogowe</strong>
-                  </h6>
-                  <p className="mbr-text mbr-fonts-style mb-3 display-7" >Szczegółowe recenzje najnowszych modeli samochodów.</p>
-                  
-                </div>
-              </div>
-            </div><div className="item features-image col-12 col-md-6 col-lg-6">
-              <div className="item-wrapper">
-                <div className="item-img mb-3">
-                  <img alt="Mobirise Website Builder" title="" data-slide-to="3" data-bs-slide-to="4" src="https://proxy.electricblaze.com/?u&#x3D;https%3A%2F%2Fimages.unsplash.com%2Fphoto-1550252308-87f004632e0a%3Fixid%3DM3w0Mzc5fDB8MXxzZWFyY2h8MTB8fGNhciUyMGNvbW11bml0eXxlbnwwfDB8fHwxNzU4OTY3NTM1fDA%26ixlib%3Drb-4.1.0%26auto%3Dformat%26fit%3Dcrop%26w%3D1200%26q%3D50&amp;e&#x3D;1762560000&amp;s&#x3D;88qQ9nNZhEYi8yLrLFObn5msyXb7bpKlT_At-uJJ8Zk"/>
-                </div>
-                <div className="item-content align-left">
-                  <h5 className="item-title mbr-fonts-style mt-0 mb-3 display-7" >2025-09-23</h5>
-                  <h6 className="item-subtitle mbr-fonts-style mb-3 display-5" >
-                    <strong>Historia motoryzacji</strong>
-                  </h6>
-                  <p className="mbr-text mbr-fonts-style mb-3 display-7" >Cofnij się w czasie i poznaj legendarne samochody.</p> 
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <AutomotiveNewsSection></AutomotiveNewsSection>
 
       
       {/* ---------- Sekcja Najczęściej zadawane pytania -------------*/}
