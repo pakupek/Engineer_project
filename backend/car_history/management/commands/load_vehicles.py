@@ -751,13 +751,7 @@ class Command(BaseCommand):
         for make_name, models in vehicle_data.items():
             try:
                 make_name_clean = make_name.strip()
-                make_obj, created_make = VehicleMake.objects.get_or_create(name=make_name_clean)
-
-                if created_make:
-                    logger.info(f"✅ Utworzono markę: {make_name_clean}")
-                else:
-                    logger.info(f"ℹ️ Marka już istnieje: {make_name_clean}. Pomijam modele tej marki.")
-                    continue  
+                make_obj, created_make = VehicleMake.objects.get_or_create(name=make_name_clean) 
 
                 for model_name, gens in models.items():
                     model_name_clean = model_name.strip()
@@ -765,11 +759,7 @@ class Command(BaseCommand):
                         make=make_obj,
                         name=model_name_clean
                     )
-                    if created_model:
-                        logger.info(f"Utworzono model: {make_name_clean} {model_name_clean}")
-                    else:
-                        logger.info(f"Model już istnieje: {make_name_clean} {model_name_clean}")
-
+                    
                     for gen_data in gens:
                         gen_name = gen_data.get("name").strip()
                         start = gen_data.get("production_start")
@@ -783,11 +773,6 @@ class Command(BaseCommand):
                                 "production_end": end
                             }
                         )
-
-                        if created_gen:
-                            logger.info(f"Utworzono generację: {make_name_clean} {model_name_clean} {gen_name} ({start}–{end})")
-                        else:
-                            logger.info(f"Generacja już istnieje: {make_name_clean} {model_name_clean} {gen_name}")
 
             except Exception as e:
                 logger.error(f"Błąd przy marce {make_name}: {e}")

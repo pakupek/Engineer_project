@@ -12,6 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
+from django.db.models import Count
 
 logger = logging.getLogger(__name__)
 
@@ -54,19 +55,63 @@ class Discussion(models.Model):
         ('HISTORIA', 'Motoryzacja historyczna'),
     ]
     
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=50)
     content = models.TextField()
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='OGOLNE')
+    views = models.PositiveIntegerField(default=0)
+    comments_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    views = models.IntegerField(default=0)
+    last_activity = models.DateTimeField(default=timezone.now)
+    pinned = models.BooleanField(default=False)      
+    locked = models.BooleanField(default=False)      
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['-pinned', '-last_activity']
 
     def __str__(self):
         return self.title
+    
+    def save(self, *args, **kwargs):
+        # Sprawdzamy czy to nowy obiekt
+        is_new = self.pk is None
+        
+        # Jeśli to nowa dyskusja, ustawiamy last_activity na teraz
+        if is_new:
+            self.last_activity = timezone.now()
+        
+        # Wywołujemy oryginalną metodę save
+        super().save(*args, **kwargs)
+    
+
+    def update_last_activity(self):
+        """Aktualizacja ostatniej aktywności"""
+        
+        Discussion.objects.filter(pk=self.pk).update(
+            last_activity=timezone.now()
+        )
+        self.refresh_from_db(fields=['last_activity'])
+
+    def update_comment_count(self):
+        """Aktualizacja liczby komentarzy"""
+        
+        count = self.comments.aggregate(count=Count('id'))['count']
+        Discussion.objects.filter(pk=self.pk).update(comment_count=count)
+        self.comment_count = count
+
+    def update_likes_count(self):
+        """Aktualizacja liczby polubień"""
+        
+        count = self.likes.aggregate(count=Count('id'))['count']
+        Discussion.objects.filter(pk=self.pk).update(likes_count=count)
+        self.likes_count = count
+
+    def increment_views(self):
+        """Zwiększanie liczby wyświetleń"""
+
+        Discussion.objects.filter(pk=self.pk).update(views=models.F('views') + 1)
+        self.views += 1
 
 
 class Comment(models.Model):
@@ -74,10 +119,19 @@ class Comment(models.Model):
     Model komentarza do dyskusji na forum
     """
 
-    discussion = models.ForeignKey(Discussion, related_name="comments", on_delete=models.CASCADE)
-    content = models.TextField()
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        # Aktualizujemy last_activity dyskusji po dodaniu komentarza
+        if is_new:
+            self.discussion.update_last_activity()
+            self.discussion.update_comment_count()
 
 
 class VehicleMake(models.Model):

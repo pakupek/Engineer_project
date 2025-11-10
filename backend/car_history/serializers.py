@@ -1,4 +1,4 @@
-import json
+import json, datetime
 from rest_framework import serializers
 from .models import (
     User, 
@@ -16,7 +16,6 @@ from .models import (
     VehicleSale,
 )
 from django.contrib.auth.password_validation import validate_password
-import datetime
 
 
 # Serializer do artykułów motoryzacyjnych
@@ -132,39 +131,94 @@ class MessageCreateSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author_name = serializers.CharField(source='author.username', read_only=True)
-    
+    """
+    Serializer komentarza wpisu na forum
+    """
+
+    author_name = serializers.CharField(source="author.username", read_only=True)
+    author_avatar = serializers.ImageField(source="author.avatar", read_only=True)
+
     class Meta:
         model = Comment
-        fields = ['id', 'content', 'author', 'author_name', 'created_at']
-        read_only_fields = ['author', 'created_at']
+        fields = [
+            "id",
+            "discussion",
+            "author",
+            "author_name",
+            "author_avatar",
+            "content",
+            "created_at"
+        ]
+        read_only_fields = ["author", "created_at"]
+
+    def create(self, validated_data):
+        validated_data["author"] = self.context['request'].user
+
+        comment = super().create(validated_data)
+
+        # Aktualizacja statystyk dyskusji
+        discussion = comment.discussion
+        discussion.comments_count = Comment.objects.filter(discussion=discussion).count()
+        discussion.update_last_activity()
+        discussion.save(update_fields=["comments_count", "last_activity"])
+
+        return comment
+
 
 
 class DiscussionSerializer(serializers.ModelSerializer):
-    author_name = serializers.CharField(source='author.username', read_only=True)
-    comment_count = serializers.SerializerMethodField()
-    comments = CommentSerializer(many=True, read_only=True)
-    created_at = serializers.DateTimeField(source='created', read_only=True)
-    updated_at = serializers.DateTimeField(source='updated', read_only=True)
-    
-    class Meta:
-        model = Discussion
-        fields = ['id', 'title', 'content', 'author', 'author_name', 'category', 
-                 'created_at', 'updated_at', 'views', 'comments', 'comment_count']
-        read_only_fields = ['author', 'views', 'created_at', 'updated_at']
-    
-    def get_comment_count(self, obj):
-        return obj.comments.count()
-        
+    """
+    Serializer wpisu na forum 
+    """
 
-class DiscussionCreateSerializer(serializers.ModelSerializer):
+    author_name = serializers.CharField(source="author.username", read_only=True)
+    author_avatar = serializers.ImageField(source="author.avatar", read_only=True)
+
     class Meta:
         model = Discussion
-        fields = ['title', 'content', 'category']
-    
+        fields = [
+            "id",
+            "title",
+            "content",
+            "author",
+            "author_name",
+            "author_avatar",
+            "category",
+            "views",
+            "comments_count",
+            "created_at",
+            "updated_at",
+            "last_activity",
+            "pinned",
+            "locked",
+        ]
+        read_only_fields = [
+            "views",
+            "comments_count",
+            "created_at",
+            "updated_at",
+            "last_activity",
+            "author",
+        ]
+
     def create(self, validated_data):
-        validated_data['author'] = self.context['request'].user
+        """
+        Przypisanie autora
+        """
+        
+        validated_data["author"] = self.context["request"].user
         return super().create(validated_data)
+    
+
+class DiscussionLockSerializer(serializers.ModelSerializer):
+    """
+    Serializer do zamykania wpisu na forum
+    """
+    
+    class Meta:
+        model = Discussion
+        fields = ['locked']
+        read_only_fields = []
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):

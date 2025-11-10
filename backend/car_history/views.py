@@ -1,12 +1,10 @@
 from django.utils import timezone
 from rest_framework import generics, permissions, status
 from django_filters.rest_framework import DjangoFilterBackend
-import django_filters
 from .serializers import (
     UserRegistrationSerializer, 
     DiscussionSerializer, 
-    CommentSerializer, 
-    DiscussionCreateSerializer, 
+    CommentSerializer,  
     MessageSerializer, 
     MessageCreateSerializer, 
     UserSerializer,
@@ -21,6 +19,7 @@ from .serializers import (
     VehicleDeleteSerializer,
     VehicleSaleSerializer,
     ArticleSerializer,
+    DiscussionLockSerializer,
 )
 from rest_framework.permissions import AllowAny
 from .models import (
@@ -47,7 +46,7 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.shortcuts import get_object_or_404
 from django.http import Http404, JsonResponse, HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-import logging, shutil, os, json, requests
+import logging, shutil, os, json, requests, django_filters
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from bs4 import BeautifulSoup
@@ -56,6 +55,8 @@ from xhtml2pdf import pisa
 from io import BytesIO
 from rest_framework.throttling import UserRateThrottle
 from django.core.cache import cache
+from .pagination import DiscussionPagination
+from .filters import DiscussionFilter
 
 logger = logging.getLogger(__name__)
 
@@ -172,7 +173,6 @@ class VehicleHistoryPDFView(generics.RetrieveAPIView):
 
     def get(self, request, vin, *args, **kwargs):
         try:
-            # Pobierz pojazd
             try:
                 vehicle = Vehicle.objects.get(vin=vin)
             except Vehicle.DoesNotExist:
@@ -182,14 +182,13 @@ class VehicleHistoryPDFView(generics.RetrieveAPIView):
             service_entries = ServiceEntry.objects.filter(vehicle=vehicle).order_by("-date")
             damage_entries = DamageEntry.objects.filter(vehicle=vehicle).order_by("-date")
 
-            # Render HTML
             html_string = render_to_string("vehicle_history_pdf.html", {
                 "vehicle": vehicle,
                 "service_entries": service_entries,
                 "damage_entries": damage_entries,
             })
 
-            # ✅ Tworzymy PDF w pamięci → będzie zwrócony jako response
+            # Tworzenie PDF w pamięci
             pdf_memory = BytesIO()
             pisa_status = pisa.CreatePDF(
                 html_string,
@@ -202,7 +201,7 @@ class VehicleHistoryPDFView(generics.RetrieveAPIView):
                 logger.error("PDF generation error")
                 return Response({"error": "Błąd generowania PDF"}, status=500)
 
-            # ✅ Zapisujemy również PDF do MEDIA/pdf_exports/
+            # Zapis PDF do MEDIA/pdf_exports/
             export_dir = os.path.join(settings.MEDIA_ROOT, "pdf_exports")
             os.makedirs(export_dir, exist_ok=True)
 
@@ -212,11 +211,11 @@ class VehicleHistoryPDFView(generics.RetrieveAPIView):
             with open(pdf_path, "wb") as f:
                 f.write(pdf_memory.getvalue())
 
-            # ✅ Zapis ścieżki PDF do modelu
+            # Zapis ścieżki PDF do modelu
             vehicle.history_pdf = f"pdf_exports/{pdf_filename}"
             vehicle.save(update_fields=["history_pdf"])
 
-            # ✅ Zwracamy PDF użytkownikowi
+            # Zwracanie PDF użytkownikowi
             pdf_memory.seek(0)
             response = HttpResponse(pdf_memory.getvalue(), content_type="application/pdf")
             response["Content-Disposition"] = f'attachment; filename="{pdf_filename}"'
@@ -327,46 +326,75 @@ class UserListView(generics.ListAPIView):
 
 
 class DiscussionListCreateView(generics.ListCreateAPIView):
-    queryset = Discussion.objects.all().order_by("-created_at")
-    serializer_class = DiscussionSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    """
+    Widok tworzenia dyskusji na forum
+    """
 
-    def get_queryset(self):
-        return Discussion.objects.all().select_related('author')
-    
-    def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return DiscussionCreateSerializer
-        return DiscussionSerializer
-    
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
-
-class DiscussionDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Discussion.objects.all()
     serializer_class = DiscussionSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = DiscussionPagination
+    filterset_class = DiscussionFilter
+
+    
+class DiscussionDetailView(generics.RetrieveAPIView):
+    """
+    Widok pojedynczego wpisu na forum
+    """
+
+    queryset = Discussion.objects.all()
+    serializer_class = DiscussionSerializer
+    permission_classes = [permissions.AllowAny]
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        instance.views += 1
-        instance.save()
+
+        # Zwiększanie liczby wyświetleń
+        instance.increment_views()
+        instance.refresh_from_db(fields=["views"])
+
         return super().retrieve(request, *args, **kwargs)
+    
+
+class LockDiscussionView(generics.UpdateAPIView):
+    """
+    Widok do zamknięcia dyskusji na forum
+    """
+
+    queryset = Discussion.objects.all()
+    serializer_class = DiscussionLockSerializer
+    permission_classes = [permissions.IsAuthenticated] 
+    
+
+    def update(self, request, *args, **kwargs):
+        discussion = self.get_object()
+
+        # Tylko autor lub admin może zamknąć dyskusję
+        if request.user != discussion.author and not request.user.is_staff:
+            return Response({"detail": "Not allowed"}, status=403)
+
+        discussion.locked = True
+        discussion.save(update_fields=['locked'])
+
+        serializer = self.get_serializer(discussion)
+        return Response(serializer.data)
+
 
 class CommentListCreateView(generics.ListCreateAPIView):
-    queryset = Comment.objects.all().order_by("-created_at")
+    """
+    Widok listy komentarzy i dodawania
+    """
+
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        return Comment.objects.filter(
-            discussion_id=self.kwargs['discussion_id']
-        ).select_related('author')
-    
+        discussion_id = self.kwargs["discussion_id"]
+        return Comment.objects.filter(discussion_id=discussion_id).order_by("created_at")
+
     def perform_create(self, serializer):
-        discussion = Discussion.objects.get(id=self.kwargs['discussion_id'])
-        serializer.save(author=self.request.user, discussion=discussion)
+        serializer.save()
+
 
 
 class UserRegistrationView(generics.CreateAPIView):

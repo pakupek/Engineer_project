@@ -144,7 +144,7 @@ export default function Navbar() {
                   <a className="nav-link link text-black display-4" href="/home">Strona główna</a>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link link text-black display-4" href="/discussion">Forum</a>
+                  <a className="nav-link link text-black display-4" href="/Forum">Forum</a>
                 </li>
                 <li className="nav-item">
                   <a className="nav-link link text-black display-4" href="/messages">Wiadomości</a>
