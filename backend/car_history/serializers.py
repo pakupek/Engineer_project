@@ -195,6 +195,12 @@ class CommentSerializer(serializers.ModelSerializer):
 
         comment = super().create(validated_data)
 
+        # Tworzymy statystyki komentarza
+        CommentStats.objects.create(
+            comment=comment,
+            user=comment.author
+        )
+
         # Aktualizacja statystyk dyskusji
         discussion = comment.discussion
         discussion.comments_count = Comment.objects.filter(discussion=discussion).count()

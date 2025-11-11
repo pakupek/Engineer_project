@@ -55,7 +55,7 @@ export default function Forum() {
             setThreads(
                 data.results.map((d) => ({
                 id: d.id,
-                avatar: d.author_name ? d.author_name[0].toUpperCase() : "?",
+                avatar: d.author.avatar,
                 title: d.title,
                 tags: [],
                 category: d.category,
@@ -184,9 +184,11 @@ export default function Forum() {
                     threads.map((t, index) => (
                         <div key={t.id} className={`tt-item ${index < 3 ? "tt-itemselect" : ""}`} onClick={() => openDiscussion(t.id)} >
                             <div className="tt-col-avatar">
-                                <svg className="tt-icon">
-                                    <use xlinkHref={`#icon-ava-${t.avatar.toLowerCase()}`}></use>
-                                </svg>
+                                <img 
+                                    src={t.avatar} 
+                                    alt={t.author_name} 
+                                    className="tt-icon" 
+                                />
                             </div>
                             <div className="tt-col-description">
                                 <h6 className="tt-title">
@@ -209,7 +211,7 @@ export default function Forum() {
                                                     {t.category}
                                                 </span>
                                             </li>
-                                            {t.tags.map((tag, idx) => (
+                                            {[t.category].map((tag, idx) => (
                                                 <li key={idx}>
                                                     <span className="tt-badge">{tag}</span>
                                                 </li>

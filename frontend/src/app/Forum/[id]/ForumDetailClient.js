@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import styles from "./ForumDetail.module.css";
 import { getToken, getCurrentUser } from "@/app/Services/auth";
 
@@ -13,21 +13,30 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
   const [currentUser, setCurrentUser] = useState(null);
   const [userDiscussionVote, setUserDiscussionVote] = useState(null);
   const [isFavorited, setIsFavorited] = useState(false);
+  const editorRef = useRef();
+  const [activeStyles, setActiveStyles] = useState({
+    bold: false,
+    italic: false,
+    underline: false,
+  });
+  
+
 
   // Pobierz aktualnego użytkownika przy ładowaniu komponentu
   useEffect(() => {
-  const fetchCurrentUser = async () => {
-    try {
-      const user = await getCurrentUser(); 
-      setCurrentUser(user);
-    
-    } catch (error) {
-      console.error("Błąd podczas pobierania użytkownika: ", error);
-    }
-  };
+    const fetchCurrentUser = async () => {
+      try {
+        const user = await getCurrentUser(); 
+        setCurrentUser(user);
+        console.log("Dane aktualnego użytkownika: ", user);
+      } catch (error) {
+        console.error("Błąd podczas pobierania użytkownika: ", error);
+      }
+    };
 
-  fetchCurrentUser();
-}, []);
+    fetchCurrentUser();
+  }, []);
+
 
   const CATEGORY_COLORS = {
     OGOLNE: "tt-color01",
@@ -47,6 +56,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
     try {
       const res = await fetch(`http://localhost:8000/api/discussions/${discussionId}/`);
       const data = await res.json();
+      console.log("Dane dyskusji: ",data);
       setDiscussion(data);
     } catch (error) {
       console.error("Error fetching discussion:", error);
@@ -160,6 +170,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
         });
       const data = await res.json();
       const commentsData = data.results || data;
+      console.log("Dane pobranych komentarzy: ",commentsData);
       setComments(commentsData);
       
     } catch (error) {
@@ -185,6 +196,15 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
           content: content }),
       });
       setContent("");
+       if (editorRef.current) {
+        editorRef.current.innerHTML = "";
+      }
+
+      setActiveStyles({
+        bold: false,
+        italic: false,
+        underline: false,
+      });
       fetchComments();
     } catch (error) {
       console.error("Error posting comment:", error);
@@ -245,41 +265,41 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
 
     return(
       <div className={styles.boxLeft}>
-                  <a className={styles.iconBtn} onClick={() => {
-            if (currentVote === 'like') {
-              // Jeśli już mamy like, usuwamy głos
-              handleVote(comment.id, 'remove');
-            } else {
-              // Jeśli nie mamy like, dodajemy like (usuwając ewentualny dislike)
-              handleVote(comment.id, 'like');
-            }
-          }}>
-                    <i className={styles.icon}>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                        <path d="M144 224C161.7 224 176 238.3 176 256L176 512C176 529.7 161.7 544 144 544L96 544C78.3 544 64 529.7 64 512L64 256C64 238.3 78.3 224 96 224L144 224zM334.6 80C361.9 80 384 102.1 384 129.4L384 133.6C384 140.4 382.7 147.2 380.2 153.5L352 224L512 224C538.5 224 560 245.5 560 272C560 291.7 548.1 308.6 531.1 316C548.1 323.4 560 340.3 560 360C560 383.4 543.2 402.9 521 407.1C525.4 414.4 528 422.9 528 432C528 454.2 513 472.8 492.6 478.3C494.8 483.8 496 489.8 496 496C496 522.5 474.5 544 448 544L360.1 544C323.8 544 288.5 531.6 260.2 508.9L248 499.2C232.8 487.1 224 468.7 224 449.2L224 262.6C224 247.7 227.5 233 234.1 219.7L290.3 107.3C298.7 90.6 315.8 80 334.6 80z"/>
-                      </svg>
-                    </i>
-                    <span className={styles.text}>{comment.likes_count || 0}</span>
-                  </a>
-                  <a className={styles.iconBtn} onClick={() => {
-            if (currentVote === 'dislike') {
-              // Jeśli już mamy dislike, usuwamy głos
-              handleVote(comment.id, 'remove');
-            } else {
-              // Jeśli nie mamy dislike, dodajemy dislike (usuwając ewentualny like)
-              handleVote(comment.id, 'dislike');
-            }
-          }}>
-                    <i className={styles.icon}>
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                        <path d="M448 96C474.5 96 496 117.5 496 144C496 150.3 494.7 156.2 492.6 161.7C513 167.2 528 185.8 528 208C528 217.1 525.4 225.6 521 232.9C543.2 237.1 560 256.6 560 280C560 299.7 548.1 316.6 531.1 324C548.1 331.4 560 348.3 560 368C560 394.5 538.5 416 512 416L352 416L380.2 486.4C382.7 492.7 384 499.5 384 506.3L384 510.5C384 537.8 361.9 559.9 334.6 559.9C315.9 559.9 298.8 549.3 290.4 532.6L234.1 420.3C227.4 407 224 392.3 224 377.4L224 190.8C224 171.4 232.9 153 248 140.8L260.2 131.1C288.6 108.4 323.8 96 360.1 96L448 96zM144 160C161.7 160 176 174.3 176 192L176 448C176 465.7 161.7 480 144 480L96 480C78.3 480 64 465.7 64 448L64 192C64 174.3 78.3 160 96 160L144 160z"/>
-                      </svg>
-                    </i>
-                    <span className={styles.text}>{comment.dislikes_count || 0}</span>
-                  </a>
-                </div>
+        <a className={styles.iconBtn} onClick={() => {
+          if (currentVote === 'like') {
+            // Jeśli już mamy like, usuwamy głos
+            handleVote(comment.id, 'remove');
+          } else {
+            // Jeśli nie mamy like, dodajemy like (usuwając ewentualny dislike)
+            handleVote(comment.id, 'like');
+          }
+        }}>
+          <i className={styles.icon}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+              <path d="M144 224C161.7 224 176 238.3 176 256L176 512C176 529.7 161.7 544 144 544L96 544C78.3 544 64 529.7 64 512L64 256C64 238.3 78.3 224 96 224L144 224zM334.6 80C361.9 80 384 102.1 384 129.4L384 133.6C384 140.4 382.7 147.2 380.2 153.5L352 224L512 224C538.5 224 560 245.5 560 272C560 291.7 548.1 308.6 531.1 316C548.1 323.4 560 340.3 560 360C560 383.4 543.2 402.9 521 407.1C525.4 414.4 528 422.9 528 432C528 454.2 513 472.8 492.6 478.3C494.8 483.8 496 489.8 496 496C496 522.5 474.5 544 448 544L360.1 544C323.8 544 288.5 531.6 260.2 508.9L248 499.2C232.8 487.1 224 468.7 224 449.2L224 262.6C224 247.7 227.5 233 234.1 219.7L290.3 107.3C298.7 90.6 315.8 80 334.6 80z"/>
+            </svg>
+          </i>
+          <span className={styles.text}>{comment.likes_count || 0}</span>
+        </a>
+        <a className={styles.iconBtn} onClick={() => {
+          if (currentVote === 'dislike') {
+            // Jeśli już mamy dislike, usuwamy głos
+            handleVote(comment.id, 'remove');
+          } else {
+            // Jeśli nie mamy dislike, dodajemy dislike (usuwając ewentualny like)
+            handleVote(comment.id, 'dislike');
+          }
+        }}>
+          <i className={styles.icon}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+              <path d="M448 96C474.5 96 496 117.5 496 144C496 150.3 494.7 156.2 492.6 161.7C513 167.2 528 185.8 528 208C528 217.1 525.4 225.6 521 232.9C543.2 237.1 560 256.6 560 280C560 299.7 548.1 316.6 531.1 324C548.1 331.4 560 348.3 560 368C560 394.5 538.5 416 512 416L352 416L380.2 486.4C382.7 492.7 384 499.5 384 506.3L384 510.5C384 537.8 361.9 559.9 334.6 559.9C315.9 559.9 298.8 549.3 290.4 532.6L234.1 420.3C227.4 407 224 392.3 224 377.4L224 190.8C224 171.4 232.9 153 248 140.8L260.2 131.1C288.6 108.4 323.8 96 360.1 96L448 96zM144 160C161.7 160 176 174.3 176 192L176 448C176 465.7 161.7 480 144 480L96 480C78.3 480 64 465.7 64 448L64 192C64 174.3 78.3 160 96 160L144 160z"/>
+            </svg>
+          </i>
+          <span className={styles.text}>{comment.dislikes_count || 0}</span>
+        </a>
+      </div>
     );
-   };
+  };
 
 
   const formatDate = (dateString) => {
@@ -289,6 +309,32 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
       year: "numeric"
     });
   };
+
+  // Komenda do edycji komentarza
+  const exec = (command) => {
+    document.execCommand(command, false, null);
+    editorRef.current.focus();
+    refreshActiveStyles();
+  };
+
+  const handleInput = () => {
+    setContent(editorRef.current.innerHTML);
+  };
+
+  const refreshActiveStyles = () => {
+    setActiveStyles({
+      bold: document.queryCommandState("bold"),
+      italic: document.queryCommandState("italic"),
+      underline: document.queryCommandState("underline"),
+    });
+  };
+
+  useEffect(() => {
+    const handler = () => refreshActiveStyles();
+    document.addEventListener("selectionchange", handler);
+    return () => document.removeEventListener("selectionchange", handler);
+  }, []);
+
 
   useEffect(() => {
     // Jeśli dane nie zostały przekazane z serwera, pobierz je
@@ -349,7 +395,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
                     />
                   </div>
                   <div className={styles.avatarTitle}>
-                    <a>{discussion.author_name || "Anonymous"}</a>
+                    <a>{discussion.author_name}</a>
                   </div>
                   <a className={styles.infoTime}>
                     <i className={styles.icon}>
@@ -362,7 +408,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
                 </div>
                 
                 {/* Przycisk zamknięcia dyskusji - widoczny tylko dla autora */}
-                {discussion.author?.id === currentUser?.id && !discussion.locked && (
+                {discussion.author === currentUser?.id && !discussion.locked && (
                   <div className={styles.itemActions}>
                     <h3 className={styles.itemTitle}>
                       <a>{discussion.title}</a>
@@ -500,14 +546,15 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
             <div className={styles.hr} />
             <h6 className={styles.title}>Często publikujący</h6>
             <div className={styles.rowIcon}>
-              {Array.from(new Set(comments.map(c => c.author_name))).slice(0, 6).map((author, index) => (
-                <div className={styles.item} key={index}>
-                  <img 
-                    src={discussion.author_avatar} 
-                    alt={discussion.author_name} 
-                    className={styles.iconAvatar}
-                  />
-                </div>
+              {Array.from( new Map( comments.map((c) => [ c.author,{ name: c.author_name, avatar: c.author_avatar }])).values()).slice(0, 6)
+                .map((user, index) => (
+                  <div className={styles.item} key={index}>
+                    <img 
+                      src={user.avatar}
+                      alt={user.name}
+                      className={styles.iconAvatar}
+                    />
+                  </div>
               ))}
             </div>
             <div className={styles.hr} />
@@ -537,8 +584,8 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
                 <div className={`${styles.itemInfo} ${styles.itemInfoTop}`}>
                   <div className={styles.avatarIcon}>
                     <img 
-                      src={discussion.author_avatar} 
-                      alt={discussion.author_name} 
+                      src={comment.author_avatar} 
+                      alt={comment.author_name} 
                       className={styles.iconAvatar}
                     />
                   </div>
@@ -590,41 +637,46 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
                   <div className={styles.colLeft}>
                     <ul className={styles.ptEditBtn}>
                       <li>
-                        <button type="button" className={styles.btnIcon}>
-                          <svg className={styles.icon}>
-                            <use xlinkHref="#icon-quote"></use>
-                          </svg>
-                        </button>
+                        <a className={`${styles.btnIcon} ${activeStyles.bold ? styles.active : ""}`} onMouseDown={(e) => { e.preventDefault(); exec("bold"); }}>
+                          <i className={styles.icon}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                              <path d="M160 96C142.3 96 128 110.3 128 128C128 145.7 142.3 160 160 160L192 160L192 480L160 480C142.3 480 128 494.3 128 512C128 529.7 142.3 544 160 544L384 544C454.7 544 512 486.7 512 416C512 369.5 487.2 328.7 450 306.3C468.7 284 480 255.3 480 224C480 153.3 422.7 96 352 96L160 96zM416 224C416 259.3 387.3 288 352 288L256 288L256 160L352 160C387.3 160 416 188.7 416 224zM256 480L256 352L384 352C419.3 352 448 380.7 448 416C448 451.3 419.3 480 384 480L256 480z"/>
+                            </svg>
+                          </i>
+                        </a>
                       </li>
+
                       <li>
-                        <button type="button" className={styles.btnIcon}>
-                          <svg className={styles.icon}>
-                            <use xlinkHref="#icon-bold"></use>
-                          </svg>
-                        </button>
+                        <a className={`${styles.btnIcon} ${activeStyles.italic ? styles.active : ""}`} onMouseDown={(e) => { e.preventDefault(); exec("italic"); }}>
+                          <i className={styles.icon}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                              <path d="M256 128C256 110.3 270.3 96 288 96L480 96C497.7 96 512 110.3 512 128C512 145.7 497.7 160 480 160L421.3 160L288 480L352 480C369.7 480 384 494.3 384 512C384 529.7 369.7 544 352 544L160 544C142.3 544 128 529.7 128 512C128 494.3 142.3 480 160 480L218.7 480L352 160L288 160C270.3 160 256 145.7 256 128z"/>
+                            </svg>
+                          </i>
+                        </a>
                       </li>
+
                       <li>
-                        <button type="button" className={styles.btnIcon}>
-                          <svg className={styles.icon}>
-                            <use xlinkHref="#icon-italic"></use>
-                          </svg>
-                        </button>
+                        <a className={`${styles.btnIcon} ${activeStyles.underline ? styles.active : ""}`} onMouseDown={(e) => { e.preventDefault(); exec("underline"); }}>
+                          <i className={styles.icon}>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                              <path d="M128 96C128 78.3 142.3 64 160 64L224 64C241.7 64 256 78.3 256 96C256 113.7 241.7 128 224 128L224 288C224 341 267 384 320 384C373 384 416 341 416 288L416 128C398.3 128 384 113.7 384 96C384 78.3 398.3 64 416 64L480 64C497.7 64 512 78.3 512 96C512 113.7 497.7 128 480 128L480 288C480 376.4 408.4 448 320 448C231.6 448 160 376.4 160 288L160 128C142.3 128 128 113.7 128 96zM128 544C128 526.3 142.3 512 160 512L480 512C497.7 512 512 526.3 512 544C512 561.7 497.7 576 480 576L160 576C142.3 576 128 561.7 128 544z"/>
+                            </svg>
+                          </i>
+                        </a>
                       </li>
                     </ul>
                   </div>
                 </div>
                 <form onSubmit={postComment}>
-                  <div className={styles.formGroup}>
-                    <textarea 
-                      name="message" 
-                      className={styles.formControl} 
-                      rows="5" 
-                      placeholder="Treść komentarza"
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      required
-                    ></textarea>
-                  </div>
+                  <div
+                    ref={editorRef}
+                    className={styles.formControl}
+                    contentEditable={true}
+                    onInput={handleInput}
+                    suppressContentEditableWarning={true}
+                    style={{ minHeight: "150px", cursor: "text" }}
+                  ></div>
                   <div className={styles.ptRow}>
                     <div className={styles.colAuto}></div>
                     <div className={styles.colAuto}>
