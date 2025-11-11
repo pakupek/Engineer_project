@@ -96,9 +96,9 @@ class Discussion(models.Model):
     def update_comment_count(self):
         """Aktualizacja liczby komentarzy"""
         
-        count = self.comments.aggregate(count=Count('id'))['count']
-        Discussion.objects.filter(pk=self.pk).update(comment_count=count)
-        self.comment_count = count
+        count = self.comment_set.aggregate(count=Count('id'))['count']
+        Discussion.objects.filter(pk=self.pk).update(comments_count=count)
+        self.comments_count = count
 
     def update_likes_count(self):
         """Aktualizacja liczby polubień"""

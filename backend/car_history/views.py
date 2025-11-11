@@ -393,7 +393,11 @@ class CommentListCreateView(generics.ListCreateAPIView):
         return Comment.objects.filter(discussion_id=discussion_id).order_by("created_at")
 
     def perform_create(self, serializer):
-        serializer.save()
+        serializer.save(
+            author=self.request.user,
+            discussion_id=self.kwargs["discussion_id"]
+        )
+
 
 
 
