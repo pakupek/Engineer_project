@@ -123,6 +123,8 @@ class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    likes_count = models.IntegerField(default=0)
+    dislikes_count = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -132,6 +134,59 @@ class Comment(models.Model):
         if is_new:
             self.discussion.update_last_activity()
             self.discussion.update_comment_count()
+            CommentStats.objects.create(comment=self)
+
+    def update_votes_count(self):
+        """Aktualizuje liczniki like/dislike na podstawie głosów"""
+        stats = self.votes.aggregate(
+            total_likes=models.Sum('likes'),
+            total_dislikes=models.Sum('dislikes')
+        )
+        self.likes_count = stats['total_likes'] or 0
+        self.dislikes_count = stats['total_dislikes'] or 0
+        self.save(update_fields=['likes_count', 'dislikes_count'])
+
+    def get_user_vote(self, user):
+        """Zwraca głos użytkownika dla tego komentarza"""
+        try:
+            vote = self.votes.get(user=user)
+            if vote.likes > 0:
+                return 'like'
+            elif vote.dislikes > 0:
+                return 'dislike'
+            return None
+        except CommentStats.DoesNotExist:
+            return None
+
+
+class CommentStats(models.Model):
+    """
+    Model statystyk dla komentarzy
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="votes")
+    likes = models.PositiveIntegerField(default=0)
+    dislikes = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'comment')  # 1 użytkownik = 1 głos
+
+    def save(self, *args, **kwargs):
+        # Upewniamy się, że użytkownik nie może jednocześnie like i dislike
+        if self.likes > 0:
+            self.dislikes = 0
+        elif self.dislikes > 0:
+            self.likes = 0
+        
+        # Upewniamy się, że wartości są 0 lub 1
+        self.likes = min(self.likes, 1)
+        self.dislikes = min(self.dislikes, 1)
+        
+        super().save(*args, **kwargs)
+        
+        # Aktualizujemy liczniki w komentarzu
+        self.comment.update_votes_count()
 
 
 class VehicleMake(models.Model):

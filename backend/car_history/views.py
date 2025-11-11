@@ -20,6 +20,7 @@ from .serializers import (
     VehicleSaleSerializer,
     ArticleSerializer,
     DiscussionLockSerializer,
+    CommentStatsUpdateSerializer,
 )
 from rest_framework.permissions import AllowAny
 from .models import (
@@ -37,6 +38,7 @@ from .models import (
     DamageEntry,
     VehicleSale,
     VehicleSaleStats,
+    CommentStats,
 )
 from rest_framework.response import Response
 from django.db.models import Q
@@ -391,14 +393,85 @@ class CommentListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         discussion_id = self.kwargs["discussion_id"]
         return Comment.objects.filter(discussion_id=discussion_id).order_by("created_at")
+    
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
 
     def perform_create(self, serializer):
         serializer.save(
-            author=self.request.user,
-            discussion_id=self.kwargs["discussion_id"]
+            author=self.request.user
         )
 
 
+class CommentStatsUpdateAPIView(generics.UpdateAPIView):
+    """
+    Widok do aktualizacja statystyk komentarza
+    """
+
+    queryset = CommentStats.objects.all()
+    serializer_class = CommentStatsUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = 'comment_id'
+
+
+    def get_object(self):
+        """
+        Pobiera lub tworzy obiekt CommentStats dla użytkownika i komentarza
+        """
+        comment_id = self.kwargs['comment_id']
+        user = self.request.user
+        comment = get_object_or_404(Comment, id=comment_id)
+        
+        stats, created = CommentStats.objects.get_or_create(
+            comment=comment,
+            user=user,
+            defaults={'likes': 0, 'dislikes': 0}
+        )
+        return stats
+
+    def patch(self, request, *args, **kwargs):
+        """
+        Obsługa głosowania like/dislike/remove
+        """
+        stats = self.get_object()
+        action = request.data.get('action')
+        
+        if action not in ['like', 'dislike', 'remove']:
+            return Response(
+                {"error": "Invalid action. Use 'like', 'dislike' or 'remove'."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Resetujemy oba liczniki przed zastosowaniem nowej akcji
+        if action == 'like':
+            stats.likes = 1
+            stats.dislikes = 0
+        elif action == 'dislike':
+            stats.likes = 0
+            stats.dislikes = 1
+        elif action == 'remove':
+            stats.likes = 0
+            stats.dislikes = 0
+
+        stats.save()
+
+        # Pobieramy zaktualizowany komentarz
+        comment = stats.comment
+        comment.refresh_from_db()
+
+        return Response({
+            "success": True,
+            "action": action,
+            "user_vote": comment.get_user_vote(request.user),
+            "likes_count": comment.likes_count,
+            "dislikes_count": comment.dislikes_count,
+            "stats": {
+                "likes": stats.likes,
+                "dislikes": stats.dislikes
+            }
+        }, status=status.HTTP_200_OK)
 
 
 class UserRegistrationView(generics.CreateAPIView):

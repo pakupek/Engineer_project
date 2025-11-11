@@ -14,6 +14,7 @@ from .models import (
     DamageEntry,
     DamageMarker,
     VehicleSale,
+    CommentStats,
 )
 from django.contrib.auth.password_validation import validate_password
 
@@ -130,6 +131,30 @@ class MessageCreateSerializer(serializers.ModelSerializer):
         return value
 
 
+class CommentStatsSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    vote_type = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CommentStats
+        fields = ['id', 'user', 'likes', 'dislikes', 'vote_type']
+        read_only_fields = ['user']
+
+    def get_vote_type(self, obj):
+        if obj.likes > 0:
+            return 'like'
+        elif obj.dislikes > 0:
+            return 'dislike'
+        return None
+
+class CommentStatsUpdateSerializer(serializers.ModelSerializer):
+    action = serializers.ChoiceField(choices=['like', 'dislike', 'remove'], write_only=True)
+    
+    class Meta:
+        model = CommentStats
+        fields = ['action']
+
+
 class CommentSerializer(serializers.ModelSerializer):
     """
     Serializer komentarza wpisu na forum
@@ -137,6 +162,8 @@ class CommentSerializer(serializers.ModelSerializer):
 
     author_name = serializers.CharField(source="author.username", read_only=True)
     author_avatar = serializers.ImageField(source="author.avatar", read_only=True)
+    user_vote = serializers.SerializerMethodField()
+    votes = CommentStatsSerializer(many=True, read_only=True)
 
     class Meta:
         model = Comment
@@ -147,9 +174,19 @@ class CommentSerializer(serializers.ModelSerializer):
             "author_name",
             "author_avatar",
             "content",
-            "created_at"
+            "likes_count", 
+            "dislikes_count",
+            "created_at",
+            "user_vote",
+            "votes"
         ]
-        read_only_fields = ["author", "created_at"]
+        read_only_fields = ["author", "created_at", 'likes_count', 'dislikes_count']
+
+    def get_user_vote(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.get_user_vote(request.user)
+        return None
 
     def create(self, validated_data):
         validated_data["author"] = self.context['request'].user
@@ -163,7 +200,6 @@ class CommentSerializer(serializers.ModelSerializer):
         discussion.save(update_fields=["comments_count", "last_activity"])
 
         return comment
-
 
 
 class DiscussionSerializer(serializers.ModelSerializer):
