@@ -52,7 +52,6 @@ export default function Forum() {
                 },
             });
             const data = await res.json();
-        
             setThreads(
                 data.results.map((d) => ({
                 id: d.id,
@@ -60,9 +59,9 @@ export default function Forum() {
                 title: d.title,
                 tags: [],
                 category: d.category,
-                likes: d.likes_count || 0,
-                replies: d.comment_count || 0,
-                views: d.views || 0,
+                likes: d.likes_count,
+                replies: d.comments_count,
+                views: d.views,
                 locked: d.locked || d.is_closed || false, 
                 activity: d.last_activity
                     ? timeAgo(d.last_activity)

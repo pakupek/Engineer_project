@@ -21,6 +21,7 @@ from .serializers import (
     ArticleSerializer,
     DiscussionLockSerializer,
     CommentStatsUpdateSerializer,
+    DiscussionStatsSerializer
 )
 from rest_framework.permissions import AllowAny
 from .models import (
@@ -39,6 +40,8 @@ from .models import (
     VehicleSale,
     VehicleSaleStats,
     CommentStats,
+    DiscussionFavorite,
+    DiscussionStats,
 )
 from rest_framework.response import Response
 from django.db.models import Q
@@ -380,6 +383,88 @@ class LockDiscussionView(generics.UpdateAPIView):
 
         serializer = self.get_serializer(discussion)
         return Response(serializer.data)
+    
+
+class DiscussionStatsView(generics.UpdateAPIView):
+    """
+    Widok do głosowania na dyskusje
+    """
+    serializer_class = DiscussionStatsSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        discussion_id = self.kwargs['discussion_id']
+        discussion = get_object_or_404(Discussion, id=discussion_id)
+        
+        vote, created = DiscussionStats.objects.get_or_create(
+            discussion=discussion,
+            user=self.request.user,
+            defaults={'likes': 0, 'dislikes': 0}
+        )
+        return vote
+
+   
+    def patch(self, request, *args, **kwargs):
+        vote = self.get_object()
+        action = request.data.get('action')
+        
+        if action not in ['like', 'dislike', 'remove']:
+            return Response(
+                {"error": "Invalid action. Use 'like', 'dislike' or 'remove'."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if action == 'like':
+            vote.likes = 1
+            vote.dislikes = 0
+        elif action == 'dislike':
+            vote.likes = 0
+            vote.dislikes = 1
+        elif action == 'remove':
+            vote.likes = 0
+            vote.dislikes = 0
+
+        vote.save()
+
+        discussion = vote.discussion
+        discussion.refresh_from_db()
+
+        return Response({
+            "success": True,
+            "action": action,
+            "user_vote": discussion.get_user_vote(request.user),
+            "likes_count": discussion.likes_count,
+            "dislikes_count": discussion.dislikes_count
+        })
+
+
+class DiscussionFavoriteView(generics.GenericAPIView):
+    """
+    Widok do dodawania/usuwania z ulubionych
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, discussion_id):
+        discussion = get_object_or_404(Discussion, id=discussion_id)
+        
+        favorite, created = DiscussionFavorite.objects.get_or_create(
+            user=request.user,
+            discussion=discussion
+        )
+        
+        if not created:
+            favorite.delete()
+            is_favorited = False
+        else:
+            is_favorited = True
+        
+        discussion.refresh_from_db()
+
+        return Response({
+            "success": True,
+            "is_favorited": is_favorited,
+            "favorites_count": discussion.favorites_count
+        })
 
 
 class CommentListCreateView(generics.ListCreateAPIView):

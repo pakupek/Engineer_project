@@ -30,7 +30,9 @@ from .views import (
     VehicleHistoryPDFView,
     AutomotiveNewsView,
     LockDiscussionView,
-    CommentStatsUpdateAPIView
+    CommentStatsUpdateAPIView,
+    DiscussionStatsView,
+    DiscussionFavoriteView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -47,6 +49,8 @@ urlpatterns = [
 
 
     path('discussions/', DiscussionListCreateView.as_view(), name='discussion_list'),
+    path('discussions/<int:discussion_id>/vote/', DiscussionStatsView.as_view(), name='discussion_vote'),
+    path('discussions/<int:discussion_id>/favorite/', DiscussionFavoriteView.as_view(), name='discussion_favorite'),
     path('discussions/<int:pk>/', DiscussionDetailView.as_view(), name='discussion_detail'),
     path('discussions/<int:discussion_id>/comments/', CommentListCreateView.as_view(), name='comment_list'),
     path('discussions/<int:pk>/close/', LockDiscussionView.as_view(), name='close_discussion'),

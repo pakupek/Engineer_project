@@ -65,7 +65,10 @@ class Discussion(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     last_activity = models.DateTimeField(default=timezone.now)
     pinned = models.BooleanField(default=False)      
-    locked = models.BooleanField(default=False)      
+    locked = models.BooleanField(default=False) 
+    likes_count = models.PositiveIntegerField(default=0)   
+    dislikes_count = models.PositiveIntegerField(default=0)
+    favorites_count = models.PositiveIntegerField(default=0)  
 
     class Meta:
         ordering = ['-pinned', '-last_activity']
@@ -101,17 +104,105 @@ class Discussion(models.Model):
         self.comments_count = count
 
     def update_likes_count(self):
-        """Aktualizacja liczby polubień"""
-        
-        count = self.likes.aggregate(count=Count('id'))['count']
+        count = self.votes.aggregate(
+            likes_count=Count('id', filter=models.Q(likes=1))
+        )['likes_count'] or 0
         Discussion.objects.filter(pk=self.pk).update(likes_count=count)
         self.likes_count = count
+
+    def update_dislikes_count(self):
+        count = self.votes.aggregate(
+            dislikes_count=Count('id', filter=models.Q(dislikes=1))
+        )['dislikes_count'] or 0
+        Discussion.objects.filter(pk=self.pk).update(dislikes_count=count)
+        self.dislikes_count = count
+
+    def update_favorites_count(self):
+        count = self.favorites.count()
+        Discussion.objects.filter(pk=self.pk).update(favorites_count=count)
+        self.favorites_count = count
+
+    def update_votes_count(self):
+        """Aktualizuje liczniki like/dislike"""
+        self.update_likes_count()
+        self.update_dislikes_count()
+
+    def get_user_vote(self, user):
+        """Zwraca głos użytkownika dla tej dyskusji"""
+        try:
+            vote = self.votes.get(user=user)
+            if vote.likes > 0:
+                return 'like'
+            elif vote.dislikes > 0:
+                return 'dislike'
+            return None
+        except:
+            return None
+
+    def is_favorited_by_user(self, user):
+        """Sprawdza czy użytkownik dodał dyskusję do ulubionych"""
+        return self.favorites.filter(user=user).exists()
 
     def increment_views(self):
         """Zwiększanie liczby wyświetleń"""
 
         Discussion.objects.filter(pk=self.pk).update(views=models.F('views') + 1)
         self.views += 1
+
+
+class DiscussionStats(models.Model):
+    """
+    Model głosów dla dyskusji
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name="votes")
+    likes = models.PositiveIntegerField(default=0)
+    dislikes = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'discussion')
+
+    def clean(self):
+        if self.likes > 0 and self.dislikes > 0:
+            raise ValidationError("Dyskusja nie może mieć jednocześnie like i dislike od tego samego użytkownika")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        
+        if self.likes > 0:
+            self.dislikes = 0
+        elif self.dislikes > 0:
+            self.likes = 0
+        
+        self.likes = min(self.likes, 1)
+        self.dislikes = min(self.dislikes, 1)
+        
+        super().save(*args, **kwargs)
+        self.discussion.update_votes_count()
+
+
+class DiscussionFavorite(models.Model):
+    """
+    Model ulubionych dyskusji
+    """
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name="favorites")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'discussion')
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.discussion.update_favorites_count()
+
+    def delete(self, *args, **kwargs):
+        discussion = self.discussion
+        super().delete(*args, **kwargs)
+        discussion.update_favorites_count()
 
 
 class Comment(models.Model):

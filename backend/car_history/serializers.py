@@ -15,6 +15,8 @@ from .models import (
     DamageMarker,
     VehicleSale,
     CommentStats,
+    DiscussionFavorite,
+    DiscussionStats,
 )
 from django.contrib.auth.password_validation import validate_password
 
@@ -201,6 +203,28 @@ class CommentSerializer(serializers.ModelSerializer):
 
         return comment
 
+class DiscussionStatsSerializer(serializers.ModelSerializer):
+    """
+    Serializer dla like i dislike dyskusji
+    """
+
+    action = serializers.ChoiceField(choices=['like', 'dislike', 'remove'], write_only=True)
+    
+    class Meta:
+        model = DiscussionStats
+        fields = ['action']
+
+
+class DiscussionFavoriteSerializer(serializers.ModelSerializer):
+    """
+    Serializer dla ulubionych dyskusji
+    """
+
+    class Meta:
+        model = DiscussionFavorite
+        fields = ['id', 'user', 'discussion', 'created_at']
+        read_only_fields = ['user', 'created_at']
+
 
 class DiscussionSerializer(serializers.ModelSerializer):
     """
@@ -209,6 +233,8 @@ class DiscussionSerializer(serializers.ModelSerializer):
 
     author_name = serializers.CharField(source="author.username", read_only=True)
     author_avatar = serializers.ImageField(source="author.avatar", read_only=True)
+    user_vote = serializers.SerializerMethodField()
+    is_favorited = serializers.SerializerMethodField()
 
     class Meta:
         model = Discussion
@@ -222,20 +248,40 @@ class DiscussionSerializer(serializers.ModelSerializer):
             "category",
             "views",
             "comments_count",
+            "likes_count",
+            "dislikes_count",
+            "favorites_count",
             "created_at",
             "updated_at",
             "last_activity",
+            "user_vote",
+            "is_favorited",
             "pinned",
             "locked",
         ]
         read_only_fields = [
             "views",
             "comments_count",
+            "likes_count",
+            "dislikes_count",
+            "favorites_count",
             "created_at",
             "updated_at",
             "last_activity",
             "author",
         ]
+
+    def get_user_vote(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.get_user_vote(request.user)
+        return None
+
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.is_favorited_by_user(request.user)
+        return False
 
     def create(self, validated_data):
         """

@@ -11,6 +11,8 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
   const [loading, setLoading] = useState(!initialDiscussion);
   const [userVotes, setUserVotes] = useState({});
   const [currentUser, setCurrentUser] = useState(null);
+  const [userDiscussionVote, setUserDiscussionVote] = useState(null);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   // Pobierz aktualnego użytkownika przy ładowaniu komponentu
   useEffect(() => {
@@ -74,6 +76,76 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
         alert("Wystąpił błąd podczas zamykania dyskusji.");
       }
     }
+  };
+
+  // Funkcja do głosowania na dyskusję
+  const handleDiscussionVote = async (action) => {
+    try {
+      const token = getToken();
+      if (!token) {
+        alert("Musisz być zalogowany, aby głosować");
+        return;
+      }
+
+      const res = await fetch(`http://localhost:8000/api/discussions/${discussionId}/vote/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action }),
+      });
+
+      if (!res.ok) throw new Error('Nie udało się zaktualizować głosu');
+
+        const result = await res.json();
+            
+        setDiscussion(prev => ({
+          ...prev,
+          likes_count: result.likes_count,
+          dislikes_count: result.dislikes_count
+        }));
+            
+        setUserDiscussionVote(result.user_vote);
+
+      } catch (err) {
+        console.error("Błąd głosowania:", err);
+        alert(err.message || "Wystąpił błąd podczas głosowania");
+      }
+  };
+
+  // Funkcja do obsługi ulubionych
+  const handleFavorite = async () => {
+    try {
+      const token = getToken();
+      if (!token) {
+        alert("Musisz być zalogowany, aby dodawać do ulubionych");
+        return;
+      }
+
+      const res = await fetch(`http://localhost:8000/api/discussions/${discussionId}/favorite/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error('Nie udało się zaktualizować ulubionych');
+
+        const result = await res.json();
+            
+        setDiscussion(prev => ({
+          ...prev,
+          favorites_count: result.favorites_count
+        }));
+            
+        setIsFavorited(result.is_favorited);
+
+      } catch (err) {
+        console.error("Błąd ulubionych:", err);
+        alert(err.message || "Wystąpił błąd");
+      }
   };
 
   const fetchComments = async () => {
@@ -328,49 +400,50 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
             </div>
             
             <div className={`${styles.itemInfo} ${styles.itemInfoBottom}`}>
+              <div className={styles.boxLeft}>
+                <a className={styles.iconBtn} onClick={() => {
+                    if (userDiscussionVote === 'like') {
+                      handleDiscussionVote('remove');
+                    } else {
+                      handleDiscussionVote('like');
+                    }
+                  }}
+                >
+                  <i className={styles.icon}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                      <path d="M144 224C161.7 224 176 238.3 176 256L176 512C176 529.7 161.7 544 144 544L96 544C78.3 544 64 529.7 64 512L64 256C64 238.3 78.3 224 96 224L144 224zM334.6 80C361.9 80 384 102.1 384 129.4L384 133.6C384 140.4 382.7 147.2 380.2 153.5L352 224L512 224C538.5 224 560 245.5 560 272C560 291.7 548.1 308.6 531.1 316C548.1 323.4 560 340.3 560 360C560 383.4 543.2 402.9 521 407.1C525.4 414.4 528 422.9 528 432C528 454.2 513 472.8 492.6 478.3C494.8 483.8 496 489.8 496 496C496 522.5 474.5 544 448 544L360.1 544C323.8 544 288.5 531.6 260.2 508.9L248 499.2C232.8 487.1 224 468.7 224 449.2L224 262.6C224 247.7 227.5 233 234.1 219.7L290.3 107.3C298.7 90.6 315.8 80 334.6 80z"/>
+                    </svg>
+                  </i>
+                  <span className={styles.text}>{discussion.likes_count}</span>
+                </a>
+                <a className={styles.iconBtn} onClick={() => {
+                  if (userDiscussionVote === 'dislike') {
+                    handleDiscussionVote('remove');
+                  } else {
+                    handleDiscussionVote('dislike');
+                  }
+                }}>
+                  <i className={styles.icon}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                      <path d="M448 96C474.5 96 496 117.5 496 144C496 150.3 494.7 156.2 492.6 161.7C513 167.2 528 185.8 528 208C528 217.1 525.4 225.6 521 232.9C543.2 237.1 560 256.6 560 280C560 299.7 548.1 316.6 531.1 324C548.1 331.4 560 348.3 560 368C560 394.5 538.5 416 512 416L352 416L380.2 486.4C382.7 492.7 384 499.5 384 506.3L384 510.5C384 537.8 361.9 559.9 334.6 559.9C315.9 559.9 298.8 549.3 290.4 532.6L234.1 420.3C227.4 407 224 392.3 224 377.4L224 190.8C224 171.4 232.9 153 248 140.8L260.2 131.1C288.6 108.4 323.8 96 360.1 96L448 96zM144 160C161.7 160 176 174.3 176 192L176 448C176 465.7 161.7 480 144 480L96 480C78.3 480 64 465.7 64 448L64 192C64 174.3 78.3 160 96 160L144 160z"/>
+                    </svg>
+                  </i>
+                  <span className={styles.text}>{discussion.dislikes_count}</span>
+                </a>
+                <a className={styles.iconBtn} onClick={handleFavorite}>
+                  <i className={styles.icon}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                      <path d="M305 151.1L320 171.8L335 151.1C360 116.5 400.2 96 442.9 96C516.4 96 576 155.6 576 229.1L576 231.7C576 343.9 436.1 474.2 363.1 529.9C350.7 539.3 335.5 544 320 544C304.5 544 289.2 539.4 276.9 529.9C203.9 474.2 64 343.9 64 231.7L64 229.1C64 155.6 123.6 96 197.1 96C239.8 96 280 116.5 305 151.1z"/>
+                    </svg>
+                  </i>
+                  <span className={styles.text}>{discussion.favorites_count}</span>
+                </a>
+              </div>
+              
               <a className={styles.iconBtn}>
-                <i className={styles.icon}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                    <path d="M144 224C161.7 224 176 238.3 176 256L176 512C176 529.7 161.7 544 144 544L96 544C78.3 544 64 529.7 64 512L64 256C64 238.3 78.3 224 96 224L144 224zM334.6 80C361.9 80 384 102.1 384 129.4L384 133.6C384 140.4 382.7 147.2 380.2 153.5L352 224L512 224C538.5 224 560 245.5 560 272C560 291.7 548.1 308.6 531.1 316C548.1 323.4 560 340.3 560 360C560 383.4 543.2 402.9 521 407.1C525.4 414.4 528 422.9 528 432C528 454.2 513 472.8 492.6 478.3C494.8 483.8 496 489.8 496 496C496 522.5 474.5 544 448 544L360.1 544C323.8 544 288.5 531.6 260.2 508.9L248 499.2C232.8 487.1 224 468.7 224 449.2L224 262.6C224 247.7 227.5 233 234.1 219.7L290.3 107.3C298.7 90.6 315.8 80 334.6 80z"/>
-                  </svg>
-                </i>
-                <span className={styles.text}>{discussion.likes_count || 0}</span>
-              </a>
-              <a className={styles.iconBtn}>
-                <i className={styles.icon}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                    <path d="M448 96C474.5 96 496 117.5 496 144C496 150.3 494.7 156.2 492.6 161.7C513 167.2 528 185.8 528 208C528 217.1 525.4 225.6 521 232.9C543.2 237.1 560 256.6 560 280C560 299.7 548.1 316.6 531.1 324C548.1 331.4 560 348.3 560 368C560 383.4 543.2 402.9 521 407.1C525.4 414.4 528 422.9 528 432C528 454.2 513 472.8 492.6 478.3C494.8 483.8 496 489.8 496 496C496 522.5 474.5 544 448 544L360.1 544C323.8 544 288.5 531.6 260.2 508.9L248 499.2C232.8 487.1 224 468.7 224 449.2L224 190.8C224 171.4 232.9 153 248 140.8L260.2 131.1C288.6 108.4 323.8 96 360.1 96L448 96zM144 160C161.7 160 176 174.3 176 192L176 448C176 465.7 161.7 480 144 480L96 480C78.3 480 64 465.7 64 448L64 192C64 174.3 78.3 160 96 160L144 160z"/>
-                  </svg>
-                </i>
-                <span className={styles.text}>0</span>
-              </a>
-              <a className={styles.iconBtn}>
-                <i className={styles.icon}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                    <path d="M305 151.1L320 171.8L335 151.1C360 116.5 400.2 96 442.9 96C516.4 96 576 155.6 576 229.1L576 231.7C576 343.9 436.1 474.2 363.1 529.9C350.7 539.3 335.5 544 320 544C304.5 544 289.2 539.4 276.9 529.9C203.9 474.2 64 343.9 64 231.7L64 229.1C64 155.6 123.6 96 197.1 96C239.8 96 280 116.5 305 151.1z"/>
-                  </svg>
-                </i>
-                <span className={styles.text}>0</span>
-              </a>
-              <div className={styles.colSeparator}></div>
-              <a className={`${styles.iconBtn} ${styles.hover02} ${styles.smallIndent}`}>
                 <i className={styles.icon}>
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
                     <path d="M448 256C501 256 544 213 544 160C544 107 501 64 448 64C395 64 352 107 352 160C352 165.4 352.5 170.8 353.3 176L223.6 248.1C206.7 233.1 184.4 224 160 224C107 224 64 267 64 320C64 373 107 416 160 416C184.4 416 206.6 406.9 223.6 391.9L353.3 464C352.4 469.2 352 474.5 352 480C352 533 395 576 448 576C501 576 544 533 544 480C544 427 501 384 448 384C423.6 384 401.4 393.1 384.4 408.1L254.7 336C255.6 330.8 256 325.5 256 320C256 314.5 255.5 309.2 254.7 304L384.4 231.9C401.3 246.9 423.6 256 448 256z"/>
-                  </svg>
-                </i>
-              </a>
-              <a className={`${styles.iconBtn} ${styles.hover02} ${styles.smallIndent}`}>
-                <i className={styles.icon}>
-                  <svg>
-                    <use xlinkHref="#icon-flag"></use>
-                  </svg>
-                </i>
-              </a>
-              <a className={`${styles.iconBtn} ${styles.hover02} ${styles.smallIndent}`}>
-                <i className={styles.icon}>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
-                    <path d="M268.2 82.4C280.2 87.4 288 99 288 112L288 192L400 192C497.2 192 576 270.8 576 368C576 481.3 494.5 531.9 475.8 542.1C473.3 543.5 470.5 544 467.7 544C456.8 544 448 535.1 448 524.3C448 516.8 452.3 509.9 457.8 504.8C467.2 496 480 478.4 480 448.1C480 395.1 437 352.1 384 352.1L288 352.1L288 432.1C288 445 280.2 456.7 268.2 461.7C256.2 466.7 242.5 463.9 233.3 454.8L73.3 294.8C60.8 282.3 60.8 262 73.3 249.5L233.3 89.5C242.5 80.3 256.2 77.6 268.2 82.6z"/>
                   </svg>
                 </i>
               </a>
