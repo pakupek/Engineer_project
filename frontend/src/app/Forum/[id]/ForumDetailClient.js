@@ -19,6 +19,16 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
     italic: false,
     underline: false,
   });
+  const [images, setImages] = useState([]);
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 5) {
+      alert("Można dodać maksymalnie 5 zdjęć");
+      return;
+    }
+    setImages(files);
+  };
   
 
 
@@ -28,7 +38,6 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
       try {
         const user = await getCurrentUser(); 
         setCurrentUser(user);
-        console.log("Dane aktualnego użytkownika: ", user);
       } catch (error) {
         console.error("Błąd podczas pobierania użytkownika: ", error);
       }
@@ -56,7 +65,6 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
     try {
       const res = await fetch(`http://localhost:8000/api/discussions/${discussionId}/`);
       const data = await res.json();
-      console.log("Dane dyskusji: ",data);
       setDiscussion(data);
     } catch (error) {
       console.error("Error fetching discussion:", error);
@@ -183,17 +191,20 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
 
   const postComment = async (e) => {
     e.preventDefault();
+
     try {
       const token = getToken();
+      const formData = new FormData();
+      formData.append("content", content);
+      formData.append("discussion", discussionId);
+      images.forEach((file) => formData.append("images", file));
+
       await fetch(`http://localhost:8000/api/discussions/${discussionId}/comments/`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          discussion: discussionId, 
-          content: content }),
+        body: formData,
       });
       setContent("");
        if (editorRef.current) {
@@ -206,6 +217,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
         underline: false,
       });
       fetchComments();
+      setImages([]);
     } catch (error) {
       console.error("Error posting comment:", error);
     }
@@ -443,6 +455,20 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
             
             <div className={styles.itemDescription}>
               <div dangerouslySetInnerHTML={{ __html: discussion.content.replace(/\n/g, '<br/>') }} />
+
+              {/* Wyświetlanie zdjęć dyskusji */}
+              {discussion.images && discussion.images.length > 0 && (
+                <div className={styles.discussionImages}>
+                  {discussion.images.map((imgObj) => (
+                    <img
+                      key={imgObj.id}
+                      src={imgObj.image}
+                      alt={`Załącznik ${imgObj.id}`}
+                      className={styles.discussionImage}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
             
             <div className={`${styles.itemInfo} ${styles.itemInfoBottom}`}>
@@ -604,6 +630,20 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
               </div>
               <div className={styles.itemDescription}>
                 <div dangerouslySetInnerHTML={{ __html: comment.content.replace(/\n/g, '<br/>') }} />
+                
+                {/* Wyświetlenie zdjęcia */}
+                {comment.images && comment.images.length > 0 && (
+                <div className={styles.discussionImages}>
+                  {comment.images.map((imgObj) => (
+                    <img
+                      key={imgObj.id}
+                      src={imgObj.image}
+                      alt={`Załącznik ${imgObj.id}`}
+                      className={styles.discussionImage}
+                    />
+                  ))}
+                </div>
+              )}
               </div>
               <div className={`${styles.itemInfo} ${styles.itemInfoBottom}`}>
                 {renderVoteButtons(comment)}
@@ -665,10 +705,40 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
                           </i>
                         </a>
                       </li>
+
+                      <li>
+                        <a className={styles.btnIcon}>
+                  
+                          <i className={styles.icon}>
+                            <input
+                              type="file"
+                              multiple
+                              accept="image/*"
+                              onChange={handleImageChange}
+                              style={{ display: "none" }}
+                            />
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+                              <path d="M288.6 76.8C344.8 20.6 436 20.6 492.2 76.8C548.4 133 548.4 224.2 492.2 280.4L328.2 444.4C293.8 478.8 238.1 478.8 203.7 444.4C169.3 410 169.3 354.3 203.7 319.9L356.5 167.3C369 154.8 389.3 154.8 401.8 167.3C414.3 179.8 414.3 200.1 401.8 212.6L249 365.3C239.6 374.7 239.6 389.9 249 399.2C258.4 408.5 273.6 408.6 282.9 399.2L446.9 235.2C478.1 204 478.1 153.3 446.9 122.1C415.7 90.9 365 90.9 333.8 122.1L169.8 286.1C116.7 339.2 116.7 425.3 169.8 478.4C222.9 531.5 309 531.5 362.1 478.4L492.3 348.3C504.8 335.8 525.1 335.8 537.6 348.3C550.1 360.8 550.1 381.1 537.6 393.6L407.4 523.6C329.3 601.7 202.7 601.7 124.6 523.6C46.5 445.5 46.5 318.9 124.6 240.8L288.6 76.8z"/>
+                            </svg>
+                          </i>
+                        </a>
+                      </li>
                     </ul>
                   </div>
                 </div>
                 <form onSubmit={postComment}>
+                  {images.length > 0 && (
+                    <div className={styles.imagePreviewContainer}>
+                      {images.map((img, i) => (
+                        <img
+                          key={i}
+                          src={URL.createObjectURL(img)}
+                          alt={`preview-${i}`}
+                          className={styles.imagePreview}
+                        />
+                      ))}
+                    </div>
+                  )}
                   <div
                     ref={editorRef}
                     className={styles.formControl}

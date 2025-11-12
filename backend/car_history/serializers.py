@@ -17,6 +17,8 @@ from .models import (
     CommentStats,
     DiscussionFavorite,
     DiscussionStats,
+    DiscussionImage,
+    CommentImage,
 )
 from django.contrib.auth.password_validation import validate_password
 
@@ -133,6 +135,26 @@ class MessageCreateSerializer(serializers.ModelSerializer):
         return value
 
 
+class DiscussionImageSerializer(serializers.ModelSerializer):
+    """
+    Serializer zdjęcia dyskusji
+    """
+
+    class Meta:
+        model = DiscussionImage
+        fields = ['id', 'image']
+
+
+class CommentImageSerializer(serializers.ModelSerializer):
+    """
+    Serializer zdjęcia komentarza
+    """
+
+    class Meta:
+        model = CommentImage
+        fields = ['id', 'image']
+
+
 class CommentStatsSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     vote_type = serializers.SerializerMethodField()
@@ -166,6 +188,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author_avatar = serializers.ImageField(source="author.avatar", read_only=True)
     user_vote = serializers.SerializerMethodField()
     votes = CommentStatsSerializer(many=True, read_only=True)
+    images = CommentImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Comment
@@ -180,7 +203,8 @@ class CommentSerializer(serializers.ModelSerializer):
             "dislikes_count",
             "created_at",
             "user_vote",
-            "votes"
+            "votes",
+            "images"
         ]
         read_only_fields = ["author", "created_at", 'likes_count', 'dislikes_count']
 
@@ -241,6 +265,7 @@ class DiscussionSerializer(serializers.ModelSerializer):
     author_avatar = serializers.ImageField(source="author.avatar", read_only=True)
     user_vote = serializers.SerializerMethodField()
     is_favorited = serializers.SerializerMethodField()
+    images = DiscussionImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Discussion
@@ -262,7 +287,7 @@ class DiscussionSerializer(serializers.ModelSerializer):
             "last_activity",
             "user_vote",
             "is_favorited",
-            "pinned",
+            "images",
             "locked",
         ]
         read_only_fields = [
@@ -276,6 +301,9 @@ class DiscussionSerializer(serializers.ModelSerializer):
             "last_activity",
             "author",
         ]
+
+    def get_images(self, obj):
+        return [img.image.url for img in obj.images.all()]
 
     def get_user_vote(self, obj):
         request = self.context.get('request')

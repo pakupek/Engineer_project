@@ -42,6 +42,8 @@ from .models import (
     CommentStats,
     DiscussionFavorite,
     DiscussionStats,
+    DiscussionImage,
+    CommentImage,
 )
 from rest_framework.response import Response
 from django.db.models import Q
@@ -340,6 +342,13 @@ class DiscussionListCreateView(generics.ListCreateAPIView):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = DiscussionPagination
     filterset_class = DiscussionFilter
+    parser_classes = [MultiPartParser, FormParser]
+
+    def perform_create(self, serializer):
+        discussion = serializer.save(author=self.request.user)
+        images = self.request.FILES.getlist('images')
+        for img in images[:5]:  # max 5 zdjęć
+            DiscussionImage.objects.create(discussion=discussion, image=img)
 
     
 class DiscussionDetailView(generics.RetrieveAPIView):
@@ -474,6 +483,7 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
         discussion_id = self.kwargs["discussion_id"]
@@ -485,9 +495,26 @@ class CommentListCreateView(generics.ListCreateAPIView):
         return context
 
     def perform_create(self, serializer):
-        serializer.save(
-            author=self.request.user
+        discussion_id = self.kwargs.get("discussion_id")
+        comment = serializer.save(
+            author=self.request.user,
+            discussion_id=discussion_id  
         )
+
+        # Obsługa zdjęć (maks. 5)
+        images = self.request.FILES.getlist('images')
+        for img in images[:5]:
+            CommentImage.objects.create(comment=comment, image=img)
+
+         # Tworzymy statystyki komentarza, jeśli wymagane
+        if not CommentStats.objects.filter(comment=comment, user=self.request.user).exists():
+            CommentStats.objects.create(comment=comment, user=self.request.user)
+
+        # Aktualizacja statystyk dyskusji
+        discussion = comment.discussion
+        discussion.comments_count = Comment.objects.filter(discussion=discussion).count()
+        discussion.update_last_activity()
+        discussion.save(update_fields=["comments_count", "last_activity"])
 
 
 class CommentStatsUpdateAPIView(generics.UpdateAPIView):

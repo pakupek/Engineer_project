@@ -32,6 +32,17 @@ export default function Forum() {
         HISTORIA: "tt-color07",
     };
 
+    const [images, setImages] = useState([]);
+
+    const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length > 5) {
+        alert("Można dodać maksymalnie 5 zdjęć");
+        return;
+        }
+        setImages(files);
+    };
+
     const getCategoryClass = (category) => {
         return CATEGORY_COLORS[category] || "tt-color01";
     };
@@ -100,13 +111,20 @@ export default function Forum() {
         setSubmitting(true);
         try {
             const token = getToken();
+            const formData = new FormData();
+            formData.append("title", newDiscussion.title);
+            formData.append("category", newDiscussion.category);
+            formData.append("content", newDiscussion.content);
+
+            images.forEach((file) => {
+                formData.append("images", file);
+            });
             const res = await fetch("http://localhost:8000/api/discussions/", {
                 method: "POST",
                 headers: {
-                "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(newDiscussion),
+                body: formData,
             });
 
             if (!res.ok) throw new Error("Błąd przy tworzeniu dyskusji");
@@ -115,6 +133,7 @@ export default function Forum() {
             setThreads((prev) => [data, ...prev]);
             setModalOpen(false);
             setNewDiscussion({ title: "", category: "OGOLNE", content: "" });
+            setImages([]);
         } catch (err) {
             console.error(err);
             alert("Nie udało się utworzyć dyskusji.");
@@ -286,6 +305,13 @@ export default function Forum() {
                             value={newDiscussion.content} 
                             onChange={handleInputChange}
                         />
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={handleImageChange}
+                        />
+
                         <button 
                             onClick={handleCreateDiscussion} 
                             disabled={submitting} 

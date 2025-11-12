@@ -2,12 +2,19 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.forms import ValidationError
 from django.utils import timezone
-from .utils import vehicle_image_path, vehicle_invoice_path, damage_image_path, default_avatar_path, user_avatar_path
+from .utils import (
+    vehicle_image_path, 
+    vehicle_invoice_path, 
+    damage_image_path, 
+    default_avatar_path, 
+    user_avatar_path, 
+    discussion_image_path, 
+    comment_image_path)
 import time, logging
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
-from datetime import datetime, timedelta
+from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -150,6 +157,32 @@ class Discussion(models.Model):
         self.views += 1
 
 
+class DiscussionImage(models.Model):
+    """
+    Model zdjęcia załączanego do dyskusji
+    """
+
+    discussion = models.ForeignKey('Discussion', on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to=discussion_image_path)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image for discussion {self.discussion.id}"
+    
+
+class CommentImage(models.Model):
+    """
+    Model zdjęcia dołączanego do komentarza
+    """
+
+    comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to=comment_image_path)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image for comment {self.comment.id}"
+
+
 class DiscussionStats(models.Model):
     """
     Model głosów dla dyskusji
@@ -219,13 +252,14 @@ class Comment(models.Model):
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
+        user = kwargs.pop('user', None)
         super().save(*args, **kwargs)
         
         # Aktualizujemy last_activity dyskusji po dodaniu komentarza
         if is_new:
             self.discussion.update_last_activity()
             self.discussion.update_comment_count()
-            CommentStats.objects.create(comment=self)
+           
 
     def update_votes_count(self):
         """Aktualizuje liczniki like/dislike na podstawie głosów"""

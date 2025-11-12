@@ -243,6 +243,8 @@
   margin-bottom: 20px;
 }
 
+
+
 .itemDescription h6 {
   font-size: 16px;
   font-weight: 600;
@@ -252,6 +254,26 @@
 
 .itemDescription p {
   margin-bottom: 15px;
+}
+
+.discussionImages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.discussionImage {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.discussionImage:hover {
+  transform: scale(1.05);
 }
 
 .itemInfoBottom {
@@ -532,6 +554,22 @@
   resize: vertical;
   box-sizing: border-box;
 }
+
+.imagePreviewContainer {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.imagePreview {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
 
 .checkboxGroup {
   display: flex;
