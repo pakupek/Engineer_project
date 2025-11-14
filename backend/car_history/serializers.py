@@ -21,10 +21,13 @@ from .models import (
     CommentImage,
 )
 from django.contrib.auth.password_validation import validate_password
+from django.core.cache import cache
 
-
-# Serializer do artykułów motoryzacyjnych
 class ArticleSerializer(serializers.Serializer):
+    """
+    Serializer do artykułów motoryzacyjnych
+    """
+
     id = serializers.CharField(allow_blank=True, required=False)
     title = serializers.CharField()
     summary = serializers.CharField(allow_blank=True, required=False)
@@ -33,7 +36,12 @@ class ArticleSerializer(serializers.Serializer):
     url = serializers.CharField(allow_blank=True, required=False)
     source = serializers.CharField(allow_blank=True, required=False)
 
+
 class VehicleImageSerializer(serializers.ModelSerializer):
+    """
+    Serializer do zdjęć pojazdu użytkownika
+    """
+
     class Meta:
         model = VehicleImage
         fields = ['id', 'vehicle', 'image', 'uploaded_at']
@@ -49,12 +57,20 @@ class VehicleImageSerializer(serializers.ModelSerializer):
 
 
 class VehicleMakeSerializer(serializers.ModelSerializer):
+    """
+    Serializer marki pojazdów
+    """
+
     class Meta:
         model = VehicleMake
         fields = '__all__'
 
 
 class VehicleModelSerializer(serializers.ModelSerializer):
+    """
+    Serializer modelu pojazdu
+    """
+
     make = VehicleMakeSerializer(read_only=True)
     class Meta:
         model = VehicleModel
@@ -62,6 +78,10 @@ class VehicleModelSerializer(serializers.ModelSerializer):
 
 
 class VehicleGenerationSerializer(serializers.ModelSerializer):
+    """
+    Serializer do generacji modelu pojazdu
+    """
+
     model = VehicleModelSerializer(read_only=True)
     class Meta:
         model = VehicleGeneration
@@ -69,14 +89,18 @@ class VehicleGenerationSerializer(serializers.ModelSerializer):
 
 
 class VehicleSerializer(serializers.ModelSerializer):
+    """
+    Serializer pojazdu użytkownika
+    """
+
     generation_id = serializers.PrimaryKeyRelatedField(
         queryset=VehicleGeneration.objects.all(),
         source='generation',  # Mapuje na pole generation w modelu
         required=False,
         allow_null=True,
-        write_only=True  # Tylko do zapisu
+        write_only=True  
     )
-    generation = VehicleGenerationSerializer(read_only=True)  # Tylko do odczytu
+    generation = VehicleGenerationSerializer(read_only=True) 
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     images = VehicleImageSerializer(many=True, read_only=True)
 
@@ -84,10 +108,12 @@ class VehicleSerializer(serializers.ModelSerializer):
         model = Vehicle
         fields = '__all__'
     
+
 class VehicleDeleteSerializer(serializers.Serializer):
     """
     Serializer dla odpowiedzi po usunięciu pojazdu
     """
+
     message = serializers.CharField()
     deleted_vehicle = serializers.CharField()
     deleted_images_count = serializers.IntegerField()
@@ -95,17 +121,29 @@ class VehicleDeleteSerializer(serializers.Serializer):
 
 
 class ChangePasswordSerializer(serializers.Serializer):
+    """
+    Serializer do zmiany hasła
+    """
+
     old_password = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True, validators=[validate_password])
     
 
 class UserSerializer(serializers.ModelSerializer):
+    """
+    Serializer użytkownika
+    """
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email','phone_number', 'avatar']
 
 
 class MessageSerializer(serializers.ModelSerializer):
+    """
+    Serializer wiadomości
+    """
+
     sender_name = serializers.CharField(source='sender.username', read_only=True)
     receiver_name = serializers.CharField(source='receiver.username', read_only=True)
     
@@ -170,6 +208,7 @@ class CommentStatsSerializer(serializers.ModelSerializer):
         elif obj.dislikes > 0:
             return 'dislike'
         return None
+
 
 class CommentStatsUpdateSerializer(serializers.ModelSerializer):
     action = serializers.ChoiceField(choices=['like', 'dislike', 'remove'], write_only=True)
@@ -337,13 +376,26 @@ class DiscussionLockSerializer(serializers.ModelSerializer):
         read_only_fields = []
 
 
+class EmailSerializer(serializers.Serializer):
+    """
+    Serializer wysyłki kod weryfikacyjnego na email
+    """
+    
+    email = serializers.EmailField(required=True)
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    """
+    Serializer rejestracji użytkownika
+    """
+
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
+    verification_code = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'phone_number', 'password', 'password2')
+        fields = ('username', 'email', 'phone_number', 'password', 'password2', 'verification_code')
         extra_kwargs = {
             'email': {'required': True},
         }
@@ -353,6 +405,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": "Hasła nie są identyczne."})
         if User.objects.filter(email=attrs['email']).exists():
             raise serializers.ValidationError({"email": "Użytkownik z tym adresem email już istnieje."})
+
+        # Weryfikacja kodu
+        cached_code = cache.get(f'verification_code_{attrs["email"]}')
+        if cached_code != attrs['verification_code']:
+            raise serializers.ValidationError({"verification_code": "Niepoprawny kod weryfikacyjny."})
         return attrs
 
     def create(self, validated_data):

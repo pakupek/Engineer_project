@@ -21,7 +21,8 @@ from .serializers import (
     ArticleSerializer,
     DiscussionLockSerializer,
     CommentStatsUpdateSerializer,
-    DiscussionStatsSerializer
+    DiscussionStatsSerializer,
+    EmailSerializer,
 )
 from rest_framework.permissions import AllowAny
 from .models import (
@@ -64,6 +65,8 @@ from rest_framework.throttling import UserRateThrottle
 from django.core.cache import cache
 from .pagination import DiscussionPagination
 from .filters import DiscussionFilter
+from .utils import generate_verification_code
+from django.core.mail import send_mail
 
 logger = logging.getLogger(__name__)
 
@@ -586,6 +589,34 @@ class CommentStatsUpdateAPIView(generics.UpdateAPIView):
         }, status=status.HTTP_200_OK)
 
 
+class SendVerificationCodeView(generics.CreateAPIView):
+    """
+    Widok wysyłania kodu weryfikacyjnego
+    """
+
+    serializer_class = EmailSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+        code = generate_verification_code()
+
+        # zapis kodu w cache na 5 minut
+        cache.set(f'verification_code_{email}', code, 300)
+
+        # wysyłka maila
+        send_mail(
+            subject="GaraZero: Kod weryfikacyjny",
+            message=f"Twój kod weryfikacyjny: {code}",
+            from_email=os.getenv("EMAIL_HOST_USER"),
+            recipient_list=[email],
+        )
+
+        return Response({"message": "Kod weryfikacyjny wysłany"}, status=status.HTTP_200_OK)
+
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
@@ -614,7 +645,7 @@ class VehicleGenerationListAPI(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = VehicleGeneration.objects.all().order_by('name')
-        model_id = self.request.query_params.get('model')  # spodziewa się ID
+        model_id = self.request.query_params.get('model')  
         if model_id:
             queryset = queryset.filter(model_id=model_id)
         return queryset
@@ -1110,6 +1141,7 @@ class VehicleSaleDetailView(generics.RetrieveDestroyAPIView):
     """
     Endpoint do pobierania i usuwania ogłoszenia sprzedaży auta.
     """
+
     queryset = VehicleSale.objects.all()
     serializer_class = VehicleSaleSerializer
     permission_classes = [permissions.IsAuthenticated]

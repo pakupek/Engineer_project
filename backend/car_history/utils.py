@@ -1,5 +1,7 @@
-from django.utils import timezone
-import os
+import os, random
+
+def generate_verification_code(length=6):
+    return ''.join([str(random.randint(0, 9)) for _ in range(length)])
 
 def vehicle_image_path(instance, filename):
     # Pliki będą w media/vehicles/<VIN>/<nazwa_pliku>
