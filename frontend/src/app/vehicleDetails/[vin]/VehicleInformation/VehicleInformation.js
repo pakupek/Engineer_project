@@ -32,77 +32,61 @@ export function VehicleInformationOverlay({ car }){
     );
 }
 
-export function VehicleInformation({ car, showMore, setShowMore}){
+export function VehicleInformation({ car}){
   const [showSaleForm, setShowSaleForm] = useState(false);
 
     return(
         
       <div className="car-info-section">
-      {/* Główne dane auta */}
-      <div className="car-info-block">
-        <h2 className="car-title">{car.title || car.name}</h2>
-        <p className="car-description">{car.description}</p>
-
-        {!showMore && (
-          <button
-            onClick={() => setShowMore(true)}
-            className="car-loadmore-btn"
-          >
-            Załaduj więcej →
-          </button>
-        )}
-      </div>
-
-      {/* Kolor nadwozia */}
-      <div className="car-info-block">
-        <h3 className="car-subtitle">Kolor nadwozia</h3>
-        <p className="car-subtext">{car.body_color || "Metalik"}</p>
-        <div className="car-color-list">
-          {car.body_colors?.map((c) => (
-            <div
-              key={c}
-              className="car-color-circle"
-              style={{ backgroundColor: c }}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Kolor wnętrza */}
-      <div className="car-info-block">
-        <h3 className="car-subtitle">Kolor wnętrza</h3>
-        <span className="car-interior-tag">{car.interior_color}</span>
-      </div>
-
-      {/* Koła */}
-      <div className="car-info-block">
-        <h3 className="car-subtitle">Koła</h3>
-        <p className="car-wheel-size">{car.wheel_size}</p>
-      </div>
-
-      {/* Wartość i przyciski */}
-      <div className="car-value-block">
-        <h3 className="car-subtitle">Wartość</h3>
-        <p className="car-price">{car.price} PLN</p>
-        <div className="car-btn-group">
-          <button className="car-btn">Aktualizuj dane →</button>
-          <button className="car-btn danger">Usuń pojazd →</button>
-          <button onClick={() => setShowSaleForm(true)}>🏷 Wystaw na sprzedaż</button>
-        </div>
-      </div>
-
-      {showSaleForm && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <button onClick={() => setShowSaleForm(false)}>✖ Zamknij</button>
-            <VehicleSaleForm
-              vin={car.vin}
-              onSaleCreated={() => setShowSaleForm(false)}
-            />
+        
+        {/* Przyciski */}
+        <div className="car-info-block">
+          <div className="car-btn-group">
+            <button className="car-btn">Aktualizuj dane →</button>
+            <button className="car-btn danger">Usuń pojazd →</button>
+            <button className="car-btn sale" onClick={() => setShowSaleForm(true)}>🏷 Wystaw na sprzedaż</button>
           </div>
         </div>
-      )}
 
-    </div>
+        {/* Kolor nadwozia */}
+        <div className="car-info-block">
+          <h3 className="car-subtitle">Kolor nadwozia</h3>
+          <p className="car-subtext">{car.body_color || "Metalik"}</p>
+          <div className="car-color-list">
+            {car.body_colors?.map((c) => (
+              <div
+                key={c}
+                className="car-color-circle"
+                style={{ backgroundColor: c }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Kolor wnętrza */}
+        <div className="car-info-block">
+          <h3 className="car-subtitle">Kolor wnętrza</h3>
+          <span className="car-interior-tag">{car.interior_color}</span>
+        </div>
+
+
+        {/* Wartość */}
+        <div className="car-value-block">
+          <h3 className="car-subtitle">Wartość</h3>
+          <p className="car-price">{car.price} PLN</p>
+        </div>
+
+        {showSaleForm && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <button onClick={() => setShowSaleForm(false)}>✖ Zamknij</button>
+              <VehicleSaleForm
+                vin={car.vin}
+                onSaleCreated={() => setShowSaleForm(false)}
+              />
+            </div>
+          </div>
+        )}
+      </div>
     );
 }

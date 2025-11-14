@@ -138,7 +138,8 @@ export default function CarDetails() {
 
   return (
     
-    <div style={{ background: "linear-gradient(to bottom, white, black)",
+    <div style={{ 
+      background: "linear-gradient(to bottom, white, black)",
       minHeight: "100vh",
       backgroundAttachment: "fixed",
       backgroundRepeat: "no-repeat",
@@ -152,127 +153,118 @@ export default function CarDetails() {
       </div>
 
       {/* Podstawowe informacje */}
-      <VehicleInformation car={car} showMore={showMore} setShowMore={setShowMore}/>
+      <VehicleInformation car={car}/>
 
-      {/* Dodatkowe sekcje po kliknięciu */}
-      {showMore && (
-        <>
-          <TechnicalData vin={vin} />
-          <Timeline vin={vin} />
+      {/* Dane techniczne */}
+      <TechnicalData vin={vin} />
+
+      {/* Oś czasu */}
+      <Timeline vin={vin} />
           
           
-          <section className={sectionStyle["vehicle-history"]}>
-            <div className={sectionStyle["vehicle-history-container"]}>
-              {/* LEWA STRONA */}
-              <div className={sectionStyle["vehicle-left"]}>
-                <h2 className={sectionStyle["vehicle-title"]}>Historia pojazdu</h2>
-                <p className={sectionStyle["vehicle-subtitle"]}>
-                  Sprawdź przeszłość swojego auta — naprawy, przeglądy i uszkodzenia.
-                  Dodawaj nowe wpisy i śledź stan pojazdu w jednym miejscu.
-                </p>
+      <section className={sectionStyle["vehicle-history"]}>
+        <div className={sectionStyle["vehicle-history-container"]}>
+          {/* LEWA STRONA */}
+          <div className={sectionStyle["vehicle-left"]}>
+            <h2 className={sectionStyle["vehicle-title"]}>Historia pojazdu</h2>
+            <p className={sectionStyle["vehicle-subtitle"]}>
+              Sprawdź przeszłość swojego auta — naprawy, przeglądy i uszkodzenia.
+              Dodawaj nowe wpisy i śledź stan pojazdu w jednym miejscu.
+            </p>
 
-                {/* Sekcja serwisowa */}
-                <div className={sectionStyle["accordion"]}>
-                  <button
-                    onClick={() => toggleSection("service")}
-                    className={sectionStyle["accordion-button"]}
-                  >
-                    <span className={sectionStyle["accordion-title"]}>🧰 Historia serwisowa</span>
-                    <span>{openSection === "service" ? "−" : "+"}</span>
-                  </button>
-                  {openSection === "service" && (
-                    <div className={sectionStyle["accordion-content"]}>
-                      <ServiceEntryCreate vin={vin} editingEntry={editingEntry} onSave={handleSave} />
-                    </div>
-                  )}
+            {/* Sekcja serwisowa */}
+            <div className={sectionStyle["accordion"]}>
+              <button onClick={() => toggleSection("service")} className={sectionStyle["accordion-button"]}>
+                <span className={sectionStyle["accordion-title"]}>🧰 Historia serwisowa</span>
+                <span>{openSection === "service" ? "−" : "+"}</span>
+              </button>
+              {openSection === "service" && (
+                <div className={sectionStyle["accordion-content"]}>
+                  <ServiceEntryCreate vin={vin} editingEntry={editingEntry} onSave={handleSave} />
                 </div>
+              )}
+            </div>
 
-                {/* Sekcja uszkodzeń */}
-                <div className={sectionStyle["accordion"]}>
-                  <button
-                    onClick={() => toggleSection("damage")}
-                    className={sectionStyle["accordion-button"]}
-                  >
-                    <span className={sectionStyle["accordion-title"]}>🚗 Historia szkód</span>
-                    <span>{openSection === "damage" ? "−" : "+"}</span>
-                  </button>
-                  {openSection === "damage" && (
-                    <div className={sectionStyle["accordion-content"]}>
-                      <DamageFormContainer onDamageAdded={handleDamageAdded} damageToEdit={editingDamage}
-                        onEditComplete={handleEditComplete}/>
-                    </div>
-                  )}
+            {/* Sekcja uszkodzeń */}
+            <div className={sectionStyle["accordion"]}>
+              <button onClick={() => toggleSection("damage")} className={sectionStyle["accordion-button"]}>
+                <span className={sectionStyle["accordion-title"]}>🚗 Historia szkód</span>
+                <span>{openSection === "damage" ? "−" : "+"}</span>
+              </button>
+              {openSection === "damage" && (
+                <div className={sectionStyle["accordion-content"]}>
+                  <DamageFormContainer onDamageAdded={handleDamageAdded} damageToEdit={editingDamage} onEditComplete={handleEditComplete}/>
                 </div>
-                {/* ✅ PRZYCISK POBIERANIA PDF */}
-                <button
-                  onClick={handleDownloadPdf}
-                  disabled={downloadingPdf}
-                  className={sectionStyle["download-btn"]}
-                  style={{
-                    marginTop: "20px",
-                    padding: "12px 20px",
-                    background: downloadingPdf ? "#6b7280" : "#1f2937",
-                    color: "white",
-                    borderRadius: "8px",
-                    border: "none",
-                    cursor: downloadingPdf ? "not-allowed" : "pointer",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    transition: "all 0.2s ease",
-                    width: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "8px",
-                  }}
-                  onMouseOver={(e) => {
-                    if (!downloadingPdf) {
-                      e.target.style.background = "#374151";
-                      e.target.style.transform = "translateY(-1px)";
-                    }
-                  }}
-                  onMouseOut={(e) => {
-                    if (!downloadingPdf) {
-                      e.target.style.background = "#1f2937";
-                      e.target.style.transform = "translateY(0)";
-                    }
-                  }}
-                >
-                  {downloadingPdf ? (
-                    <>
-                      <span>⏳</span>
-                      Generowanie PDF...
-                    </>
-                  ) : (
-                    <>
-                      <span>📄</span>
-                      Pobierz historię pojazdu (PDF)
-                    </>
-                  )}
-                </button>
-              </div>
+              )}
+            </div>
 
-              {/* PRAWA STRONA */}
-              <div className={sectionStyle["vehicle-right"]}>
-                {/* Suwak: Serwis */}
-                <div className={sectionStyle["card-section dark"]}>
-                  <div className={sectionStyle["scroll-container"]}>
-                    <ServiceEntriesList vin={vin} key={reloadKey} onEditEntry={handleEditEntry} />
-                  </div>
-                </div>
+            {/* Przycisk pobierania PDF */}
+            <button
+              onClick={handleDownloadPdf}
+              disabled={downloadingPdf}
+              className={sectionStyle["download-btn"]}
+              style={{
+                marginTop: "20px",
+                padding: "12px 20px",
+                background: downloadingPdf ? "#6b7280" : "#1f2937",
+                color: "white",
+                borderRadius: "8px",
+                border: "none",
+                cursor: downloadingPdf ? "not-allowed" : "pointer",
+                fontSize: "14px",
+                fontWeight: "500",
+                transition: "all 0.2s ease",
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+              }}
+              onMouseOver={(e) => {
+                if (!downloadingPdf) {
+                  e.target.style.background = "#374151";
+                  e.target.style.transform = "translateY(-1px)";
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!downloadingPdf) {
+                  e.target.style.background = "#1f2937";
+                  e.target.style.transform = "translateY(0)";
+                }
+              }}
+            >
+              {downloadingPdf ? (
+                <>
+                  <span>⏳</span>
+                  Generowanie PDF...
+                </>
+              ) : (
+                <>
+                  <span>📄</span>
+                  Pobierz historię pojazdu (PDF)
+                </>
+              )}
+            </button>
+          </div>
 
-                {/* Suwak: Uszkodzenia */}
-                <div className={sectionStyle["card-section yellow"]}>
-                  <div className={sectionStyle["scroll-container"]}>
-                    <DamageHistory key={damageReloadKey}
-                      onEditDamage={handleEditDamage}/>
-                  </div>
-                </div>
+          {/* PRAWA STRONA */}
+          <div className={sectionStyle["vehicle-right"]}>
+            {/* Suwak: Serwis */}
+            <div className={sectionStyle["card-section dark"]}>
+              <div className={sectionStyle["scroll-container"]}>
+                <ServiceEntriesList vin={vin} key={reloadKey} onEditEntry={handleEditEntry} />
               </div>
             </div>
-          </section>
-        </>
-      )}
+
+            {/* Suwak: Uszkodzenia */}
+            <div className={sectionStyle["card-section yellow"]}>
+              <div className={sectionStyle["scroll-container"]}>
+                <DamageHistory key={damageReloadKey} onEditDamage={handleEditDamage}/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section> 
     </div>
   );
 }

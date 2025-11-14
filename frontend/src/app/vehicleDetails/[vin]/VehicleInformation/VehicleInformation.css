@@ -108,11 +108,14 @@
 }
 
 .car-btn-group {
-  display: flex;
   gap: 12px;
-  justify-content: flex-end;
   margin-top: 15px;
-  flex-wrap: wrap;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
 }
 
 .car-btn {
@@ -135,6 +138,11 @@
 .car-btn.danger:hover {
   border-color: #ff5252;
   color: #ff5252;
+}
+
+.car-btn.sale:hover{
+  border-color: #56da27;
+  color: #56da27;
 }
 
 
