@@ -44,7 +44,13 @@ export default function DamageFormContainer({ damageToEdit, onEditComplete}) {
     formData.append("description", damageData.description);
     formData.append("severity", damageData.severity);
 
-    damageData.existingPhotos.forEach(photo => formData.append("photos", photo));
+    // POPRAWIONE: Wyślij existingPhotos jako JSON string
+    formData.append("existingPhotos", JSON.stringify(damageData.existingPhotos));
+
+    // Wyślij new_photos jako pliki
+    damageData.newPhotos.forEach(photo => {
+      formData.append("new_photos", photo); 
+    });
 
     const token = getToken();
     const isEditing = Boolean(damageToEdit);
@@ -63,9 +69,7 @@ export default function DamageFormContainer({ damageToEdit, onEditComplete}) {
       });
 
       if (!response.ok) {
-        const err = await response.json();
-        console.error("Błąd API:", err);
-        alert("Operacja nie powiodła się");
+        alert("Operacja nie powiodła się: " + (response.detail || JSON.stringify(response)));
         return;
       }
 

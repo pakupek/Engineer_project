@@ -14,8 +14,12 @@ def vehicle_invoice_path(instance, filename):
 
 
 def damage_image_path(instance, filename):
-    # Pliki zdjęć uszkodzeń będą w media/vehicles/<VIN>/damage/<nazwa_pliku>
-    return f"vehicles/{instance.vehicle.vin}/damage/{filename}"
+    """
+    Funkcja generująca ścieżkę dla zdjęć uszkodzeń
+    Format: media/vehicles/<VIN>/damage/<id>/<nazwa_pliku>
+    """
+    
+    return f"vehicles/{instance.damage_entry.vehicle.vin}/damage/{instance.damage_entry.id}/{filename}"
 
 
 def user_avatar_path(instance, filename):

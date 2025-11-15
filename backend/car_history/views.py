@@ -1070,10 +1070,6 @@ class DamageEntryView(generics.GenericAPIView):
         if serializer.is_valid():
             damage_entry = serializer.save()
 
-            # Dodanie nowych zdjęć
-            for file in request.FILES.getlist("newPhotos"):
-                DamagePhoto.objects.create(damage_entry=damage_entry, file=file)
-
             return Response({
                 "success": True,
                 "message": "Wpis o szkodzie dodany pomyślnie",
@@ -1087,60 +1083,130 @@ class DamageEntryView(generics.GenericAPIView):
         entry_id = kwargs.get("entry_id")
         entry = get_object_or_404(DamageEntry, id=entry_id)
 
-        serializer = self.get_serializer(entry, data=request.data, partial=True, context={"vehicle": entry.vehicle, "request": request})
-
+    
         # Aktualizacja markerów
         markers_data = None
         if "markers" in request.data:
             try:
                 markers_data = json.loads(request.data["markers"])
-            except json.JSONDecodeError:
+                
+            except json.JSONDecodeError as e:
                 markers_data = []
 
         # Obsługa zdjęć
-        existing_photos = request.data.get("existingPhotos", "[]")
-        try:
-            existing_photos = json.loads(existing_photos)
-        except json.JSONDecodeError:
-            existing_photos = []
+        existing_photos = []
+        if "existingPhotos" in request.data:
+            try:
+                existing_photos_data = request.data["existingPhotos"]
+                if isinstance(existing_photos_data, str):
+                    existing_photos = json.loads(existing_photos_data)
+                else:
+                    existing_photos = existing_photos_data
+               
+            except (json.JSONDecodeError, TypeError) as e:
+                existing_photos = []
+        else:
+            # Jeśli nie ma existingPhotos, użyj wszystkich obecnych zdjęć
+            existing_photos = list(entry.photos.values('id', 'image'))
+
+        # Sprawdź serializer PRZED obsługą zdjęć
+        serializer = self.get_serializer(entry, data=request.data, partial=True, context={"vehicle": entry.vehicle, "request": request})
+        
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         # Usuń zdjęcia, które zostały usunięte w formularzu
-        entry.photos.exclude(id__in=[p.get("id") for p in existing_photos if "id" in p]).delete()
+        existing_photo_ids = [p.get("id") for p in existing_photos if p.get("id")]
+        
+        photos_to_delete = entry.photos.exclude(id__in=existing_photo_ids)
+
+        # Usuń fizyczne pliki zdjęć przed usunięciem z bazy
+        for photo in photos_to_delete:
+            if photo.image and os.path.isfile(photo.image.path):
+                try:
+                    os.remove(photo.image.path)
+                except OSError as e:
+                    logger.error(f"Error deleting photo file {e}")
+        
+        # Usuń rekordy z bazy
+        photos_to_delete.delete()
 
         # Dodaj nowe zdjęcia
-        for file in request.FILES.getlist("newPhotos"):
-            DamagePhoto.objects.create(damage_entry=entry, file=file)
+        new_photos_count = len(request.FILES.getlist("new_photos"))
+        
+        for file in request.FILES.getlist("new_photos"):
+            DamagePhoto.objects.create(damage_entry=entry, image=file)
 
-        if serializer.is_valid():
-            serializer.save()
+        # Zapisz przez serializer
+        entry = serializer.save()
 
-            # Zaktualizuj markery
-            if markers_data is not None:
-                entry.markers.all().delete()
-                for marker in markers_data:
+        # Zaktualizuj markery
+        if markers_data is not None:
+            entry.markers.all().delete()
+            for marker in markers_data:
+                if marker.get("x_percent") is not None and marker.get("y_percent") is not None:
                     entry.markers.create(
                         x_percent=marker.get("x_percent"),
                         y_percent=marker.get("y_percent"),
-                        severity=marker.get("severity"),
+                        severity=marker.get("severity", "drobne"),
                     )
 
-            return Response({
-                "success": True,
-                "message": "Wpis został zaktualizowany",
-                "data": self.get_serializer(entry).data
-            })
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            "success": True,
+            "message": "Wpis został zaktualizowany",
+            "data": self.get_serializer(entry).data
+        })
 
     # DELETE – usuń wpis
     def delete(self, request, *args, **kwargs):
         entry_id = kwargs.get("entry_id")
         entry = get_object_or_404(DamageEntry, id=entry_id)
 
-        # Usuń wszystkie zdjęcia przed usunięciem wpisu
-        entry.photos.all().delete()
-        entry.delete()
-        return Response({"success": True, "message": "Wpis o szkodzie został usunięty"}, status=status.HTTP_204_NO_CONTENT)
+        try:
+            # Ścieżka do folderu ze zdjęciami tego wpisu
+            damage_folder_path = os.path.join(
+                settings.MEDIA_ROOT, 
+                'vehicles', 
+                entry.vehicle.vin, 
+                'damage', 
+                str(entry.id)
+            )
+            
+            # Najpierw usuń fizyczne pliki zdjęć
+            photos = entry.photos.all()
+            for photo in photos:
+                if photo.image and os.path.isfile(photo.image.path):
+                    try:
+                        os.remove(photo.image.path)
+                        print(f"Deleted photo file: {photo.image.path}")
+                    except OSError as e:
+                        print(f"Error deleting photo file {photo.image.path}: {e}")
+            
+            # Usuń rekordy zdjęć z bazy
+            entry.photos.all().delete()
+            
+            # Usuń cały folder (jeśli istnieje)
+            if os.path.exists(damage_folder_path) and os.path.isdir(damage_folder_path):
+                try:
+                    shutil.rmtree(damage_folder_path)  # Usuwa rekursywnie cały folder
+                    print(f"Deleted damage folder: {damage_folder_path}")
+                except OSError as e:
+                    print(f"Error deleting folder {damage_folder_path}: {e}")
+            
+            # Na końcu usuń wpis z bazy
+            entry.delete()
+            
+            return Response({
+                "success": True, 
+                "message": "Wpis o szkodzie został usunięty"
+            }, status=status.HTTP_204_NO_CONTENT)
+            
+        except Exception as e:
+            print(f"Error during deletion: {e}")
+            return Response({
+                "success": False,
+                "message": f"Błąd podczas usuwania: {str(e)}"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     
 

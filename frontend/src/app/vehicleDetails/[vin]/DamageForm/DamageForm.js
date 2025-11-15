@@ -2,14 +2,13 @@ import React, { useEffect, useRef, useState } from "react";
 import ImageDamageCreate from "../ImageDamage/ImageDamageCreate";
 import style from "./DamageForm.module.css";
 
-
-export default function DamageForm({
-  handleAddDamage,
-  handleAddMarker,
-  markers,
-  selectedSeverity,
-  setSelectedSeverity,
-  damageToEdit,
+export default function DamageForm({ 
+  handleAddDamage, 
+  handleAddMarker, 
+  markers, 
+  selectedSeverity, 
+  setSelectedSeverity, 
+  damageToEdit 
 }) {
   const dateRef = useRef(null);
   const [description, setDescription] = useState("");
@@ -17,13 +16,24 @@ export default function DamageForm({
   const fileInputRef = useRef(null);
   const [existingPhotos, setExistingPhotos] = useState([]);
 
-
   // Wczytanie danych przy edycji
   useEffect(() => {
     if (damageToEdit) {
       if (dateRef.current) dateRef.current.value = damageToEdit.date || "";
       setDescription(damageToEdit.description || "");
-      setExistingPhotos(damageToEdit.photos || []);
+      
+      // Ustawienie istniejących zdjęć - DOSTOSOWANE DO STRUKTURY Z BACKENDU
+      if (damageToEdit.photos && Array.isArray(damageToEdit.photos)) {
+        
+        const formattedPhotos = damageToEdit.photos.map(photo => ({
+          id: photo.id,
+          url: photo.image, // Używamy pełnego URL z pola 'image'
+          name: `photo-${photo.id}`
+        }));
+        setExistingPhotos(formattedPhotos);
+      } else {
+        setExistingPhotos([]);
+      }
       setNewPhotos([]);
     } else {
       setDescription("");
@@ -45,6 +55,9 @@ export default function DamageForm({
       return;
     }
     setNewPhotos((prev) => [...prev, ...files]);
+    
+    // Reset input file
+    e.target.value = '';
   };
 
   // Usuwanie zdjęcia
@@ -52,21 +65,30 @@ export default function DamageForm({
     if (isExisting) {
       setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
     } else {
+      // Zwolnij URL obiektu przed usunięciem
+      if (newPhotos[index] instanceof File) {
+        URL.revokeObjectURL(URL.createObjectURL(newPhotos[index]));
+      }
       setNewPhotos((prev) => prev.filter((_, i) => i !== index));
     }
   };
 
   const handleSubmit = (e) => {
-    handleAddDamage(e, {
-      date: dateRef.current.value,
+    e.preventDefault();
+    
+    // Przygotuj dane do wysłania
+    const submitData = {
+      date: dateRef.current?.value,
       description,
       severity: selectedSeverity,
-      existingPhotos, 
+      existingPhotos: existingPhotos.map(photo => ({
+        id: photo.id,
+        url: photo.url
+      })), 
       newPhotos,      
-    });
+    };
+    handleAddDamage(e, submitData);
   };
-
-
 
   return (
     <div className={style["damage-form"]}>
@@ -122,7 +144,6 @@ export default function DamageForm({
         <div className={style["form-group"]}>
           <label>Zdjęcia (max 10)</label>
 
-          {/* Ukryty natywny input */}
           <input
             type="file"
             name="photos"
@@ -133,7 +154,6 @@ export default function DamageForm({
             style={{ display: "none" }}
           />
 
-          {/* Własny przycisk */}
           <button
             type="button"
             className={style["upload-btn"]}
@@ -143,51 +163,59 @@ export default function DamageForm({
           </button>
 
           {/* Podgląd miniatur */}
-          {(existingPhotos.length + newPhotos.length) > 0 && (
+          {(existingPhotos.length > 0 || newPhotos.length > 0) && (
             <div className={style["photo-preview"]}>
-              {existingPhotos.map((url, index) => (
-                <div key={`exist-${index}`} className={style["photo-item"]}>
+              {/* Istniejące zdjęcia - POPRAWIONE */}
+              {existingPhotos.map((photo, index) => (
+                <div key={`exist-${photo.id}`} className={style["photo-item"]}>
                   <img
-                    src={url}
-                    alt={`Podgląd ${index + 1}`}
+                    src={photo.url}
+                    alt={`Podgląd istniejącego zdjęcia ${index + 1}`}
                     className={style["photo-thumb"]}
+                    onError={(e) => {
+                      console.error("Error loading image:", photo.url);
+                      e.target.src = "/images/placeholder.jpg";
+                    }}
                   />
                   <button
                     type="button"
                     onClick={() => handleRemovePhoto(index, true)}
                     className={style["remove-photo-btn"]}
+                    title="Usuń zdjęcie"
                   >
                     ×
                   </button>
+                  <div className={style["photo-badge"]}>Istniejące</div>
                 </div>
               ))}
 
+              {/* Nowe zdjęcia */}
               {newPhotos.map((file, index) => (
                 <div key={`new-${index}`} className={style["photo-item"]}>
                   <img
                     src={URL.createObjectURL(file)}
-                    alt={`Podgląd ${index + 1}`}
+                    alt={`Podgląd nowego zdjęcia ${index + 1}`}
                     className={style["photo-thumb"]}
                   />
                   <button
                     type="button"
                     onClick={() => handleRemovePhoto(index)}
                     className={style["remove-photo-btn"]}
+                    title="Usuń zdjęcie"
                   >
                     ×
                   </button>
+                  <div className={style["photo-badge"]}>Nowe</div>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Licznik zdjęć */}
           <div className={style["photo-count"]}>
             {existingPhotos.length + newPhotos.length} / 10
           </div>
         </div>
 
-        {/* Przycisk do zatwierdzenia formuarza */}
         <button type="submit" className={style["submit-btn"]}>
           {damageToEdit ? "Zapisz zmiany" : "Zgłoś uszkodzenie"}
         </button>

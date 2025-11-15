@@ -460,9 +460,16 @@ class DamageMarkerSerializer(serializers.ModelSerializer):
 
 
 class DamagePhotoSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = DamagePhoto
-        fields = ['id', 'image']
+        fields = ['id', 'image', 'image_url']
+
+    def get_image_url(self, obj):
+        if obj.image:
+            return obj.image.url
+        return None
         
 
 class DamageEntrySerializer(serializers.ModelSerializer):
@@ -472,30 +479,22 @@ class DamageEntrySerializer(serializers.ModelSerializer):
     
     markers = DamageMarkerSerializer(many=True, read_only=True)
     photos = DamagePhotoSerializer(many=True, read_only=True)  
-    new_photos = serializers.ListField(
-        child=serializers.ImageField(max_length=None, allow_empty_file=False, use_url=False),
-        write_only=True,
-        required=False
-    )
 
     class Meta:
         model = DamageEntry
-        fields = ['id','date','description','photos','new_photos','markers']
-
-    def validate_new_photos(self, value):
-        if len(value) > 10:
-            raise serializers.ValidationError("Nie można dodać więcej niż 10 zdjęć")
-        return value
+        fields = ['id','date','description','photos','markers']
 
     def create(self, validated_data):
         # Pobieramy vehicle z kontekstu
         vehicle = self.context['vehicle']
-        new_photos = validated_data.pop('new_photos', [])
-
+        
         # Tworzymy DamageEntry
         damage_entry = DamageEntry.objects.create(vehicle=vehicle, **validated_data)
 
-        # Tworzenie zdjęć
+        # Tworzenie zdjęć - teraz z request.FILES
+        new_photos = self.context['request'].FILES.getlist('new_photos')
+        print(f"Creating {len(new_photos)} new photos from request.FILES")
+        
         for photo in new_photos:
             DamagePhoto.objects.create(damage_entry=damage_entry, image=photo)
 
@@ -512,20 +511,10 @@ class DamageEntrySerializer(serializers.ModelSerializer):
         return damage_entry
     
     def update(self, instance, validated_data):
-        # Aktualizacja pól podstawowych
+        # Aktualizacja tylko pól podstawowych
         instance.date = validated_data.get('date', instance.date)
         instance.description = validated_data.get('description', instance.description)
         instance.save()
-
-        # Dodawanie nowych zdjęć
-        new_photos = validated_data.pop('new_photos', [])
-        if new_photos:
-            if instance.photos.count() + len(new_photos) > 10:
-                raise serializers.ValidationError("Nie można mieć więcej niż 10 zdjęć")
-            for photo in new_photos:
-                DamagePhoto.objects.create(damage_entry=instance, image=photo)
-
-        # Obsługa markerów - możesz tu dopisać podobnie jak w create()
 
         return instance
     

@@ -103,6 +103,37 @@
   overflow: hidden;
 }
 
+.damage-photos-container {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  margin-top: 0.5rem;
+  padding-bottom: 0.25rem;
+}
+
+.damage-photo-thumb {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.damage-photo-thumb:hover {
+  transform: scale(1.1);
+}
+
+.damage-photos-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.damage-photos-container::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 3px;
+}
+
 .no-entries {
   color: #888;
   text-align: center;
