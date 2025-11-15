@@ -80,7 +80,7 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
         throw new Error(data.message || `Błąd: ${response.status}`);
       }
 
-      alert(isEditing ? "✅ Wpis został zaktualizowany!" : "✅ Wpis został dodany!");
+      alert(isEditing ? "Wpis został zaktualizowany!" : "Wpis został dodany!");
       setFormData({
         description: "",
         mileage: "",
@@ -105,15 +105,22 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
 
       <form onSubmit={handleSubmit} className={style["form-container"]}>
         <div className={style["form-group"]}>
-          <label>Opis serwisu *</label>
+          <label>Opis serwisu</label>
           <textarea
             name="description"
             rows="3"
             value={formData.description}
+            maxLength={500}
             onChange={handleChange}
             required
           />
+
+          {/* Licznik znaków */}
+          <div className={style["char-counter"]}>
+            {formData.description.length}/100
+          </div>
         </div>
+
 
         <div className={style["form-group"]}>
           <label>Przebieg (km) *</label>

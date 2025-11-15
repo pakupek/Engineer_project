@@ -9,7 +9,7 @@ export default function DamageFormContainer({ damageToEdit, onEditComplete}) {
   const [markers, setMarkers] = useState([]);
   const [selectedSeverity, setSelectedSeverity] = useState("drobne");
 
-  // 📌 Wczytaj istniejące markery przy edycji
+  // Wczytaj istniejące markery przy edycji
   useEffect(() => {
     if (damageToEdit) {
       // Głębokie skopiowanie tablicy markerów (aby zachować referencje)
@@ -59,18 +59,18 @@ export default function DamageFormContainer({ damageToEdit, onEditComplete}) {
 
       if (!response.ok) {
         const err = await response.json();
-        console.error("❌ Błąd API:", err);
-        alert("❌ Operacja nie powiodła się");
+        console.error("Błąd API:", err);
+        alert("Operacja nie powiodła się");
         return;
       }
 
-      alert(isEditing ? "✅ Zmiany zapisane!" : "✅ Szkoda dodana!");
+      alert(isEditing ? "Zmiany zapisane!" : "Szkoda dodana!");
       e.target.reset();
       setMarkers([]);
-      onEditComplete?.(); // odświeżenie listy szkód
+      onEditComplete?.(); 
     } catch (err) {
-      console.error("❌ Błąd połączenia:", err);
-      alert("❌ Błąd połączenia z serwerem");
+      console.error("Błąd połączenia:", err);
+      alert("Błąd połączenia z serwerem");
     }
   };
 

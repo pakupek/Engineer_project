@@ -995,12 +995,24 @@ class ServiceEntryView(generics.GenericAPIView):
         except ServiceEntry.DoesNotExist:
             return Response({"success": False, "message": "Nie znaleziono wpisu"}, status=status.HTTP_404_NOT_FOUND)
 
+        old_image_path = None
+
+        if "invoice_image" in request.data:
+            if entry.invoice_image:
+                old_image_path = entry.invoice_image.path
+
         serializer = self.get_serializer(entry, data=request.data, partial=True)
+
         if serializer.is_valid():
             serializer.save()
+
+            if old_image_path:
+                import os
+                if os.path.isfile(old_image_path):
+                    os.remove(old_image_path)
+                    
             return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
-        print("❌ Błędy walidacji PATCH:", serializer.errors)  # 🔍 DODAJ TO
         return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     # DELETE
@@ -1015,6 +1027,13 @@ class ServiceEntryView(generics.GenericAPIView):
                 {"success": False, "message": "Nie znaleziono wpisu serwisowego dla podanego VIN i ID"},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+       
+        if entry.invoice_image:
+            image_path = entry.invoice_image.path  
+
+            if os.path.isfile(image_path):
+                os.remove(image_path)
 
         entry.delete()
         return Response(

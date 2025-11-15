@@ -73,13 +73,11 @@ export default function CarDetails() {
       
     } catch (error) {
       console.error("Błąd pobierania PDF:", error);
-      alert("Nie udało się wygenerować PDF. Sprawdź czy pojazd ma komplet danych.");
+      alert("Nie udało się wygenerować PDF");
     } finally {
       setDownloadingPdf(false);
     }
   };
-
-
 
 
   const [showSaleForm, setShowSaleForm] = useState(false);
@@ -91,8 +89,6 @@ export default function CarDetails() {
     alert("Ogłoszenie zostało wystawione!");
     closeSaleForm();
   };
-
-
 
 
   const toggleSection = (section) => {
@@ -247,16 +243,16 @@ export default function CarDetails() {
             </button>
           </div>
 
-          {/* PRAWA STRONA */}
+          {/* Prawa Strona */}
           <div className={sectionStyle["vehicle-right"]}>
-            {/* Suwak: Serwis */}
+            {/* Serwis */}
             <div className={sectionStyle["card-section dark"]}>
               <div className={sectionStyle["scroll-container"]}>
                 <ServiceEntriesList vin={vin} key={reloadKey} onEditEntry={handleEditEntry} />
               </div>
             </div>
 
-            {/* Suwak: Uszkodzenia */}
+            {/* Uszkodzenia */}
             <div className={sectionStyle["card-section yellow"]}>
               <div className={sectionStyle["scroll-container"]}>
                 <DamageHistory key={damageReloadKey} onEditDamage={handleEditDamage}/>

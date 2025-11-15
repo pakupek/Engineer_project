@@ -32,6 +32,14 @@
   gap: 8px;
 }
 
+.char-counter {
+  font-size: 12px;
+  color: #666;
+  text-align: right;
+  margin-top: 4px;
+}
+
+
 .form-group label {
   font-weight: 600;
   color: #ccc;

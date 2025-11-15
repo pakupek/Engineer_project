@@ -663,7 +663,7 @@ class ServiceEntry(models.Model):
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='service_entries')
     date = models.DateField()
     mileage = models.PositiveIntegerField()
-    description = models.TextField(max_length=1000)
+    description = models.TextField(max_length=500, blank=True)
     cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     invoice_image = models.ImageField(upload_to=vehicle_invoice_path, null=True, blank=True)
 
@@ -678,7 +678,7 @@ class DamageEntry(models.Model):
 
     vehicle = models.ForeignKey("Vehicle", on_delete=models.CASCADE, related_name="damage_entries")
     date = models.DateField()
-    description = models.TextField(blank=True)
+    description = models.TextField(max_length=500, blank=True)
     photos = models.ImageField(upload_to=damage_image_path, null=True, blank=True)
 
     def __str__(self):
