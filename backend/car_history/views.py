@@ -45,6 +45,7 @@ from .models import (
     DiscussionStats,
     DiscussionImage,
     CommentImage,
+    DamagePhoto,
 )
 from rest_framework.response import Response
 from django.db.models import Q
@@ -1056,59 +1057,72 @@ class DamageEntryView(generics.GenericAPIView):
 
     # GET – pobierz listę szkód
     def get(self, request, *args, **kwargs):
-        vin = self.kwargs.get("vin")
-        entries = self.get_queryset()
-        serializer = self.get_serializer(entries, many=True)
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     # POST – utwórz nowy wpis
     def post(self, request, *args, **kwargs):
         vin = self.kwargs.get("vin")
-        try:
-            vehicle = Vehicle.objects.get(vin=vin)
-        except Vehicle.DoesNotExist:
-            return Response({"error": "Pojazd nie istnieje"}, status=status.HTTP_404_NOT_FOUND)
+        vehicle = get_object_or_404(Vehicle, vin=vin)
 
         serializer = self.get_serializer(data=request.data, context={"vehicle": vehicle, "request": request})
         if serializer.is_valid():
             damage_entry = serializer.save()
+
+            # Dodanie nowych zdjęć
+            for file in request.FILES.getlist("newPhotos"):
+                DamagePhoto.objects.create(damage_entry=damage_entry, file=file)
+
             return Response({
                 "success": True,
                 "message": "Wpis o szkodzie dodany pomyślnie",
-                "data": DamageEntrySerializer(damage_entry).data
+                "data": self.get_serializer(damage_entry).data
             }, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # PATCH – aktualizuj wpis
     def patch(self, request, *args, **kwargs):
-
         entry_id = kwargs.get("entry_id")
         entry = get_object_or_404(DamageEntry, id=entry_id)
-        data = request.data.copy()
 
+        serializer = self.get_serializer(entry, data=request.data, partial=True, context={"vehicle": entry.vehicle, "request": request})
 
+        # Aktualizacja markerów
         markers_data = None
-        if "markers" in data:
+        if "markers" in request.data:
             try:
-                markers_data = json.loads(data["markers"])
+                markers_data = json.loads(request.data["markers"])
             except json.JSONDecodeError:
-                pass
+                markers_data = []
 
-        serializer = self.get_serializer(entry, data=data, partial=True)
+        # Obsługa zdjęć
+        existing_photos = request.data.get("existingPhotos", "[]")
+        try:
+            existing_photos = json.loads(existing_photos)
+        except json.JSONDecodeError:
+            existing_photos = []
+
+        # Usuń zdjęcia, które zostały usunięte w formularzu
+        entry.photos.exclude(id__in=[p.get("id") for p in existing_photos if "id" in p]).delete()
+
+        # Dodaj nowe zdjęcia
+        for file in request.FILES.getlist("newPhotos"):
+            DamagePhoto.objects.create(damage_entry=entry, file=file)
 
         if serializer.is_valid():
             serializer.save()
 
-            # Aktualizacja markerów
+            # Zaktualizuj markery
             if markers_data is not None:
-                entry.markers.all().delete()  # usuń stare
+                entry.markers.all().delete()
                 for marker in markers_data:
                     entry.markers.create(
                         x_percent=marker.get("x_percent"),
                         y_percent=marker.get("y_percent"),
                         severity=marker.get("severity"),
                     )
-               
 
             return Response({
                 "success": True,
@@ -1118,13 +1132,16 @@ class DamageEntryView(generics.GenericAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
     # DELETE – usuń wpis
     def delete(self, request, *args, **kwargs):
         entry_id = kwargs.get("entry_id")
         entry = get_object_or_404(DamageEntry, id=entry_id)
+
+        # Usuń wszystkie zdjęcia przed usunięciem wpisu
+        entry.photos.all().delete()
         entry.delete()
         return Response({"success": True, "message": "Wpis o szkodzie został usunięty"}, status=status.HTTP_204_NO_CONTENT)
+
     
 
 

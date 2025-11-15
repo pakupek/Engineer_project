@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import ImageDamageCreate from "../ImageDamage/ImageDamageCreate";
 import style from "./DamageForm.module.css";
+
 
 export default function DamageForm({
   handleAddDamage,
@@ -11,16 +12,61 @@ export default function DamageForm({
   damageToEdit,
 }) {
   const dateRef = useRef(null);
-  const descriptionRef = useRef(null);
+  const [description, setDescription] = useState("");
+  const [newPhotos, setNewPhotos] = useState([]);
+  const fileInputRef = useRef(null);
+  const [existingPhotos, setExistingPhotos] = useState([]);
 
-  // Ustaw dane edycji w polach formularza
+
+  // Wczytanie danych przy edycji
   useEffect(() => {
     if (damageToEdit) {
       if (dateRef.current) dateRef.current.value = damageToEdit.date || "";
-      if (descriptionRef.current)
-        descriptionRef.current.value = damageToEdit.description || "";
+      setDescription(damageToEdit.description || "");
+      setExistingPhotos(damageToEdit.photos || []);
+      setNewPhotos([]);
+    } else {
+      setDescription("");
+      setExistingPhotos([]);
+      setNewPhotos([]);
     }
   }, [damageToEdit]);
+
+  const handleDescriptionChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 500) setDescription(value);
+  };
+
+  // Dodawanie nowych zdjęć
+  const handlePhotosChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length + newPhotos.length + existingPhotos.length > 10) {
+      alert("Możesz dodać maksymalnie 10 zdjęć");
+      return;
+    }
+    setNewPhotos((prev) => [...prev, ...files]);
+  };
+
+  // Usuwanie zdjęcia
+  const handleRemovePhoto = (index, isExisting = false) => {
+    if (isExisting) {
+      setExistingPhotos((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      setNewPhotos((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleSubmit = (e) => {
+    handleAddDamage(e, {
+      date: dateRef.current.value,
+      description,
+      severity: selectedSeverity,
+      existingPhotos, 
+      newPhotos,      
+    });
+  };
+
+
 
   return (
     <div className={style["damage-form"]}>
@@ -53,27 +99,95 @@ export default function DamageForm({
         />
       </div>
 
-      <form onSubmit={handleAddDamage} className={style["form-container"]}>
+      <form onSubmit={handleSubmit} className={style["form-container"]}>
         <div className={style["form-group"]}>
           <label>Data</label>
           <input type="date" name="date" ref={dateRef} required />
         </div>
 
         <div className={style["form-group"]}>
-          <label>Opis</label>
+          <label>Opis (max 500 znaków)</label>
           <textarea
             name="description"
             rows="3"
             placeholder="Opisz uszkodzenie..."
-            ref={descriptionRef}
+            value={description}
+            onChange={handleDescriptionChange}
           />
+          <div className={style["char-count"]}>
+            {description.length}/500
+          </div>
         </div>
 
         <div className={style["form-group"]}>
-          <label>Zdjęcie</label>
-          <input type="file" name="photos" accept="image/*" />
+          <label>Zdjęcia (max 10)</label>
+
+          {/* Ukryty natywny input */}
+          <input
+            type="file"
+            name="photos"
+            accept="image/*"
+            multiple
+            onChange={handlePhotosChange}
+            ref={fileInputRef}
+            style={{ display: "none" }}
+          />
+
+          {/* Własny przycisk */}
+          <button
+            type="button"
+            className={style["upload-btn"]}
+            onClick={() => fileInputRef.current.click()}
+          >
+            Wybierz zdjęcia
+          </button>
+
+          {/* Podgląd miniatur */}
+          {(existingPhotos.length + newPhotos.length) > 0 && (
+            <div className={style["photo-preview"]}>
+              {existingPhotos.map((url, index) => (
+                <div key={`exist-${index}`} className={style["photo-item"]}>
+                  <img
+                    src={url}
+                    alt={`Podgląd ${index + 1}`}
+                    className={style["photo-thumb"]}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhoto(index, true)}
+                    className={style["remove-photo-btn"]}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+
+              {newPhotos.map((file, index) => (
+                <div key={`new-${index}`} className={style["photo-item"]}>
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={`Podgląd ${index + 1}`}
+                    className={style["photo-thumb"]}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePhoto(index)}
+                    className={style["remove-photo-btn"]}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Licznik zdjęć */}
+          <div className={style["photo-count"]}>
+            {existingPhotos.length + newPhotos.length} / 10
+          </div>
         </div>
 
+        {/* Przycisk do zatwierdzenia formuarza */}
         <button type="submit" className={style["submit-btn"]}>
           {damageToEdit ? "Zapisz zmiany" : "Zgłoś uszkodzenie"}
         </button>

@@ -679,10 +679,21 @@ class DamageEntry(models.Model):
     vehicle = models.ForeignKey("Vehicle", on_delete=models.CASCADE, related_name="damage_entries")
     date = models.DateField()
     description = models.TextField(max_length=500, blank=True)
-    photos = models.ImageField(upload_to=damage_image_path, null=True, blank=True)
 
     def __str__(self):
         return f"{self.vehicle.vin} - {self.date}"
+
+
+class DamagePhoto(models.Model):
+    """
+    Zdjęcia powiązane z wpisem uszkodzeń
+    """
+
+    damage_entry = models.ForeignKey(DamageEntry, on_delete=models.CASCADE, related_name="photos")
+    image = models.ImageField(upload_to=damage_image_path)
+
+    def __str__(self):
+        return f"{self.damage_entry.vehicle.vin} - {self.damage_entry.date}"
 
 
 class DamageMarker(models.Model):

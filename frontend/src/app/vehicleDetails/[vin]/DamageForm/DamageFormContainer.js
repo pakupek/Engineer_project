@@ -34,12 +34,17 @@ export default function DamageFormContainer({ damageToEdit, onEditComplete}) {
   };
 
   // Obsługa formularza (wysyłanie danych do backendu)
-  const handleAddDamage = async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
+  const handleAddDamage = async (e, damageData) => {
+    e.preventDefault(); 
+    const formData = new FormData();
 
     formData.append("vin", vin);
-    formData.append("markers", JSON.stringify(markers)); // zawsze wysyłamy aktualne markery
+    formData.append("markers", JSON.stringify(markers));
+    formData.append("date", damageData.date);
+    formData.append("description", damageData.description);
+    formData.append("severity", damageData.severity);
+
+    damageData.existingPhotos.forEach(photo => formData.append("photos", photo));
 
     const token = getToken();
     const isEditing = Boolean(damageToEdit);
@@ -67,12 +72,13 @@ export default function DamageFormContainer({ damageToEdit, onEditComplete}) {
       alert(isEditing ? "Zmiany zapisane!" : "Szkoda dodana!");
       e.target.reset();
       setMarkers([]);
-      onEditComplete?.(); 
+      onEditComplete?.();
     } catch (err) {
       console.error("Błąd połączenia:", err);
       alert("Błąd połączenia z serwerem");
     }
   };
+
 
   return (
     <DamageForm
