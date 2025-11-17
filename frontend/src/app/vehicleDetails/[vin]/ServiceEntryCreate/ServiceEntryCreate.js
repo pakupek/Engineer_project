@@ -89,7 +89,7 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
         invoice_image: null,
       });
 
-      if (onSave) onSave(); // powiadom listę o aktualizacji
+      if (onSave) onSave(); 
 
     } catch (err) {
       console.error("Błąd:", err);
@@ -117,7 +117,7 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
 
           {/* Licznik znaków */}
           <div className={style["char-counter"]}>
-            {formData.description.length}/100
+            {formData.description.length}/500
           </div>
         </div>
 
