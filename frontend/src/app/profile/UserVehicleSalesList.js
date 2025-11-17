@@ -68,7 +68,7 @@ export default function UserVehicleSalesList() {
           {loading ? (
             <p className={styles.loadingText}>Ładowanie ogłoszeń...</p>
           ) : sales.length === 0 ? (
-            <p className={styles.noSalesText}>Brak aktualnie wystawionych aut.</p>
+            <p className={styles.noSalesText}></p>
           ) : (
             <div className={styles.listContainer}>
               {sales.map((sale) => (

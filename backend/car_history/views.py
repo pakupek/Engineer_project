@@ -68,6 +68,7 @@ from .pagination import DiscussionPagination
 from .filters import DiscussionFilter
 from .utils import generate_verification_code
 from django.core.mail import send_mail
+from weasyprint import HTML, CSS
 
 logger = logging.getLogger(__name__)
 
@@ -184,35 +185,32 @@ class VehicleHistoryPDFView(generics.RetrieveAPIView):
 
     def get(self, request, vin, *args, **kwargs):
         try:
+            # Pobierz pojazd
             try:
                 vehicle = Vehicle.objects.get(vin=vin)
             except Vehicle.DoesNotExist:
                 return Response({"error": "Pojazd nie istnieje"}, status=404)
 
-            # Pobierz wpisy serwisowe i uszkodzenia
+            # Powiązane dane
             service_entries = ServiceEntry.objects.filter(vehicle=vehicle).order_by("-date")
             damage_entries = DamageEntry.objects.filter(vehicle=vehicle).order_by("-date")
 
+            # Render HTML
             html_string = render_to_string("vehicle_history_pdf.html", {
                 "vehicle": vehicle,
                 "service_entries": service_entries,
                 "damage_entries": damage_entries,
             })
 
-            # Tworzenie PDF w pamięci
-            pdf_memory = BytesIO()
-            pisa_status = pisa.CreatePDF(
-                html_string,
-                dest=pdf_memory,
-                encoding="UTF-8",
-                link_callback=self._link_callback
+            # CSS (możesz podpiąć normalny plik style.css!)
+            css_path = os.path.join(settings.BASE_DIR, "car_history", "static", "css", "pdf_styles.css")
+
+            # Tworzenie PDF
+            pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(
+                stylesheets=[CSS(css_path)]
             )
 
-            if pisa_status.err:
-                logger.error("PDF generation error")
-                return Response({"error": "Błąd generowania PDF"}, status=500)
-
-            # Zapis PDF do MEDIA/pdf_exports/
+            # Zapis PDF do MEDIA
             export_dir = os.path.join(settings.MEDIA_ROOT, "pdf_exports")
             os.makedirs(export_dir, exist_ok=True)
 
@@ -220,48 +218,19 @@ class VehicleHistoryPDFView(generics.RetrieveAPIView):
             pdf_path = os.path.join(export_dir, pdf_filename)
 
             with open(pdf_path, "wb") as f:
-                f.write(pdf_memory.getvalue())
+                f.write(pdf_file)
 
-            # Zapis ścieżki PDF do modelu
             vehicle.history_pdf = f"pdf_exports/{pdf_filename}"
             vehicle.save(update_fields=["history_pdf"])
 
-            # Zwracanie PDF użytkownikowi
-            pdf_memory.seek(0)
-            response = HttpResponse(pdf_memory.getvalue(), content_type="application/pdf")
-            response["Content-Disposition"] = f'attachment; filename="{pdf_filename}"'
+            # Odpowiedź z PDF
+            response = HttpResponse(pdf_file, content_type="application/pdf")
+            response["Content-Disposition"] = f'attachment; filename=\"{pdf_filename}\""'
             return response
 
         except Exception as e:
             logger.exception("Unexpected server error")
             return Response({"error": str(e)}, status=500)
-
-    def _link_callback(self, uri, rel):
-        """
-        Callback do obsługi fontów w xhtml2pdf
-        """
-        # Jeśli to font, zwróć ścieżkę do fonta z polskimi znakami
-        if uri.endswith('.ttf'):
-            font_path = self._get_polish_font_path()
-            if font_path:
-                return font_path
-        return uri
-
-    def _get_polish_font_path(self):
-        """
-        Zwraca ścieżkę do fonta z polskimi znakami
-        """
-        font_paths = [
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-            "C:/Windows/Fonts/arial.ttf",
-            "/Library/Fonts/Arial Unicode.ttf",
-        ]
-        
-        for path in font_paths:
-            if os.path.exists(path):
-                return path
-        return None
 
 
 class MessageListCreateView(generics.CreateAPIView):
