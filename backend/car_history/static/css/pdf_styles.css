@@ -3,6 +3,16 @@ body {
     font-size: 13px;
     color: #1f2937;
     background: white;
+    width: 100%;
+    min-width: 100%;
+}
+
+.container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 
@@ -47,6 +57,8 @@ body {
     padding: 18px 20px;
     margin-bottom: 28px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+    break-inside: avoid;
+    width: 100%;
 }
 
 /* TABLE */
@@ -54,6 +66,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 5px;
+    table-layout: fixed;
 }
 
 td {
@@ -77,6 +90,7 @@ td {
     border-left: 4px solid #1e3a8a;
     margin-bottom: 14px;
     gap: 20px; 
+    break-inside: avoid;
 }
 
 .entry.damage {
