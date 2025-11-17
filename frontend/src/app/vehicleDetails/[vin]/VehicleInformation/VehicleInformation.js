@@ -36,15 +36,18 @@ export function VehicleInformation({ car}){
   const [showSaleForm, setShowSaleForm] = useState(false);
 
     return(
-        
       <div className="car-info-section">
-        
         {/* Przyciski */}
         <div className="car-info-block">
           <div className="car-btn-group">
             <button className="car-btn">Aktualizuj dane →</button>
             <button className="car-btn danger">Usuń pojazd →</button>
-            <button className="car-btn sale" onClick={() => setShowSaleForm(true)}>🏷 Wystaw na sprzedaż</button>
+            {/* Pokaż tylko, jeśli auto NIE jest wystawione */}
+            {!car.for_sale && (
+              <button className="car-btn sale" onClick={() => setShowSaleForm(true)}>
+                🏷 Wystaw na sprzedaż
+              </button>
+            )}
           </div>
         </div>
 

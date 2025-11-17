@@ -614,7 +614,7 @@ class VehicleSaleSerializer(serializers.ModelSerializer):
                 "id": d.id,
                 "date": d.date.isoformat() if d.date else None,
                 "description": d.description,
-                "photos": d.photos.url if d.photos else None,
+                "photos": [p.image.url for p in d.photos.all()],
             }
             for d in vehicle.damage_entries.all().order_by("-date")
         ]

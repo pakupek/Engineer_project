@@ -3,13 +3,51 @@
 import React, { useState, useEffect } from "react";
 import styles from "./VehicleSaleDetail.module.css";
 import { getToken } from "../../Services/auth";
-import PDFView from "./PDFView";
 
 
 export default function VehicleSaleDetail({ saleId }) {
   const [sale, setSale] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloadingPdf(true);
+      const token = getToken();
+      
+      const response = await fetch(
+        `http://localhost:8000/api/vehicles/${sale.vehicle}/history/pdf/`,
+        {
+          method: "GET",
+          headers: { 
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Błąd serwera: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${sale.vehicle}_historia.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error("Błąd pobierania PDF:", error);
+      alert("Nie udało się wygenerować PDF");
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
 
   useEffect(() => {
     const fetchSale = async () => {
@@ -19,7 +57,7 @@ export default function VehicleSaleDetail({ saleId }) {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        console.log(token);
+        console.log('loaded sale detail', data);
         setSale(data);
       } catch (error) {
         console.error("Błąd ładowania szczegółów ogłoszenia:", error);
@@ -79,17 +117,31 @@ export default function VehicleSaleDetail({ saleId }) {
     </div>
 
     {/* Opis ogłoszenia */}
-    <div className={styles.descriptionSection}>
-      <h2>Opis ogłoszenia</h2>
-      <p>{sale.description || "Brak opisu dla tego ogłoszenia."}</p>
+    <div className={styles.descriptionRow}>
+
+      {/* LEWA STRONA – opis */}
+      <div className={styles.descriptionText}>
+        <h2>Opis ogłoszenia</h2>
+        <p>{sale.description || "Brak opisu dla tego ogłoszenia."}</p>
+      </div>
+
+      {/* PRAWA STRONA – przycisk */}
+      <div className={styles.pdfButtonWrapper}>
+        <button onClick={handleDownloadPdf} disabled={downloadingPdf} className={styles.pdfButton}>
+          {downloadingPdf ? (
+            <>
+              <span>⏳</span>
+              Generowanie PDF...
+            </>
+          ) : (
+            <>
+              <span>📄</span>
+              Pobierz historię pojazdu (PDF)
+            </>
+          )}
+        </button>
+      </div>
     </div>
-
-    {/* PODGLĄD PDF Z HISTORIĄ POJAZDU */}
-    {sale.history_pdf && (
-      <PDFView fileUrl={sale.history_pdf} />
-    )}
-
-
 
     {/* MAPA LOKALIZACJI */}
     {sale.vehicle_info?.location && (
