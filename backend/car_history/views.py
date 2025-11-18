@@ -5,8 +5,7 @@ from .serializers import (
     UserRegistrationSerializer, 
     DiscussionSerializer, 
     CommentSerializer,  
-    MessageSerializer, 
-    MessageCreateSerializer, 
+    MessageSerializer,  
     UserSerializer,
     ChangePasswordSerializer,
     VehicleSerializer,
@@ -60,8 +59,6 @@ from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from bs4 import BeautifulSoup
 from django.template.loader import render_to_string
-from xhtml2pdf import pisa
-from io import BytesIO
 from rest_framework.throttling import UserRateThrottle
 from django.core.cache import cache
 from .pagination import DiscussionPagination
@@ -69,6 +66,7 @@ from .filters import DiscussionFilter
 from .utils import generate_verification_code
 from django.core.mail import send_mail
 from weasyprint import HTML, CSS
+from django.contrib.staticfiles import finders
 
 logger = logging.getLogger(__name__)
 
@@ -202,12 +200,12 @@ class VehicleHistoryPDFView(generics.RetrieveAPIView):
                 "damage_entries": damage_entries,
             })
 
-            # CSS (możesz podpiąć normalny plik style.css!)
-            css_path = os.path.join(settings.BASE_DIR, "car_history", "static", "css", "pdf_styles.css")
+            # CSS dla PDF
+            css_path = finders.find("css/pdf_styles.css")
 
             # Tworzenie PDF
-            pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf(
-                stylesheets=[CSS(css_path)]
+            pdf_file = HTML(string=html_string, base_url=request.build_absolute_uri("")).write_pdf(
+                stylesheets=[CSS(filename=css_path)]
             )
 
             # Zapis PDF do MEDIA

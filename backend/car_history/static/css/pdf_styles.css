@@ -212,6 +212,16 @@ td {
     flex: 1;
     min-width: 140px;
     text-align: center;
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    gap: 6px;
+}
+
+.spec-item svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
 }
 
 .no-data {

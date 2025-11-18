@@ -43,7 +43,7 @@ export default function VehicleSalesList() {
     fetchSales();
   }, [filters]);
 
-  // Pobieramy listę marek i modeli (można wystawić osobne endpointy w Django)
+  // Pobieramy listę marek i modeli
   useEffect(() => {
     const fetchMakes = async () => {
       const res = await fetch("http://localhost:8000/api/makes/");
@@ -53,6 +53,7 @@ export default function VehicleSalesList() {
     fetchMakes();
   }, []);
 
+  // Pobieramy modele zależne od wybranej marki
   useEffect(() => {
     if (filters.make) {
       const fetchModels = async () => {
@@ -72,6 +73,7 @@ export default function VehicleSalesList() {
       <div className={styles.filters}>
         <h2>Filtruj ogłoszenia</h2>
 
+        {/* Marka */}
         <div className={styles.filterRow}>
           <label>Marka:</label>
           <select
@@ -85,6 +87,7 @@ export default function VehicleSalesList() {
           </select>
         </div>
 
+        {/* Model zależny od marki */}
         <div className={styles.filterRow}>
           <label>Model:</label>
           <select
@@ -99,8 +102,9 @@ export default function VehicleSalesList() {
           </select>
         </div>
 
+        {/* Zakres cenowy */}
         <div className={styles.filterRow}>
-          <label>Cena: {filters.priceMin}$ – {filters.priceMax}$</label>
+          <label>Cena: {filters.priceMin} – {filters.priceMax}</label>
           <input
             type="range"
             min="0"
@@ -119,6 +123,7 @@ export default function VehicleSalesList() {
           />
         </div>
 
+        {/* Przycisk reset */}
         <button className={styles.resetBtn} onClick={() => setFilters({
           make: "", model: "", priceMin: 0, priceMax: 100000
         })}>
