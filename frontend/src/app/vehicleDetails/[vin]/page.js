@@ -30,6 +30,7 @@ export default function CarDetails() {
   const [editingDamage, setEditingDamage] = useState(null);
   const handleEditEntry = (entry) => setEditingEntry(entry);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  
 
   const handleSave = () => {
     setEditingEntry(null);
@@ -149,7 +150,7 @@ export default function CarDetails() {
       </div>
 
       {/* Podstawowe informacje */}
-      <VehicleInformation car={car}/>
+      <VehicleInformation car={car} setCar={setCar}/>
 
       {/* Dane techniczne */}
       <TechnicalData vin={vin} />

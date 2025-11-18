@@ -57,7 +57,6 @@ export default function VehicleSaleDetail({ saleId }) {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
-        console.log('loaded sale detail', data);
         setSale(data);
       } catch (error) {
         console.error("Błąd ładowania szczegółów ogłoszenia:", error);
@@ -195,12 +194,9 @@ export default function VehicleSaleDetail({ saleId }) {
 
               if (res.ok) {
                 alert("Wiadomość wysłana pomyślnie!");
-                const data = await res.json();
-                console.log('message create response', res.status, data);
                 e.target.reset();
               } else {
-                const err = await res.json();
-                alert("Błąd: " + (err.detail || "Nie udało się wysłać wiadomości."));
+                alert("Nie udało się wysłać wiadomości.");
               }
             } catch (error) {
               console.error("Błąd wysyłania wiadomości:", error);

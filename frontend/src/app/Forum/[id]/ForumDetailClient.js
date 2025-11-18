@@ -178,7 +178,6 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
         });
       const data = await res.json();
       const commentsData = data.results || data;
-      console.log("Dane pobranych komentarzy: ",commentsData);
       setComments(commentsData);
       
     } catch (error) {

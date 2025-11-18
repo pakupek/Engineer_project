@@ -6,6 +6,7 @@ import VehicleSaleForm from "../../../VehicleSale/VehicleSaleForm.js";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { getToken } from "../../../Services/auth";
+import EditVehicle from "../EditVehicle/EditVehicle.js";
 
 export function VehicleInformationOverlay({ car }){
     return (
@@ -34,9 +35,15 @@ export function VehicleInformationOverlay({ car }){
     );
 }
 
-export function VehicleInformation({ car}){
+export function VehicleInformation({ car, setCar }){
   const [showSaleForm, setShowSaleForm] = useState(false);
   const router = useRouter();
+  const [showEdit, setShowEdit] = useState(false);
+
+  // Funkcja do odświeżania danych po edycji
+  const handleVehicleUpdated = (updatedVehicle) => {
+    setCar(updatedVehicle); // aktualizuje dane od razu
+  };
 
   // Funkcja usuwania pojazdu
   const handleDeleteVehicle = async () => {
@@ -67,19 +74,23 @@ export function VehicleInformation({ car}){
 
     return(
       <div className="car-info-section">
+
         {/* Przyciski */}
         <div className="car-info-block">
           <div className="car-btn-group">
-            <button className="car-btn">Aktualizuj dane →</button>
+            <button className="car-btn" onClick={() => setShowEdit(true)}>Aktualizuj dane →</button>
             <button className="car-btn danger" onClick={handleDeleteVehicle}>Usuń pojazd →</button>
+
             {/* Pokaż tylko, jeśli auto NIE jest wystawione */}
             {!car.for_sale && (
               <button className="car-btn sale" onClick={() => setShowSaleForm(true)}>
                 🏷 Wystaw na sprzedaż
               </button>
             )}
+
           </div>
         </div>
+
 
         {/* Kolor nadwozia */}
         <div className="car-info-block">
@@ -96,6 +107,7 @@ export function VehicleInformation({ car}){
           </div>
         </div>
 
+
         {/* Kolor wnętrza */}
         <div className="car-info-block">
           <h3 className="car-subtitle">Kolor wnętrza</h3>
@@ -109,6 +121,7 @@ export function VehicleInformation({ car}){
           <p className="car-price">{car.price} PLN</p>
         </div>
 
+        {/* Formularz wystawiania pojazdu na sprzedaż */}
         {showSaleForm && (
           <div className="modal-overlay">
             <div className="modal-content">
@@ -119,6 +132,15 @@ export function VehicleInformation({ car}){
               />
             </div>
           </div>
+        )}
+
+        {/* Edytuj pojazd */}
+        {showEdit && (
+          <EditVehicle
+            vin={car.vin}
+            onClose={() => setShowEdit(false)}
+            onUpdated={handleVehicleUpdated}
+          />
         )}
       </div>
     );

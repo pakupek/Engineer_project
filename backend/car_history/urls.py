@@ -34,6 +34,7 @@ from .views import (
     DiscussionStatsView,
     DiscussionFavoriteView,
     SendVerificationCodeView,
+    VehicleImageDetailView,
 )
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -80,6 +81,7 @@ urlpatterns = [
     path("vehicles/<str:vin>/history/pdf/", VehicleHistoryPDFView.as_view(), name="vehicle_history_pdf"),
     path('vehicles/<str:vin>/delete/', VehicleDeleteView.as_view(), name='vehicle_delete'),
     path('vehicles/<str:vin>/images/', VehicleImageListCreateView.as_view(), name='vehicle_images'),
+    path("vehicles/<str:vin>/images/<int:pk>/", VehicleImageDetailView.as_view()),
     path('vehicle-history/<str:vin>/', vehicle_history, name='vehicle_history_by_vin'),
 
 

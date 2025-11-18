@@ -238,13 +238,13 @@ class MessageListCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         receiver = self.request.data.get("receiver")
-        sale_id = self.request.data.get("sale")  # ← pobieramy ID ogłoszenia
+        sale_id = self.request.data.get("sale") 
 
-        # 1️Blokada wysyłania wiadomości do siebie
+        # Blokada wysyłania wiadomości do siebie
         if str(self.request.user.id) == str(receiver):
             raise ValidationError("Nie możesz wysłać wiadomości do samego siebie.")
         
-        # Zapisz wiadomość z przypisanym ogłoszeniem (jeśli istnieje)
+        # Zapisz wiadomość z przypisanym ogłoszeniem
         sale_instance = None
         if sale_id:
             try:
@@ -618,6 +618,7 @@ class VehicleGenerationListAPI(generics.ListAPIView):
             queryset = queryset.filter(model_id=model_id)
         return queryset
 
+
 class VehicleImageListCreateView(generics.ListCreateAPIView):
     """
     GET  -> pobiera wszystkie zdjęcia danego pojazdu
@@ -672,6 +673,55 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(created_images, status=status.HTTP_201_CREATED)
+    
+
+class VehicleImageDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    GET    -> pobiera dane zdjęcia pojazdu
+    PUT    -> aktualizuje zdjęcie pojazdu
+    DELETE -> usuwa zdjęcie pojazdu
+    """
+    
+    serializer_class = VehicleImageSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Zwracamy tylko zdjęcia należące do wskazanego VIN.
+        """
+        vin = self.kwargs["vin"]
+        return VehicleImage.objects.filter(vehicle__vin=vin)
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        new_file = request.FILES.get("image")
+        if not new_file:
+            return Response(
+                {"detail": "Brak pliku 'image'."},
+                status=400
+            )
+
+        # usuń fizyczny plik
+        if instance.image:
+            instance.image.delete(save=False)
+
+        instance.image = new_file
+        instance.save()
+
+        return Response(self.get_serializer(instance).data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # usuń fizyczny plik
+        if instance.image:
+            instance.image.delete(save=False)
+
+        instance.delete()
+        return Response(status=204)
+
+
 
 
 class VehicleCreateView(generics.CreateAPIView):
@@ -712,6 +762,7 @@ class VehicleListView(generics.ListAPIView):
     serializer_class = VehicleSerializer
     permission_classes = [permissions.AllowAny]
 
+
 class UserVehicleListView(generics.ListAPIView):
     """
     Endpoint do pobierania listy pojazdów zalogowanego użytkownika (/api/vehicles/my-vehicles/)
@@ -722,6 +773,7 @@ class UserVehicleListView(generics.ListAPIView):
     def get_queryset(self):
         return Vehicle.objects.filter(owner=self.request.user).select_related('generation', 'generation__model', 'generation__model__make').order_by('-generation__production_start')
     
+
 class VehiclesForSaleListView(generics.ListAPIView):
     """
     Endpoint do pobierania listy pojazdów wystawionych na sprzedaż (/api/vehicles/for-sale/)
@@ -733,14 +785,35 @@ class VehiclesForSaleListView(generics.ListAPIView):
         # Zwraca pojazdy, które mają for_sale=True
         return Vehicle.objects.filter(for_sale=True).select_related('generation', 'generation__model', 'generation__model__make').order_by('-generation__production_start')
     
-class VehicleDetailAPI(generics.RetrieveAPIView):
+
+class VehicleDetailAPI(generics.RetrieveUpdateAPIView):
     """
-    Endpoint do pobierania danych konkretnego pojazdu (api/vehicles/id/)
+    Endpoint: /api/vehicles/<vin>/
+    
+    GET  → pobranie danych pojazdu
+    PATCH → częściowa aktualizacja danych pojazdu
+    PUT → pełna aktualizacja (opcjonalne)
     """
     permission_classes = [IsAuthenticated]
-    queryset = Vehicle.objects.select_related('generation', 'generation__model', 'generation__model__make')
+    queryset = Vehicle.objects.select_related(
+        'generation', 'generation__model', 'generation__model__make'
+    )
     serializer_class = VehicleSerializer
     lookup_field = 'vin'
+
+    def patch(self, request, *args, **kwargs):
+        """
+        Częściowa aktualizacja danych pojazdu
+        """
+        vehicle = self.get_object()
+        serializer = VehicleSerializer(vehicle, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class VehicleDeleteView(generics.DestroyAPIView):
     """

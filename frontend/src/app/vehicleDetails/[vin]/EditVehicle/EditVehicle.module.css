@@ -1,0 +1,102 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal {
+  width: 90%;
+  height: 90%;
+  background: #111;
+  border-radius: 14px;
+  display: flex;
+  overflow: hidden;
+  color: white;
+}
+
+.left {
+  width: 45%;
+  padding: 20px;
+  border-right: 1px solid #333;
+  overflow-y: auto;
+}
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.imageBox {
+  position: relative;
+}
+
+.imageBox img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.deleteBtn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(255, 0, 0, 0.7);
+  border: none;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  color: white;
+  font-size: 16px;
+}
+
+.right {
+  width: 55%;
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form input,
+.form select {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #222;
+  color: white;
+}
+
+.footer {
+  margin-top: 30px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.cancel {
+  padding: 10px 18px;
+  background: #444;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.save {
+  padding: 10px 18px;
+  background: #4caf50;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: black;
+  font-weight: bold;
+}

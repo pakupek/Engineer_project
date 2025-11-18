@@ -90,7 +90,7 @@ export default function AddVehiclePage() {
 
       const data = await response.json();
       if (response.ok) {
-        console.log("Zdjęcia zostały przesłane pomyślnie:", data);
+        console.info("Zdjęcia zostały przesłane pomyślnie:");
       } else {
         console.error("Błąd przy przesyłaniu zdjęć:", data);
       }
@@ -192,11 +192,9 @@ export default function AddVehiclePage() {
 
     const submitData = {
       ...formData,
-      generation_id: selectedGeneration || null, // DODAJ TE LINIE
+      generation_id: selectedGeneration || null, 
     };
-    
-    console.log("📤 Form data do wysłania:", submitData);
-    console.log("🔍 Generation ID:", submitData.generation_id);
+
 
     // USUŃ niepotrzebne pola które nie są w modelu Vehicle
     delete submitData.make;
@@ -215,7 +213,6 @@ export default function AddVehiclePage() {
       });
 
       const data = await response.json();
-      console.log("Odpowiedź z backendu:", data);
 
       if (response.ok) {
         // Upload zdjęć po utworzeniu pojazdu
@@ -256,7 +253,7 @@ export default function AddVehiclePage() {
 
       } else {
         setError(JSON.stringify(data, null, 2));
-        console.log("Błąd:", data);
+        console.error("Błąd:");
       }
     } catch (err) {
         let errorMessage = '';
