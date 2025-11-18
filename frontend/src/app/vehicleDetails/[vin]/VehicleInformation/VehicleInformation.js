@@ -4,6 +4,8 @@ import styles from "./VehicleInformation.module.css";
 import "./VehicleInformation.css";
 import VehicleSaleForm from "../../../VehicleSale/VehicleSaleForm.js";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { getToken } from "../../../Services/auth";
 
 export function VehicleInformationOverlay({ car }){
     return (
@@ -34,6 +36,34 @@ export function VehicleInformationOverlay({ car }){
 
 export function VehicleInformation({ car}){
   const [showSaleForm, setShowSaleForm] = useState(false);
+  const router = useRouter();
+
+  // Funkcja usuwania pojazdu
+  const handleDeleteVehicle = async () => {
+    if (!confirm("Czy na pewno chcesz usunąć ten pojazd? Ta akcja jest nieodwracalna.")) return;
+
+    try {
+      const token = getToken();
+      const response = await fetch(`http://localhost:8000/api/vehicles/${car.vin}/delete/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Błąd podczas usuwania pojazdu");
+      }
+
+      alert("Pojazd został usunięty.");
+      router.push("/VehicleList"); 
+    } catch (error) {
+      console.error("Błąd usuwania pojazdu:", error);
+      alert("Nie udało się usunąć pojazdu: " + error.message);
+    }
+  };
 
     return(
       <div className="car-info-section">
@@ -41,7 +71,7 @@ export function VehicleInformation({ car}){
         <div className="car-info-block">
           <div className="car-btn-group">
             <button className="car-btn">Aktualizuj dane →</button>
-            <button className="car-btn danger">Usuń pojazd →</button>
+            <button className="car-btn danger" onClick={handleDeleteVehicle}>Usuń pojazd →</button>
             {/* Pokaż tylko, jeśli auto NIE jest wystawione */}
             {!car.for_sale && (
               <button className="car-btn sale" onClick={() => setShowSaleForm(true)}>
