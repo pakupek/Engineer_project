@@ -318,6 +318,41 @@
   padding: 20px;
 }
 
+.pagination {
+  display: flex;
+  justify-content: center; /* wyśrodkowanie */
+  align-items: center;
+  gap: 12px; /* odstęp między elementami */
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  background-color: #1f2937; /* ciemny przycisk */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.page-btn:hover {
+  background-color: #374151; /* efekt najechania */
+}
+
+.page-btn:disabled {
+  background-color: #6b7280;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-size: 14px;
+  color: #111827;
+  font-weight: 500;
+}
+
 .create-discussion-btn {
   position: fixed;
   bottom: 30px;

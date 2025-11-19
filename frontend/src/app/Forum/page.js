@@ -32,6 +32,9 @@ export default function Forum() {
         HISTORIA: "tt-color07",
     };
 
+    const [page, setPage] = useState(1); 
+    const [pageCount, setPageCount] = useState(1);
+
     const [images, setImages] = useState([]);
 
     const handleImageChange = (e) => {
@@ -47,13 +50,14 @@ export default function Forum() {
         return CATEGORY_COLORS[category] || "tt-color01";
     };
 
-    const fetchThreads = async () => {
+    const fetchThreads = async (pageNumber = 1) => {
         try {
             const token = getToken();
             const query = new URLSearchParams({
                 category: filters.category !== "ALL" ? filters.category : "",
                 status: filters.status !== "ALL" ? filters.status : "",
-                search: filters.search || ""
+                search: filters.search || "",
+                page: pageNumber,
                 }).toString();
             const res = await fetch(`http://localhost:8000/api/discussions/?${query}`, {
                 method: "GET",
@@ -63,6 +67,7 @@ export default function Forum() {
                 },
             });
             const data = await res.json();
+            console.log("Fetched discussions data:", data);
             setThreads(
                 data.results.map((d) => ({
                 id: d.id,
@@ -79,6 +84,10 @@ export default function Forum() {
                     : timeAgo(d.created_at),
                 }))
             );
+
+            const totalPages = Math.max(1, Math.ceil(data.count / 10)); 
+            setPageCount(totalPages);
+            setPage(pageNumber);
         } catch (err) {
             console.error("Error fetching discussions:", err);
         } finally {
@@ -87,8 +96,16 @@ export default function Forum() {
     };
 
         useEffect(() => {
-            fetchThreads();
+            fetchThreads(1);
     }, [filters]);
+
+    const handleNextPage = () => {
+        if (page < pageCount) fetchThreads(page + 1);
+    };
+
+    const handlePrevPage = () => {
+        if (page > 1) fetchThreads(page - 1);
+    };
 
     function timeAgo(dateString) {
         const diff = Date.now() - new Date(dateString).getTime();
@@ -275,6 +292,27 @@ export default function Forum() {
                         </div>
                     ))
                 )}
+            </div>
+            <div className="pagination">
+                <button
+                    className="page-btn"
+                    onClick={handlePrevPage}
+                    disabled={page === 1}
+                >
+                    ◀ Poprzednia
+                </button>
+
+                <span className="page-info">
+                    {page} / {pageCount}
+                </span>
+
+                <button
+                    className="page-btn"
+                    onClick={handleNextPage}
+                    disabled={page === pageCount}
+                >
+                    Następna ▶
+                </button>
             </div>
 
             <button className="create-discussion-btn" onClick={() => setModalOpen(true)}>+</button>
