@@ -706,7 +706,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
                       </li>
 
                       <li>
-                        <a className={styles.btnIcon}>
+                        <a className={styles.btnIcon} onClick={() => document.querySelector('input[type="file"]').click()}>
                   
                           <i className={styles.icon}>
                             <input
