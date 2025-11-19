@@ -78,6 +78,13 @@
   color: #4b5563;
 }
 
+.btn-group {
+  margin-left: auto; 
+  display: flex;
+  gap: 10px;
+}
+
+
 /* Responsywność */
 @media (max-width: 768px) {
     .filters-container{

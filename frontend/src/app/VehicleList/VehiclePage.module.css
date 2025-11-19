@@ -1,5 +1,5 @@
 .container {
-  width: 100%; /* zajmuje całą szerokość */
+  width: 100%; 
   max-width: 100%;
   font-family: Arial, Helvetica, sans-serif;
   margin-top: 150px !important;
@@ -54,6 +54,45 @@
 .error {
   color: #dc2626;
 }
+
+.pagination {
+  margin-top: 30px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 15px;
+  margin-left: 450px;
+}
+
+.pageInfo {
+  font-size: 15px;
+  color: #444;
+  font-weight: 500;
+}
+
+.pageBtn {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.pageBtn:hover {
+  background-color: #f3f3f3;
+  border-color: #999;
+}
+
+.pageBtn:disabled {
+  background-color: #eaeaea;
+  border-color: #d5d5d5;
+  cursor: not-allowed;
+  color: #999;
+}
+
 
 /* RESPONSYWNE: mniejsze ekrany */
 @media (max-width: 1024px) {

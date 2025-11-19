@@ -10,7 +10,16 @@ export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filteredVehicles, setFilteredVehicles] = useState(vehicles);
+  const [filters, setFilters] = useState({});
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const handleFilterChange = (updatedFilters) => {
+    setFilters(updatedFilters);
+    setPage(1);
+  };
+
+
 
   // Pobieranie danych o pojazdach
   useEffect(() => {
@@ -18,7 +27,19 @@ export default function VehiclesPage() {
       try {
         setLoading(true);
         const token = getToken();
-        const response = await fetch('http://localhost:8000/api/vehicles/my-vehicles/', {
+        // Zamiana filtrów na string zapytania GET
+        const params = new URLSearchParams();
+
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value !== "" && value !== null && value !== undefined) {
+            params.append(key, value);
+          }
+        });
+
+        // Dodajemy paginację
+        params.append("page", page);
+
+        const response = await fetch(`http://localhost:8000/api/vehicles/my-vehicles/?${params}`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -28,7 +49,8 @@ export default function VehiclesPage() {
         const data = await response.json();
 
         if (response.ok) {
-          setVehicles(data);
+          setVehicles(data.results);
+          setTotalPages(Math.ceil(data.count / 10)); 
         } else {
           setError(JSON.stringify(data));
         }
@@ -41,7 +63,7 @@ export default function VehiclesPage() {
     };
 
     fetchVehicles();
-  }, []);
+  }, [filters, page]);
 
   // Funkcja do usuwania pojazdu
   const handleDeleteVehicle = async (vin) => {
@@ -62,7 +84,7 @@ export default function VehiclesPage() {
 
       const data = await response.json();
       setVehicles((prev) => prev.filter((v) => v.vin !== vin));
-      setFilteredVehicles((prev) => prev.filter((v) => v.vin !== vin));
+      
       return data;
     } catch (error) {
       console.error('Błąd usuwania pojazdu:', error);
@@ -100,13 +122,36 @@ export default function VehiclesPage() {
           </button>
         </div>
 
-        <VehicleFilters vehicles={vehicles} onFiltered={setFilteredVehicles} />
+        <VehicleFilters onFilterChange={handleFilterChange} />
 
         <VehicleList 
           vehicles={vehicles} 
           onDeleteVehicle={handleDeleteVehicle}
           onViewDetails={(vehicleVin) => window.location.href = `/VehicleDetails/${vehicleVin}`} 
         />
+        <div className={styles.pagination}>
+          <button
+            className={styles.pageBtn}
+            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+            disabled={page === 1}
+          >
+            ◀
+          </button>
+
+          <span className={styles.pageInfo}>
+            Strona {page} / {totalPages}
+          </span>
+
+          <button
+            className={styles.pageBtn}
+            onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={page === totalPages}
+          >
+            ▶
+          </button>
+        </div>
+
+
       </main>
     </DashboardLayout>
   );

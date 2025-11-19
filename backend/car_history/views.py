@@ -61,7 +61,7 @@ from bs4 import BeautifulSoup
 from django.template.loader import render_to_string
 from rest_framework.throttling import UserRateThrottle
 from django.core.cache import cache
-from .pagination import DiscussionPagination
+from .pagination import DiscussionPagination, TenPerPagePagination
 from .filters import DiscussionFilter
 from .utils import generate_verification_code
 from django.core.mail import send_mail
@@ -769,10 +769,68 @@ class UserVehicleListView(generics.ListAPIView):
     """
     serializer_class = VehicleSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = TenPerPagePagination
 
     def get_queryset(self):
-        return Vehicle.objects.filter(owner=self.request.user).select_related('generation', 'generation__model', 'generation__model__make').order_by('-generation__production_start')
-    
+        user = self.request.user
+        qs = Vehicle.objects.filter(owner=user).select_related(
+            'generation',
+            'generation__model',
+            'generation__model__make'
+        )
+
+        # Pobieranie parametrów GET 
+        search = self.request.GET.get("search")
+        brand = self.request.GET.get("brand")
+        model = self.request.GET.get("model")
+
+        min_price = self.request.GET.get("minPrice")
+        max_price = self.request.GET.get("maxPrice")
+
+        min_year = self.request.GET.get("minYear")
+        max_year = self.request.GET.get("maxYear")
+
+        sort = self.request.GET.get("sort", "newest")
+
+        # Filtry tekstowe
+        if search:
+            qs = qs.filter(
+                Q(generation__model__make__name__icontains=search) |
+                Q(generation__model__name__icontains=search) |
+                Q(vin__icontains=search)
+            )
+
+        if brand:
+            qs = qs.filter(generation__model__make__name__icontains=brand)
+
+        if model:
+            qs = qs.filter(generation__model__name__icontains=model)
+
+        # Filtry liczbowe: cena 
+        if min_price:
+            qs = qs.filter(price__gte=min_price)
+
+        if max_price:
+            qs = qs.filter(price__lte=max_price)
+
+        # Filtry lat produkcji 
+        if min_year:
+            qs = qs.filter(generation__production_start__gte=min_year)
+
+        if max_year:
+            qs = qs.filter(generation__production_end__lte=max_year)
+
+        # Sortowanie
+        if sort == "newest":
+            qs = qs.order_by("-generation__production_start")
+        elif sort == "oldest":
+            qs = qs.order_by("generation__production_start")
+        elif sort == "priceHigh":
+            qs = qs.order_by("-price")
+        elif sort == "priceLow":
+            qs = qs.order_by("price")
+
+        return qs
 
 class VehiclesForSaleListView(generics.ListAPIView):
     """

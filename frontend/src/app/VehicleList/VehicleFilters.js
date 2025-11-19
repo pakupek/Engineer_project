@@ -18,12 +18,31 @@ export default function VehicleFilters({ onFilterChange }) {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const newFilters = {
-      ...filters,
+    setFilters((prev) => ({
+      ...prev,
       [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const applyFilters = () => {
+    onFilterChange?.(filters);
+  };
+
+  const resetFilters = () => {
+    const empty = {
+      search: "",
+      show: "all",
+      sort: "newest",
+      brand: "",
+      model: "",
+      minPrice: "",
+      maxPrice: "",
+      minYear: "",
+      maxYear: "",
     };
-    setFilters(newFilters);
-    onFilterChange?.(newFilters);
+
+    setFilters(empty);
+    onFilterChange?.(empty);
   };
 
   return (
@@ -83,7 +102,7 @@ export default function VehicleFilters({ onFilterChange }) {
           className={styles["input"]}
         />
 
-        {/* Rok produkcji */}
+        {/* Rok */}
         <input
           type="number"
           name="minYear"
@@ -102,7 +121,7 @@ export default function VehicleFilters({ onFilterChange }) {
         />
       </div>
 
-      {/* Sortowanie */}
+      {/* Sortowanie + przyciski */}
       <div className={styles["sort-row"]}>
         <span>Sortuj wg</span>
         <select
@@ -116,6 +135,17 @@ export default function VehicleFilters({ onFilterChange }) {
           <option value="priceHigh">cena: malejąco</option>
           <option value="priceLow">cena: rosnąco</option>
         </select>
+
+        {/* Przyciski zastosuj/wyczyść */}
+        <div className={styles["btn-group"]}>
+          <button className={styles["apply-btn"]} onClick={applyFilters}>
+            Zastosuj
+          </button>
+
+          <button className={styles["reset-btn"]} onClick={resetFilters}>
+            Wyczyść
+          </button>
+        </div>
       </div>
     </div>
   );
