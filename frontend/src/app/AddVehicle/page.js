@@ -40,20 +40,18 @@ export default function AddVehiclePage() {
   });
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files); 
-    // Sprawdź czy nie przekracza limitu
-    if (files.length > 30) {
-      alert("Możesz dodać maksymalnie 30 zdjęć");
-      return;
+    let selectedFiles = Array.from(e.target.files);
+
+    // Połącz z już wybranymi zdjęciami
+    const combinedImages = [...images, ...selectedFiles];
+
+    // Obetnij do maksymalnie 30
+    if (combinedImages.length > 30) {
+      selectedFiles = combinedImages.slice(0, 30 - images.length);
+      alert('Wybrano więcej niż 30 zdjęć — zostaną dodane tylko pierwsze.');
     }
-    
-    // Sprawdź czy łączna liczba zdjęć nie przekracza limitu
-    if (images.length + files.length > 30) {
-      alert(`Możesz dodać maksymalnie 30 zdjęć. Masz już ${images.length} zdjęć.`);
-      return;
-    }
-    
-    setImages(prev => [...prev, ...files]);
+
+    setImages([...images, ...selectedFiles]);
   };
 
   const removeImage = (indexToRemove) => {
@@ -183,11 +181,10 @@ export default function AddVehiclePage() {
     setError('');
     setSuccess('');
 
-    // Walidacja liczby zdjęć
-    if (images.length > 30) {
-      setError("Możesz dodać maksymalnie 30 zdjęć");
-      setLoading(false);
-      return;
+    // Obetnij listę zdjęć do maksymalnie 30
+    const imagesToUpload = images.slice(0, 30);
+      if (images.length > 30) {
+        setError("Osiągnięto limit 30 zdjęć. Nadmiarowe zdjęcia zostały pominięte.");
     }
 
     const submitData = {
@@ -216,8 +213,8 @@ export default function AddVehiclePage() {
 
       if (response.ok) {
         // Upload zdjęć po utworzeniu pojazdu
-        if (images.length > 0 && data.vin) {
-          await uploadImages(data.vin, images);
+        if (imagesToUpload.length > 0 && data.vin) {
+          await uploadImages(data.vin, imagesToUpload);
         }
         setSuccess("Pojazd i zdjęcia zostały przesłane pomyślnie!");
         

@@ -639,34 +639,28 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
         if not files:
             return Response({"detail": "Nie wybrano żadnych plików."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Sprawdź czy nie przekracza limitu
+        # ile zdjęć już jest
         current_image_count = vehicle.images.count()
-        if current_image_count >= self.MAX_IMAGES:
+        remaining_slots = self.MAX_IMAGES - current_image_count
+
+        if remaining_slots <= 0:
             return Response(
                 {"detail": f"Osiągnięto limit {self.MAX_IMAGES} zdjęć dla tego pojazdu."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Sprawdź czy dodanie nowych zdjęć nie przekroczy limitu
-        if current_image_count + len(files) > self.MAX_IMAGES:
-            available_slots = self.MAX_IMAGES - current_image_count
-            return Response(
-                {"detail": f"Możesz dodać tylko {available_slots} więcej zdjęć (limit: {self.MAX_IMAGES})."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # ograniczamy listę dodawanych zdjęć do dostępnych slotów
+        files_to_save = files[:remaining_slots]
 
         created_images = []
         errors = []
 
-        for file in files:
-            serializer = self.get_serializer(data={'image': file})
+        for file in files_to_save:
+            serializer = self.get_serializer(data={'image': file}, context={'vehicle': vehicle})
             if serializer.is_valid():
-                
                 serializer.save(vehicle=vehicle)
                 created_images.append(serializer.data)
             else:
-                print(serializer.errors)
-
                 errors.append(serializer.errors)
 
         if errors:
