@@ -6,6 +6,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.timezone import localdate
 from PIL import Image
 from io import BytesIO
+import os, shutil
+from django.conf import settings
 
 from car_history.models import (
     Vehicle, VehicleImage,
@@ -70,9 +72,9 @@ class VehicleIntegrationTest(APITestCase):
         r = self.client.post(create_url, payload, format="json")
         self.assertEqual(r.status_code, 201)
 
-        vehicle = Vehicle.objects.get(vin=payload["vin"])
+        self.vehicle = Vehicle.objects.get(vin=payload["vin"])
 
-        images_url = reverse('vehicle_images', kwargs={"vin": vehicle.vin})
+        images_url = reverse('vehicle_images', kwargs={"vin": self.vehicle.vin})
         
 
         # dodawanie zdjęć
@@ -106,12 +108,12 @@ class VehicleIntegrationTest(APITestCase):
         # Dodatkowe asercje integracyjne:
     
         # Sprawdź czy właściciel jest poprawny
-        self.assertEqual(vehicle.owner, self.user)
+        self.assertEqual(self.vehicle.owner, self.user)
         
         # Sprawdź relacje między modelami
-        self.assertEqual(vehicle.generation.name, self.generation.name)
-        self.assertEqual(vehicle.generation.model.name, self.model.name)
-        self.assertEqual(vehicle.generation.model.make.name, self.make.name)
+        self.assertEqual(self.vehicle.generation.name, self.generation.name)
+        self.assertEqual(self.vehicle.generation.model.name, self.model.name)
+        self.assertEqual(self.vehicle.generation.model.make.name, self.make.name)
         
         # Sprawdź strukturę odpowiedzi
         self.assertEqual(r3.data['vin'], payload['vin'])
@@ -124,4 +126,17 @@ class VehicleIntegrationTest(APITestCase):
             self.assertIn('image', image_data)
             self.assertIn('uploaded_at', image_data)
             self.assertTrue(image_data['image'].startswith('http') or image_data['image'].startswith('/media/'))
+
+    def tearDown(self):
+        # Usuń wszystkie pliki powiązane z VehicleImage w tym teście
+        for image in VehicleImage.objects.all():
+            if image.image and os.path.isfile(image.image.path):
+                os.remove(image.image.path)
+
+        # Usuń folder pojazdu: media/vehicles/<vin>
+        if hasattr(self, 'vehicle'):
+            vehicle_dir = os.path.join(settings.MEDIA_ROOT, 'vehicles', self.vehicle.vin)
+            if os.path.exists(vehicle_dir):
+                shutil.rmtree(vehicle_dir, ignore_errors=True)
+        super().tearDown()
 

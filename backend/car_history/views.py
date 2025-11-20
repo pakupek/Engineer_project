@@ -1,3 +1,4 @@
+from car_history.permissions import IsOwner
 from django.utils import timezone
 from rest_framework import generics, permissions, status
 from django_filters.rest_framework import DjangoFilterBackend
@@ -846,12 +847,16 @@ class VehicleDetailAPI(generics.RetrieveUpdateAPIView):
     PATCH → częściowa aktualizacja danych pojazdu
     PUT → pełna aktualizacja (opcjonalne)
     """
-    permission_classes = [IsAuthenticated]
-    queryset = Vehicle.objects.select_related(
-        'generation', 'generation__model', 'generation__model__make'
-    )
+    permission_classes = [IsAuthenticated, IsOwner]
+
     serializer_class = VehicleSerializer
     lookup_field = 'vin'
+
+    def get_queryset(self):
+        # Tylko pojazdy należące do zalogowanego użytkownika
+        return Vehicle.objects.filter(owner=self.request.user).select_related(
+            'generation', 'generation__model', 'generation__model__make'
+        )
 
     def patch(self, request, *args, **kwargs):
         """

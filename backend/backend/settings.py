@@ -21,7 +21,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Katalog, w którym będą przechowywane pliki użytkowników
-MEDIA_ROOT = MEDIA_ROOT = '/app/backend/media'
+MEDIA_ROOT = '/app/backend/media'
 
 # URL do serwowania tych plików w przeglądarce
 MEDIA_URL = '/media/'
