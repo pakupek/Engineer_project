@@ -3,7 +3,7 @@ from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth import get_user_model
 from rest_framework import status
 from django.core.files.uploadedfile import SimpleUploadedFile
-from ..models import VehicleMake, VehicleModel, VehicleGeneration, Vehicle, VehicleImage
+from ...models import VehicleMake, VehicleModel, VehicleGeneration, Vehicle, VehicleImage
 from django.utils.timezone import localdate
 from PIL import Image
 from io import BytesIO
@@ -80,7 +80,7 @@ class VehicleCreationTest(APITestCase):
             
             response = self.client.post(
                 images_url,
-                data={'images': image},  # Używamy 'images' nawet dla pojedynczego pliku
+                data={'images': image},  
                 format='multipart'
             )
             

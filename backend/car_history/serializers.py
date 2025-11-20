@@ -94,16 +94,18 @@ class VehicleSerializer(serializers.ModelSerializer):
     Serializer pojazdu użytkownika
     """
 
-    generation_id = serializers.PrimaryKeyRelatedField(
-        queryset=VehicleGeneration.objects.all(),
-        source='generation',  # Mapuje na pole generation w modelu
-        required=False,
-        allow_null=True,
-        write_only=True  
-    )
-    generation = VehicleGenerationSerializer(read_only=True) 
     owner = serializers.PrimaryKeyRelatedField(read_only=True)
     images = VehicleImageSerializer(many=True, read_only=True)
+    generation_id = serializers.PrimaryKeyRelatedField(
+        queryset=VehicleGeneration.objects.all(),
+        source='generation',
+        required=False,
+        allow_null=True,
+        write_only=True
+    )
+
+    # to pole służy TYLKO do odczytu
+    generation = VehicleGenerationSerializer(read_only=True)
 
     class Meta:
         model = Vehicle
