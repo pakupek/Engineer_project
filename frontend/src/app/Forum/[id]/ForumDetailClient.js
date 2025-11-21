@@ -20,6 +20,35 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
     underline: false,
   });
   const [images, setImages] = useState([]);
+  const [sort, setSort] = useState("recent");
+  const sortMap = {
+    recent: "-created_at",
+    liked: "-likes",
+    longest: "-length",
+    shortest: "length",
+  };
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+
+  const handleSortClick = (type) => {
+    setSort(type);
+    setPage(1);
+  };
+
+  const handleSelectChange = (e) => {
+    setSort(e.target.value);
+    setPage(1);
+  };
+
+  const handleNext = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  const handlePrev = () => {
+    if (page > 1) setPage(page - 1);
+  };
+
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
@@ -169,7 +198,14 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
   const fetchComments = async () => {
     try {
       const token = getToken();
-      const res = await fetch(`http://localhost:8000/api/discussions/${discussionId}/comments/`, {
+      setLoading(true);
+      // Budujemy query params
+      const params = new URLSearchParams({
+        page: page.toString(),
+        sort: sort,
+      });
+
+      const res = await fetch(`http://localhost:8000/api/discussions/${discussionId}/comments/?${params.toString()}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -177,15 +213,23 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
           },
         });
       const data = await res.json();
+      console.log("Fetched comments data:", data);
       const commentsData = data.results || data;
       setComments(commentsData);
-      
+      // Ustaw liczbę stron
+      if (data.count) {
+        setTotalPages(Math.ceil(data.count / 10));
+      }
     } catch (error) {
       console.error("Error fetching comments:", error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchComments();
+  }, [page, sort]);
 
 
   const postComment = async (e) => {
@@ -586,17 +630,27 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
             <div className={styles.rowObjectInline}>
               <h6 className={styles.title}>Sortowanie komentarzy:</h6>
               <ul className={`${styles.listBadge} ${styles.sizeLg}`}>
-                <li><span className={styles.badge}>Ostatnie</span></li>
-                <li><span className={`${styles.color02} ${styles.badge}`}>Najczęściej lubiane</span></li>
-                <li><span className={styles.badge}>Najdłuższe</span></li>
-                <li><span className={styles.badge}>Najkrótsze</span></li>
+                <li>
+                  <span className={`${styles.badge} ${sort === "recent" ? styles.active : ""}`} onClick={() => handleSortClick("recent")}>
+                    Ostatnie
+                  </span>
+                </li>
+                <li>
+                  <span className={`${styles.badge} ${sort === "liked" ? styles.active : ""}`} onClick={() => handleSortClick("liked")}>
+                    Najczęściej lubiane
+                  </span>
+                </li>
+                <li>
+                  <span className={`${styles.badge} ${sort === "longest" ? styles.active : ""}`} onClick={() => handleSortClick("longest")}>
+                    Najdłuższe
+                  </span>
+                </li>
+                <li>
+                  <span className={`${styles.badge} ${sort === "shortest" ? styles.active : ""}`} onClick={() => handleSortClick("shortest")}>
+                    Najkrótsze
+                  </span>
+                </li>
               </ul>
-              <select className={`${styles.select} ${styles.formControl}`}>
-                <option value="Recent">Ostatnie</option>
-                <option value="Most Liked">Najczęściej lubiane</option>
-                <option value="Longest">Najdłuższe</option>
-                <option value="Shortest">Najkrótsze</option>
-              </select>
             </div>
           </div>
         </div>
@@ -661,10 +715,21 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
           </div>
         ))}
 
-        {/* Koniec odpowiedzi */}
-        <div className={styles.wrapperInner}>
-          <h4 className={styles.titleSeparator}><span>Koniec listy komentarzy</span></h4>
+        {/* Paginacja */}
+        <div className={styles.paginationWrapper}>
+          <button className={styles.paginationBtn} onClick={handlePrev} disabled={page === 1}>
+            Poprzednia
+          </button>
+
+          <span className={styles.pageNumber}>
+            Strona {page} z {totalPages}
+          </span>
+
+          <button className={styles.paginationBtn} onClick={handleNext} disabled={page === totalPages}>
+            Następna
+          </button>
         </div>
+
 
         {/* Edytor odpowiedzi */}
         {!discussion.locked ? (

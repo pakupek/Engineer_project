@@ -62,11 +62,12 @@ from bs4 import BeautifulSoup
 from django.template.loader import render_to_string
 from rest_framework.throttling import UserRateThrottle
 from django.core.cache import cache
-from .pagination import DiscussionPagination, TenPerPagePagination
+from .pagination import CommentPagination, DiscussionPagination, TenPerPagePagination
 from .filters import DiscussionFilter
 from .utils import generate_verification_code
 from django.core.mail import send_mail
-from weasyprint import HTML, CSS
+from django.db.models.functions import Length
+
 from django.contrib.staticfiles import finders
 
 logger = logging.getLogger(__name__)
@@ -184,6 +185,7 @@ class VehicleHistoryPDFView(generics.RetrieveAPIView):
 
     def get(self, request, vin, *args, **kwargs):
         try:
+            from weasyprint import HTML, CSS
             # Pobierz pojazd
             try:
                 vehicle = Vehicle.objects.get(vin=vin)
@@ -456,10 +458,27 @@ class CommentListCreateView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     parser_classes = [MultiPartParser, FormParser]
+    pagination_class = CommentPagination
 
     def get_queryset(self):
         discussion_id = self.kwargs["discussion_id"]
-        return Comment.objects.filter(discussion_id=discussion_id).order_by("created_at")
+        sort = self.request.query_params.get("sort", "recent")
+
+        qs = Comment.objects.filter(discussion_id=discussion_id)
+
+        # FILTRY SORTOWANIA
+        if sort == "recent":
+            qs = qs.order_by("-created_at")         # najnowsze
+        elif sort == "liked":
+            qs = qs.order_by("-likes_count")              # najwięcej polubień
+        elif sort == "longest":
+            qs = qs.annotate(length=Length("content")).order_by("-length")
+        elif sort == "shortest":
+            qs = qs.annotate(length=Length("content")).order_by("length")
+        else:
+            qs = qs.order_by("-created_at")         # default
+
+        return qs
     
     def get_serializer_context(self):
         context = super().get_serializer_context()
