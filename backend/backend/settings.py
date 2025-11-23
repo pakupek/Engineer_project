@@ -26,6 +26,7 @@ MEDIA_ROOT = '/app/backend/media'
 # URL do serwowania tych plików w przeglądarce
 MEDIA_URL = '/media/'
 
+TESTING = False
 
 # Pobranie klucza API 
 APITUBE_KEY = os.getenv("APITUBE_KEY")
@@ -106,8 +107,8 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=20),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(minutes=0),
     'SLIDING_TOKEN_LIFETIME': timedelta(days=30),
     'SLIDING_TOKEN_REFRESH_LIFETIME_LATE_USER': timedelta(days=1),
     'SLIDING_TOKEN_LIFETIME_LATE_USER': timedelta(days=30),
@@ -174,6 +175,7 @@ DATABASES = {
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
         'HOST': os.getenv('POSTGRES_HOST'),
         'PORT': os.getenv('POSTGRES_PORT'),
+        'CONN_MAX_AGE': 60,
     }
 }
 
