@@ -1,23 +1,81 @@
 services:
   django:
     container_name: dev-django 
-    image: python:3.12-slim
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
       - PYTHONPATH=/app/backend/
-
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
     volumes:
       - ./backend:/app/backend
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    networks:  
+      - app-network
 
+  redis:
+    image: redis:7
+    container_name: dev-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dev-celery
+    volumes:
+      - ./backend:/app/backend
+    depends_on:
+      - redis
+      - django
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
     env_file:
       - .env
 
-    depends_on:
-      - db
-    networks:  
+    networks:
       - app-network
+
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dev-celery-beat
+    volumes:
+      - ./backend:/app/backend
+    depends_on:
+      - redis
+      - django
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    env_file:
+      - .env
+
+    networks:
+      - app-network
+
   db:
     container_name: dev-db
     image: postgres:16.1-alpine
@@ -31,10 +89,12 @@ services:
       - pgdata:/var/lib/postgresql/data
     networks:
       - app-network
+
   frontend:
     container_name: dev-frontend
-    image: node:20
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:

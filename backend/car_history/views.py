@@ -55,7 +55,7 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.shortcuts import get_object_or_404
 from django.http import Http404, JsonResponse, HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-import logging, shutil, os, json, requests, django_filters
+import logging, shutil, os, json, requests, django_filters, threading
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from bs4 import BeautifulSoup
@@ -65,8 +65,8 @@ from django.core.cache import cache
 from .pagination import CommentPagination, DiscussionPagination, TenPerPagePagination
 from .filters import DiscussionFilter
 from .utils import generate_verification_code
-from django.core.mail import send_mail
-from django.db.models.functions import Length
+from django.db.models import F, Prefetch
+from .tasks import send_verification_email_task
 
 from django.contrib.staticfiles import finders
 
@@ -317,18 +317,43 @@ class DiscussionListCreateView(generics.ListCreateAPIView):
     Widok tworzenia dyskusji na forum
     """
 
-    queryset = Discussion.objects.all()
     serializer_class = DiscussionSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     pagination_class = DiscussionPagination
     filterset_class = DiscussionFilter
     parser_classes = [MultiPartParser, FormParser]
 
+    def get_queryset(self):
+        request_user = self.request.user
+        queryset = Discussion.objects.all().select_related('author').prefetch_related('images')
+
+        if request_user.is_authenticated:
+            votes_prefetch = Prefetch(
+                'comments__votes',  # `comments` → related_name w Comment do Discussion
+                queryset=CommentStats.objects.filter(user=request_user),
+                to_attr='user_votes'
+            )
+            favorites_prefetch = Prefetch(
+                'favorites',
+                queryset=DiscussionFavorite.objects.filter(user=request_user),
+                to_attr='user_favorites'
+            )
+
+            queryset = queryset.prefetch_related(votes_prefetch, favorites_prefetch)
+
+        return queryset
+
     def perform_create(self, serializer):
         discussion = serializer.save(author=self.request.user)
         images = self.request.FILES.getlist('images')
-        for img in images[:5]:  # max 5 zdjęć
-            DiscussionImage.objects.create(discussion=discussion, image=img)
+        if images:
+            images_to_create = [
+                DiscussionImage(discussion=discussion, image=img)
+                for img in images[:5]
+            ]
+            DiscussionImage.objects.bulk_create(images_to_create)
+
+
 
     
 class DiscussionDetailView(generics.RetrieveAPIView):
@@ -470,7 +495,9 @@ class CommentListCreateView(generics.ListCreateAPIView):
         discussion_id = self.kwargs["discussion_id"]
         sort = self.request.query_params.get("sort", "recent")
 
-        qs = Comment.objects.filter(discussion_id=discussion_id)
+        qs = Comment.objects.filter(discussion_id=discussion_id) \
+        .select_related('author') \
+        .prefetch_related('votes')
 
         # FILTRY SORTOWANIA
         if sort == "recent":
@@ -478,9 +505,9 @@ class CommentListCreateView(generics.ListCreateAPIView):
         elif sort == "liked":
             qs = qs.order_by("-likes_count")              # najwięcej polubień
         elif sort == "longest":
-            qs = qs.annotate(length=Length("content")).order_by("-length")
+            qs.order_by('-content_length')              # najdłuższe
         elif sort == "shortest":
-            qs = qs.annotate(length=Length("content")).order_by("length")
+            qs.order_by('content_length')             # najkrótsze
         else:
             qs = qs.order_by("-created_at")         # default
 
@@ -500,8 +527,9 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
         # Obsługa zdjęć (maks. 5)
         images = self.request.FILES.getlist('images')
-        for img in images[:5]:
-            CommentImage.objects.create(comment=comment, image=img)
+        CommentImage.objects.bulk_create([
+            CommentImage(comment=comment, image=img) for img in images[:5]
+        ])
 
          # Tworzymy statystyki komentarza, jeśli wymagane
         if not CommentStats.objects.filter(comment=comment, user=self.request.user).exists():
@@ -606,14 +634,9 @@ class SendVerificationCodeView(generics.CreateAPIView):
         # zapis kodu w cache na 5 minut
         cache.set(f'verification_code_{email}', code, 300)
 
-        # wysyłka maila
+        # Wysyłka maila przez Celery
         if not getattr(settings, "TESTING", False):
-            send_mail(
-                subject="GaraZero: Kod weryfikacyjny",
-                message=f"Twój kod weryfikacyjny: {code}",
-                from_email=os.getenv("EMAIL_HOST_USER"),
-                recipient_list=[email],
-            )
+            send_verification_email_task.delay(email, code)
 
         return Response({"message": "Kod weryfikacyjny wysłany"}, status=status.HTTP_200_OK)
 
@@ -669,36 +692,25 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
 
         files = request.FILES.getlist('images')
         if not files:
-            return Response({"detail": "Nie wybrano żadnych plików."}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # ile zdjęć już jest
-        current_image_count = vehicle.images.count()
-        remaining_slots = self.MAX_IMAGES - current_image_count
+            return Response({"detail": "Nie wybrano żadnych plików."}, status=400)
 
+        remaining_slots = self.MAX_IMAGES - getattr(vehicle, 'images_count', vehicle.images.count())
         if remaining_slots <= 0:
-            return Response(
-                {"detail": f"Osiągnięto limit {self.MAX_IMAGES} zdjęć dla tego pojazdu."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": f"Osiągnięto limit {self.MAX_IMAGES} zdjęć."}, status=400)
 
-        # ograniczamy listę dodawanych zdjęć do dostępnych slotów
         files_to_save = files[:remaining_slots]
 
-        created_images = []
-        errors = []
+        # Bulk create
+        vehicle_images = [VehicleImage(vehicle=vehicle, image=file) for file in files_to_save]
+        VehicleImage.objects.bulk_create(vehicle_images)
 
-        for file in files_to_save:
-            serializer = self.get_serializer(data={'image': file}, context={'vehicle': vehicle})
-            if serializer.is_valid():
-                serializer.save(vehicle=vehicle)
-                created_images.append(serializer.data)
-            else:
-                errors.append(serializer.errors)
+        # Aktualizacja licznika zdjęć
+        Vehicle.objects.filter(pk=vehicle.pk).update(images_count=F('images_count') + len(files_to_save))
 
-        if errors:
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(vehicle_images, many=True)
+        return Response(serializer.data, status=201)
 
-        return Response(created_images, status=status.HTTP_201_CREATED)
+
     
 
 class VehicleImageDetailView(generics.RetrieveUpdateDestroyAPIView):

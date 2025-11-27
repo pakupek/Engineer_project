@@ -1,3 +1,4 @@
+import datetime
 from locust import HttpUser, task, between
 import string, io, random, time
 from PIL import Image
@@ -15,6 +16,12 @@ def random_phone():
 CATEGORY_CHOICES = [
     'OGOLNE', 'TECHNICZNE'
 ]
+BODY_COLOR_CHOICES = ['Czarny', 'Biały', 'Srebrny', 'Szary', 'Czerwony', 'Niebieski', 'Zielony', 'Beżowy', 'Żółty']
+INTERIOR_COLOR_CHOICES = ['Czarny', 'Beżowy', 'Szary', 'Brązowy', 'Biały', 'Czerwony']
+DRIVE_TYPE_CHOICES = ['FWD', 'RWD', 'AWD', '4x4']
+TRANSMISSION_CHOICES = ['Manualna', 'Automatyczna', 'Półautomatyczna', 'CVT', 'Dwusprzęgłowa']
+FUEL_TYPES = ['Benzyna', 'Diesel', 'Hybryda', 'Elektryczny', 'Benzyna+LPG', 'Benzyna+CNG']
+LOCATIONS = ['Warszawa', 'Kraków', 'Wrocław', 'Poznań', 'Gdańsk', 'Łódź', 'Katowice', 'Szczecin']
 
 class CarHistoryUser(HttpUser):
     wait_time = between(1, 3)
@@ -22,6 +29,7 @@ class CarHistoryUser(HttpUser):
     token_expiry = 0
     discussions_cache = []
     created_categories = set()
+    vehicle_created = False
     host = "http://localhost:8000"
 
     def on_start(self):
@@ -68,15 +76,105 @@ class CarHistoryUser(HttpUser):
             self.login_user()
 
     def refresh_discussions(self):
-        """Pobiera aktualną listę dyskusji z API"""
+        """Pobiera aktualną listę dyskusji z API — bezpiecznie."""
         self.ensure_token_valid()
         response = self.client.get("/api/discussions/")
-        if response.status_code == 200:
-            self.discussions_cache = [d["id"] for d in response.json().get("results", [])]
-        elif response.status_code == 401:
+
+        if response.status_code == 401:
             self.login_user()
+            return
+
+        try:
+            data = response.json()
+        except Exception:
+            print(f"❌ Invalid JSON from /api/discussions/: {response.text}")
+            return
+
+        # --- Obsługa paginacji / results / listy ---
+        if isinstance(data, list):
+            self.discussions_cache = [d["id"] for d in data if "id" in d]
+            return
+
+        if isinstance(data, dict):
+            # API paginowane przez DRF (results)
+            if "results" in data and isinstance(data["results"], list):
+                self.discussions_cache = [d["id"] for d in data["results"] if "id" in d]
+                return
+
+            print(f"❌ Unexpected dict response: {data}")
+            return
+
+        print(f"❌ Unexpected response type from discussions: {type(data)} -> {data}")
+
+
+
+    @task()
+    def create_vehicle(self):
+        """Tworzenie pojazdu oraz dodawanie zdjęć przez osobny endpoint"""
+        if self.vehicle_created:
+            return
+        self.ensure_token_valid()
+
+        vin = random_vin()
+        rand_suffix = str(random.randint(1000, 9999))
+
+        # -----------------------------
+        # 1️⃣ Tworzenie pojazdu
+        # -----------------------------
+        data = {
+            "vin": vin,
+            "brand": f"Marka{rand_suffix}",
+            "model": f"Model{rand_suffix}",
+            "odometer": random.randint(5000, 300000),
+            "year": random.randint(1995, 2024),
+            "mileage": random.randint(5000, 320000),
+            "engine_capacity": round(random.uniform(1.0, 5.0), 1),
+            "engine_power": random.randint(70, 400),
+            "fuel_type": random.choice(FUEL_TYPES),
+            "transmission": random.choice(TRANSMISSION_CHOICES),
+            "drive_type": random.choice(DRIVE_TYPE_CHOICES),
+            "body_color": random.choice(BODY_COLOR_CHOICES),
+            "interior_color": random.choice(INTERIOR_COLOR_CHOICES),
+            "location": random.choice(LOCATIONS),
+            "description": f"Testowy opis pojazdu {rand_suffix}"
+        }
+
+        response = self.client.post("/api/vehicles/create/", json=data)
+
+        if response.status_code not in [200, 201]:
+            print(f"❌ Failed to create vehicle {vin}: {response.status_code}, {response.text}")
+            return
+
+        print(f"🚗 Vehicle created: {vin}")
+        self.vehicle_created = True
+        # -----------------------------
+        # 2️⃣ Dodawanie zdjęć przez /api/vehicle/<vin>/images/
+        # -----------------------------
+        num_images = random.randint(1, 3)  # min. 1 żeby przetestować endpoint
+        files = []
+
+        for i in range(num_images):
+            img = Image.new("RGB", (200, 200),
+                            color=(random.randint(0, 255),
+                                   random.randint(0, 255),
+                                   random.randint(0, 255)))
+            img_bytes = io.BytesIO()
+            img.save(img_bytes, format="JPEG")
+            img_bytes.seek(0)
+
+            files.append(("images", (f"car_img_{i}.jpg", img_bytes, "image/jpeg")))
+
+        img_response = self.client.post(
+            f"/api/vehicles/{vin}/images/",
+            files=files
+        )
+
+        if img_response.status_code in [200, 201]:
+            print(f"🖼️ Added {num_images} images for vehicle {vin}")
         else:
-            print(f"❌ Failed to refresh discussions: {response.status_code}, {response.text}")
+            print(f"❌ Failed to upload images for {vin}: {img_response.status_code}, {img_response.text}")
+
+
 
 
     @task()
@@ -156,9 +254,6 @@ class CarHistoryUser(HttpUser):
             print(f"❌ Failed to create comment: {response.status_code}, {response.text}")
 
     
-
-    
-
 """
 
     @task

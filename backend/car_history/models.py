@@ -14,12 +14,12 @@ import time, logging
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.keys import Keys
-from datetime import datetime
+from datetime import date, datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-from django.db.models import Count
+from django.db.models import Count, Sum, F
 
 logger = logging.getLogger(__name__)
 
@@ -243,12 +243,21 @@ class Comment(models.Model):
     Model komentarza do dyskusji na forum
     """
 
-    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE)
+    discussion = models.ForeignKey(Discussion, on_delete=models.CASCADE, related_name="comments")
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    likes_count = models.IntegerField(default=0)
-    dislikes_count = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    likes_count = models.IntegerField(default=0, db_index=True)
+    dislikes_count = models.IntegerField(default=0, db_index=True)
+    content_length = models.PositiveIntegerField(default=0, editable=False, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['discussion', '-created_at']),
+            models.Index(fields=['discussion', '-likes_count']),
+            models.Index(fields=['discussion', '-content_length']),
+            models.Index(fields=['author']),
+        ]
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -257,8 +266,11 @@ class Comment(models.Model):
         
         # Aktualizujemy last_activity dyskusji po dodaniu komentarza
         if is_new:
-            self.discussion.update_last_activity()
-            self.discussion.update_comment_count()
+            # inkrementacja liczby komentarzy w dyskusji i aktualizacja last_activity
+            Discussion.objects.filter(pk=self.discussion_id).update(
+                comments_count=F('comments_count') + 1,
+                last_activity=timezone.now()
+            )
            
 
     def update_votes_count(self):
@@ -432,7 +444,7 @@ class Vehicle(models.Model):
     body_color = models.CharField(default='Biały', choices=BODY_COLOR_CHOICES, verbose_name='Kolor nadwozia')
     interior_color = models.CharField(default='Czarny', choices=INTERIOR_COLOR_CHOICES, verbose_name='Kolor wnętrza')
     price = models.DecimalField(max_digits=8, default=0.0, decimal_places=2, editable=True, verbose_name='Cena (PLN)')
-    first_registration = models.DateField(default=timezone.now, blank=True, null=True, verbose_name='Data pierwszej rejestracji')
+    first_registration = models.DateField(default=timezone.localdate, blank=True, null=True, verbose_name='Data pierwszej rejestracji')
     location = models.CharField(default='', max_length=100, verbose_name='Lokalizacja')
     drive_type = models.CharField(default='FWD', max_length=10, choices=DRIVE_TYPE_CHOICES, verbose_name='Rodzaj napędu')
     transmission_type = models.CharField(default='Manualna', max_length=20, choices=TRANSMISSION_CHOICES, verbose_name='Skrzynia biegów')
@@ -440,6 +452,8 @@ class Vehicle(models.Model):
     registration = models.CharField(default='', verbose_name='Nr rejestracyjny')
     fuel_type = models.CharField(max_length=20, choices=FUEL_TYPES, default='', verbose_name='Typ paliwa')
     history_pdf = models.FileField(upload_to="pdf_exports/", null=True, blank=True)
+    images_count = models.PositiveIntegerField(default=0)
+
 
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)

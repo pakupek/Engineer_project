@@ -26,7 +26,13 @@ MEDIA_ROOT = '/app/backend/media'
 # URL do serwowania tych plików w przeglądarce
 MEDIA_URL = '/media/'
 
-TESTING = False
+# Celery settings
+CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+
+
+
+TESTING = True
 
 # Pobranie klucza API 
 APITUBE_KEY = os.getenv("APITUBE_KEY")

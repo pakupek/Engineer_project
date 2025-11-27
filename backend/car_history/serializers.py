@@ -348,10 +348,14 @@ class DiscussionSerializer(serializers.ModelSerializer):
         return [img.image.url for img in obj.images.all()]
 
     def get_user_vote(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return obj.get_user_vote(request.user)
+        if hasattr(obj, 'user_votes') and obj.user_votes:
+            vote = obj.user_votes[0]
+            if vote.likes:
+                return 'like'
+            elif vote.dislikes:
+                return 'dislike'
         return None
+
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
