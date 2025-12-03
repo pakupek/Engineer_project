@@ -66,7 +66,7 @@ from .pagination import CommentPagination, DiscussionPagination, TenPerPagePagin
 from .filters import DiscussionFilter
 from .utils import generate_verification_code
 from django.db.models import F, Prefetch
-from .tasks import send_verification_email_task
+from .tasks import send_verification_email_task, refresh_discussions_cache_task
 
 from django.contrib.staticfiles import finders
 
@@ -323,13 +323,40 @@ class DiscussionListCreateView(generics.ListCreateAPIView):
     filterset_class = DiscussionFilter
     parser_classes = [MultiPartParser, FormParser]
 
-    def get_queryset(self):
-        request_user = self.request.user
-        queryset = Discussion.objects.all().select_related('author').prefetch_related('images')
+    CACHE_KEY = "discussion_list"
+    CACHE_TTL = 30  # czas życia cache w sekundach
 
+    def _fetch_from_db(self):
+        """
+        Pobiera ogólny queryset z bazy danych (bez prefetch dla użytkownika)
+        """
+        queryset = Discussion.objects.all().select_related('author').prefetch_related('images')
+        return queryset
+
+    def get_queryset(self):
+        """
+        Pobiera queryset z cache lub z bazy jeśli cache nie istnieje.
+        Jeśli cache istnieje, odświeża go w tle.
+        Dodaje prefetch specyficzny dla zalogowanego użytkownika.
+        """
+        cached_queryset = cache.get(self.CACHE_KEY)
+        if cached_queryset:
+            # Odświeżanie cache w tle
+            try:
+                refresh_discussions_cache_task.delay()
+            except Exception:
+                pass
+            queryset = cached_queryset
+        else:
+            # Pobranie danych z bazy i zapis w cache
+            queryset = self._fetch_from_db()
+            cache.set(self.CACHE_KEY, queryset, self.CACHE_TTL)
+
+        # Prefetch dla zalogowanego użytkownika (votes i favorites)
+        request_user = self.request.user
         if request_user.is_authenticated:
             votes_prefetch = Prefetch(
-                'comments__votes',  # `comments` → related_name w Comment do Discussion
+                'comments__votes',
                 queryset=CommentStats.objects.filter(user=request_user),
                 to_attr='user_votes'
             )
@@ -338,12 +365,14 @@ class DiscussionListCreateView(generics.ListCreateAPIView):
                 queryset=DiscussionFavorite.objects.filter(user=request_user),
                 to_attr='user_favorites'
             )
-
             queryset = queryset.prefetch_related(votes_prefetch, favorites_prefetch)
 
         return queryset
 
     def perform_create(self, serializer):
+        """
+        Tworzenie dyskusji wraz z dodawaniem zdjęć
+        """
         discussion = serializer.save(author=self.request.user)
         images = self.request.FILES.getlist('images')
         if images:
@@ -352,6 +381,12 @@ class DiscussionListCreateView(generics.ListCreateAPIView):
                 for img in images[:5]
             ]
             DiscussionImage.objects.bulk_create(images_to_create)
+
+        # Po dodaniu nowej dyskusji odśwież cache w tle
+        try:
+            refresh_discussions_cache_task.delay()
+        except Exception:
+            pass
 
 
 
@@ -624,21 +659,26 @@ class SendVerificationCodeView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         email = serializer.validated_data['email']
+
         # W trybie testowym zawsze generujemy ten sam kod
         if getattr(settings, "TESTING", False):
             code = "123456"
         else:
             code = generate_verification_code()
-        
 
-        # zapis kodu w cache na 5 minut
+        # Zapis kodu w cache na 5 minut
         cache.set(f'verification_code_{email}', code, 300)
 
-        # Wysyłka maila przez Celery
+        # Wysyłka maila tylko w trybie produkcyjnym
         if not getattr(settings, "TESTING", False):
             send_verification_email_task.delay(email, code)
 
-        return Response({"message": "Kod weryfikacyjny wysłany"}, status=status.HTTP_200_OK)
+        # Response dla testów może zawierać kod (tylko w trybie TESTING)
+        response_data = {"message": "Kod weryfikacyjny wysłany"}
+        if getattr(settings, "TESTING", False):
+            response_data["verification_code"] = code  # opcjonalnie dla testów automatycznych
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer

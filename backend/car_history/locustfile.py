@@ -24,49 +24,90 @@ FUEL_TYPES = ['Benzyna', 'Diesel', 'Hybryda', 'Elektryczny', 'Benzyna+LPG', 'Ben
 LOCATIONS = ['Warszawa', 'Kraków', 'Wrocław', 'Poznań', 'Gdańsk', 'Łódź', 'Katowice', 'Szczecin']
 
 class CarHistoryUser(HttpUser):
-    wait_time = between(1, 3)
+    wait_time = between(2, 5)
     token = None
     token_expiry = 0
     discussions_cache = []
     created_categories = set()
     vehicle_created = False
     host = "http://localhost:8000"
+    
 
     def on_start(self):
         """Rejestracja i logowanie użytkownika przy starcie"""
+        self.username = ""
+        self.password =""
+        self.email = ""
+        self.phone_number = ""
+        self.register_user()
         self.login_user()
         self.comments_count = defaultdict(int)
         self.created_categories = set()
 
-    def login_user(self):
-        """Rejestracja/logowanie użytkownika i ustawienie tokenu"""
+    def register_user(self):
+        """Rejestracja nowego użytkownika"""
         rand_suffix = str(random.randint(1000, 9999))
-        email = f"user_{rand_suffix}@example.com"
-        username = f"user_{rand_suffix}"
-        phone_number = "+48123" + "".join([str(random.randint(0, 9)) for _ in range(6)])
-        password = "testpassword"
+        self.email = f"user_{rand_suffix}@example.com"
+        self.username = f"user_{rand_suffix}"
+        self.phone_number = "+48123" + "".join([str(random.randint(0, 9)) for _ in range(6)])
+        self.password = "testpassword"
 
-        self.client.post("/api/send-verification-code/", json={"email": email})
+        # Wysłanie kodu weryfikacyjnego
+        send_code_response = self.client.post("/api/send-verification-code/", json={"email": self.email})
+        
+        if send_code_response.status_code not in [200, 201]:
+            print(f"❌ Failed to send verification code: {send_code_response.text}")
+            return False
+
         verification_code = "123456"
 
-        self.client.post("/api/register/", json={
-            "username": username,
-            "email": email,
-            "phone_number": phone_number,
-            "password": password,
-            "password2": password,
+        # Rejestracja
+        response = self.client.post("/api/register/", json={
+            "username": self.username,
+            "email": self.email,
+            "phone_number": self.phone_number,
+            "password": self.password,
+            "password2": self.password,
             "verification_code": verification_code
         })
 
-        response = self.client.post("/api/login/", json={"username": username, "password": password})
-        if response.status_code == 200:
-            self.token = response.json()["access"]
-            self.client.headers.update({"Authorization": f"Bearer {self.token}"})
-            self.token_expiry = time.time() + 20 * 60
-            print("✅ Logged in")
+        if response.status_code == 201:
+            print(f"✅ User registered: {self.username}")
+            return True
         else:
-            print("❌ LOGIN FAILED:", response.text)
-            self.token = None
+            print(f"❌ REGISTRATION FAILED: {response.status_code}, {response.text}")
+            return False
+
+    def login_user(self):
+        """Logowanie użytkownika i ustawienie tokenu"""
+        # Sprawdź czy mamy dane do logowania
+        if not self.username or not self.password:
+            print("❌ No credentials available for login")
+            return False
+
+        response = self.client.post("/api/login/", json={
+            "username": self.username,
+            "password": self.password
+        })
+
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                self.token = data["access"]
+                self.client.headers.update({"Authorization": f"Bearer {self.token}"})
+                self.token_expiry = time.time() + 20 * 60
+                print(f"✅ Logged in: {self.username}")
+                return True
+            except Exception as e:
+                print(f"❌ Failed to parse login response: {e}")
+                return False
+        else:
+            print(f"❌ LOGIN FAILED ({response.status_code}): {response.text}")
+            # Jeśli logowanie nie powiodło się, spróbuj ponownej rejestracji
+            print("🔄 Attempting to re-register user...")
+            if self.register_user():
+                return self.login_user()
+            return False
 
 
     def ensure_token_valid(self):
@@ -252,175 +293,3 @@ class CarHistoryUser(HttpUser):
             self.login_user()
         else:
             print(f"❌ Failed to create comment: {response.status_code}, {response.text}")
-
-    
-"""
-
-    @task
-    def some_task(self):
-        # przykładowy endpoint testowy
-        self.client.get("/api/profile/")
-
-    @task()
-    def list_discussions(self):
-        self.client.get("/api/discussions/")
-
-    @task(1)
-        def logout(self):
-            if self.token:
-                self.client.headers.pop("Authorization", None)
-                self.token = None
-                print("🔒 User logged out")
-    @task
-    def refresh_token(self):
-        if self.token:
-            self.client.post("/token/refresh/", json={"refresh": self.token})
-
-    @task
-    def check_auth(self):
-        self.client.get("/auth/check/")
-
-    @task
-    def profile(self):
-        self.client.get("/profile/")
-
-    @task
-    def list_users(self):
-        self.client.get("/users/")
-
-
-    
-
-    @task
-    def discussion_detail(self):
-        self.client.get(f"/discussions/{random_id()}/")
-
-    @task
-    def vote_discussion(self):
-        self.client.post(f"/discussions/{random_id()}/vote/", json={"vote": "up"})
-
-    @task
-    def favorite_discussion(self):
-        self.client.post(f"/discussions/{random_id()}/favorite/")
-
-    @task
-    def discussion_comments(self):
-        self.client.get(f"/discussions/{random_id()}/comments/")
-
-    @task
-    def close_discussion(self):
-        self.client.post(f"/discussions/{random_id()}/close/")
-
-  
-    @task
-    def vote_comment(self):
-        self.client.post(f"/comments/{random_id()}/vote/", json={"vote": "up"})
-
-  
-    @task
-    def list_messages(self):
-        self.client.get("/messages/")
-
-    @task
-    def unread_messages(self):
-        self.client.get("/messages/unread-count/")
-
-    @task
-    def conversation(self):
-        self.client.get(f"/messages/conversation/{random_id()}/")
-
-    @task
-    def mark_as_read(self):
-        self.client.post(f"/messages/{random_id()}/mark-read/")
-
- 
-    @task
-    def create_vehicle(self):
-        vin = random_vin()
-        self.client.post("/vehicles/create/", json={
-            "vin": vin,
-            "make": "Test",
-            "model": "Model",
-            "year": 2020
-        })
-
-    @task
-    def list_vehicles(self):
-        self.client.get("/vehicles/")
-
-    @task
-    def my_vehicles(self):
-        self.client.get("/vehicles/my-vehicles/")
-
-    @task
-    def vehicles_for_sale(self):
-        self.client.get("/vehicles/for-sale/")
-
-    @task
-    def vehicle_detail(self):
-        vin = random_vin()
-        self.client.get(f"/vehicles/{vin}/")
-
-    @task
-    def vehicle_history_pdf(self):
-        vin = random_vin()
-        self.client.get(f"/vehicles/{vin}/history/pdf/")
-
-    @task
-    def delete_vehicle(self):
-        vin = random_vin()
-        self.client.delete(f"/vehicles/{vin}/delete/")
-
-    @task
-    def vehicle_images(self):
-        vin = random_vin()
-        self.client.get(f"/vehicles/{vin}/images/")
-
-    @task
-    def vehicle_history(self):
-        vin = random_vin()
-        self.client.get(f"/vehicle-history/{vin}/")
-
-    @task
-    def makes(self):
-        self.client.get("/makes/")
-
-    @task
-    def models(self):
-        self.client.get("/models/")
-
-    @task
-    def generations(self):
-        self.client.get("/generations/")
-
-  
-    @task
-    def service_entry(self):
-        self.client.get(f"/service-entry/{random_vin()}/")
-
-    @task
-    def service_entry_detail(self):
-        self.client.get(f"/service-entry/{random_vin()}/{random_id()}/")
-
-    
-    @task
-    def damage_entry(self):
-        self.client.get(f"/damage-entry/{random_vin()}/")
-
-    @task
-    def damage_entry_detail(self):
-        self.client.get(f"/damage-entry/{random_vin()}/{random_id()}/")
-
-
-    @task
-    def sales(self):
-        self.client.get("/sales/")
-
-    @task
-    def sale_detail(self):
-        self.client.get(f"/sales/{random_id()}/")
-
-
-    @task
-    def automotive_news(self):
-        self.client.get("/automotive-news/")"""
