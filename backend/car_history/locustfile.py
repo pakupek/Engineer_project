@@ -14,7 +14,7 @@ def random_phone():
     return "+48123" + "".join([str(random.randint(0, 9)) for _ in range(6)])
 
 CATEGORY_CHOICES = [
-    'OGOLNE', 'TECHNICZNE'
+    'OGOLNE', 'TECHNICZNE', 'PORADY','RECENZJE','TUNING','ELEKTRO','HISTORIA'
 ]
 BODY_COLOR_CHOICES = ['Czarny', 'Biały', 'Srebrny', 'Szary', 'Czerwony', 'Niebieski', 'Zielony', 'Beżowy', 'Żółty']
 INTERIOR_COLOR_CHOICES = ['Czarny', 'Beżowy', 'Szary', 'Brązowy', 'Biały', 'Czerwony']
@@ -44,6 +44,7 @@ class CarHistoryUser(HttpUser):
         self.comments_count = defaultdict(int)
         self.created_categories = set()
 
+
     def register_user(self):
         """Rejestracja nowego użytkownika"""
         rand_suffix = str(random.randint(1000, 9999))
@@ -72,11 +73,11 @@ class CarHistoryUser(HttpUser):
         })
 
         if response.status_code == 201:
-            print(f"✅ User registered: {self.username}")
             return True
         else:
             print(f"❌ REGISTRATION FAILED: {response.status_code}, {response.text}")
             return False
+
 
     def login_user(self):
         """Logowanie użytkownika i ustawienie tokenu"""
@@ -96,28 +97,27 @@ class CarHistoryUser(HttpUser):
                 self.token = data["access"]
                 self.client.headers.update({"Authorization": f"Bearer {self.token}"})
                 self.token_expiry = time.time() + 20 * 60
-                print(f"✅ Logged in: {self.username}")
                 return True
+            
             except Exception as e:
                 print(f"❌ Failed to parse login response: {e}")
                 return False
         else:
             print(f"❌ LOGIN FAILED ({response.status_code}): {response.text}")
             # Jeśli logowanie nie powiodło się, spróbuj ponownej rejestracji
-            print("🔄 Attempting to re-register user...")
             if self.register_user():
                 return self.login_user()
             return False
 
 
     def ensure_token_valid(self):
-        """Sprawdza, czy token wygasł, jeśli tak – logowanie ponownie"""
+        """Sprawdza, czy token wygasł"""
         if not self.token or time.time() >= self.token_expiry:
-            print("⏳ Token wygasł – ponowne logowanie")
             self.login_user()
 
+
     def refresh_discussions(self):
-        """Pobiera aktualną listę dyskusji z API — bezpiecznie."""
+        """Pobiera aktualną listę dyskusji z API"""
         self.ensure_token_valid()
         response = self.client.get("/api/discussions/")
 
@@ -131,13 +131,13 @@ class CarHistoryUser(HttpUser):
             print(f"❌ Invalid JSON from /api/discussions/: {response.text}")
             return
 
-        # --- Obsługa paginacji / results / listy ---
+        # Obsługa paginacji 
         if isinstance(data, list):
             self.discussions_cache = [d["id"] for d in data if "id" in d]
             return
 
         if isinstance(data, dict):
-            # API paginowane przez DRF (results)
+            # API paginowane przez DRF
             if "results" in data and isinstance(data["results"], list):
                 self.discussions_cache = [d["id"] for d in data["results"] if "id" in d]
                 return
@@ -148,20 +148,17 @@ class CarHistoryUser(HttpUser):
         print(f"❌ Unexpected response type from discussions: {type(data)} -> {data}")
 
 
-
     @task()
     def create_vehicle(self):
         """Tworzenie pojazdu oraz dodawanie zdjęć przez osobny endpoint"""
         if self.vehicle_created:
             return
+        
         self.ensure_token_valid()
-
         vin = random_vin()
         rand_suffix = str(random.randint(1000, 9999))
 
-        # -----------------------------
-        # 1️⃣ Tworzenie pojazdu
-        # -----------------------------
+        # Tworzenie pojazdu
         data = {
             "vin": vin,
             "brand": f"Marka{rand_suffix}",
@@ -186,12 +183,10 @@ class CarHistoryUser(HttpUser):
             print(f"❌ Failed to create vehicle {vin}: {response.status_code}, {response.text}")
             return
 
-        print(f"🚗 Vehicle created: {vin}")
         self.vehicle_created = True
-        # -----------------------------
-        # 2️⃣ Dodawanie zdjęć przez /api/vehicle/<vin>/images/
-        # -----------------------------
-        num_images = random.randint(1, 3)  # min. 1 żeby przetestować endpoint
+
+        # Dodawanie zdjęć przez /api/vehicle/<vin>/images/
+        num_images = random.randint(1, 3)
         files = []
 
         for i in range(num_images):
@@ -210,17 +205,14 @@ class CarHistoryUser(HttpUser):
             files=files
         )
 
-        if img_response.status_code in [200, 201]:
-            print(f"🖼️ Added {num_images} images for vehicle {vin}")
-        else:
+        if img_response.status_code not in [200, 201]:
             print(f"❌ Failed to upload images for {vin}: {img_response.status_code}, {img_response.text}")
-
-
 
 
     @task()
     def create_discussion_with_images(self):
-        self.refresh_discussions()  # odświeżenie bazy przy każdej próbie
+        """ Tworzenie dyskusji z losową kategorią i obrazkami """
+        self.refresh_discussions() 
         remaining_categories = [c for c in CATEGORY_CHOICES if c not in self.created_categories]
         if not remaining_categories:
             return
@@ -230,8 +222,8 @@ class CarHistoryUser(HttpUser):
         title = f"{category.capitalize()} Discussion {rand_suffix}"
         content = f"Treść testowej dyskusji {rand_suffix} w kategorii {category}"
         num_images = random.randint(0, 3)
-
         files = []
+
         for i in range(num_images):
             img = Image.new("RGB", (100, 100),
                             color=(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
@@ -247,31 +239,34 @@ class CarHistoryUser(HttpUser):
         }
 
         response = self.client.post("/api/discussions/", data=data, files=files)
+
         if response.status_code in [200, 201]:
-            print(f"✅ Created discussion in category {category}")
             self.created_categories.add(category)
+
         elif response.status_code == 401:
             self.login_user()
+
         else:
             print(f"❌ Failed to create discussion: {response.status_code}, {response.text}")
 
     @task()
     def create_comment(self):
-        self.refresh_discussions()  # odświeżenie bazy przy każdej próbie
+        """ Tworzenie komentarza w losowej dyskusji z obrazkami """
+        self.refresh_discussions()
         if not self.discussions_cache:
             return
 
         # wybierz dyskusję, w której jeszcze nie dodano komentarza przez tego użytkownika
-        available_discussions = [d for d in self.discussions_cache if self.comments_count[d] == 0]
+        available_discussions = [d for d in self.discussions_cache if self.comments_count[d] < 3]
         if not available_discussions:
             return
 
         discussion_id = random.choice(available_discussions)
         rand_suffix = str(random.randint(1000, 9999))
         content = f"Testowy komentarz {rand_suffix}"
-
         num_images = random.randint(0, 3)
         files = []
+
         for i in range(num_images):
             img = Image.new("RGB", (100, 100),
                             color=(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
@@ -287,9 +282,10 @@ class CarHistoryUser(HttpUser):
         )
 
         if response.status_code in [200, 201]:
-            self.comments_count[discussion_id] = 1
-            print(f"✅ Comment created for discussion {discussion_id} ({num_images} images)")
+            self.comments_count[discussion_id] += 1
+
         elif response.status_code == 401:
             self.login_user()
+
         else:
             print(f"❌ Failed to create comment: {response.status_code}, {response.text}")
