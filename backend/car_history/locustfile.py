@@ -14,7 +14,8 @@ def random_phone():
     return "+48123" + "".join([str(random.randint(0, 9)) for _ in range(6)])
 
 CATEGORY_CHOICES = [
-    'OGOLNE', 'TECHNICZNE', 'PORADY','RECENZJE','TUNING','ELEKTRO','HISTORIA'
+    'OGOLNE', 'TECHNICZNE', 'PORADY', 'RECENZJE',
+    'TUNING', 'ELEKTRO', 'HISTORIA'
 ]
 BODY_COLOR_CHOICES = ['Czarny', 'Biały', 'Srebrny', 'Szary', 'Czerwony', 'Niebieski', 'Zielony', 'Beżowy', 'Żółty']
 INTERIOR_COLOR_CHOICES = ['Czarny', 'Beżowy', 'Szary', 'Brązowy', 'Biały', 'Czerwony']
@@ -23,46 +24,41 @@ TRANSMISSION_CHOICES = ['Manualna', 'Automatyczna', 'Półautomatyczna', 'CVT', 
 FUEL_TYPES = ['Benzyna', 'Diesel', 'Hybryda', 'Elektryczny', 'Benzyna+LPG', 'Benzyna+CNG']
 LOCATIONS = ['Warszawa', 'Kraków', 'Wrocław', 'Poznań', 'Gdańsk', 'Łódź', 'Katowice', 'Szczecin']
 
+
 class CarHistoryUser(HttpUser):
     wait_time = between(2, 5)
     token = None
     token_expiry = 0
-    discussions_cache = []
-    created_categories = set()
     vehicle_created = False
     host = "http://localhost:8000"
-    
 
     def on_start(self):
-        """Rejestracja i logowanie użytkownika przy starcie"""
         self.username = ""
-        self.password =""
+        self.password = ""
         self.email = ""
         self.phone_number = ""
+
         self.register_user()
         self.login_user()
-        self.comments_count = defaultdict(int)
-        self.created_categories = set()
 
+        self.created_categories = set()
+        self.comments_count = defaultdict(int)
 
     def register_user(self):
-        """Rejestracja nowego użytkownika"""
         rand_suffix = str(random.randint(1000, 9999))
         self.email = f"user_{rand_suffix}@example.com"
         self.username = f"user_{rand_suffix}"
         self.phone_number = "+48123" + "".join([str(random.randint(0, 9)) for _ in range(6)])
         self.password = "testpassword"
 
-        # Wysłanie kodu weryfikacyjnego
         send_code_response = self.client.post("/api/send-verification-code/", json={"email": self.email})
-        
+
         if send_code_response.status_code not in [200, 201]:
             print(f"❌ Failed to send verification code: {send_code_response.text}")
             return False
 
         verification_code = "123456"
 
-        # Rejestracja
         response = self.client.post("/api/register/", json={
             "username": self.username,
             "email": self.email,
@@ -74,14 +70,13 @@ class CarHistoryUser(HttpUser):
 
         if response.status_code == 201:
             return True
+        
         else:
             print(f"❌ REGISTRATION FAILED: {response.status_code}, {response.text}")
             return False
 
 
     def login_user(self):
-        """Logowanie użytkownika i ustawienie tokenu"""
-        # Sprawdź czy mamy dane do logowania
         if not self.username or not self.password:
             print("❌ No credentials available for login")
             return False
@@ -98,59 +93,48 @@ class CarHistoryUser(HttpUser):
                 self.client.headers.update({"Authorization": f"Bearer {self.token}"})
                 self.token_expiry = time.time() + 20 * 60
                 return True
-            
+
             except Exception as e:
                 print(f"❌ Failed to parse login response: {e}")
                 return False
+
         else:
             print(f"❌ LOGIN FAILED ({response.status_code}): {response.text}")
-            # Jeśli logowanie nie powiodło się, spróbuj ponownej rejestracji
             if self.register_user():
                 return self.login_user()
             return False
 
 
     def ensure_token_valid(self):
-        """Sprawdza, czy token wygasł"""
         if not self.token or time.time() >= self.token_expiry:
             self.login_user()
 
 
-    def refresh_discussions(self):
-        """Pobiera aktualną listę dyskusji z API"""
+    def fetch_discussions(self):
         self.ensure_token_valid()
         response = self.client.get("/api/discussions/")
 
         if response.status_code == 401:
             self.login_user()
-            return
+            return []
 
         try:
             data = response.json()
         except Exception:
             print(f"❌ Invalid JSON from /api/discussions/: {response.text}")
-            return
+            return []
 
-        # Obsługa paginacji 
         if isinstance(data, list):
-            self.discussions_cache = [d["id"] for d in data if "id" in d]
-            return
+            return [d.get("id") for d in data if "id" in d]
 
-        if isinstance(data, dict):
-            # API paginowane przez DRF
-            if "results" in data and isinstance(data["results"], list):
-                self.discussions_cache = [d["id"] for d in data["results"] if "id" in d]
-                return
+        if isinstance(data, dict) and "results" in data:
+            return [d.get("id") for d in data["results"] if "id" in d]
 
-            print(f"❌ Unexpected dict response: {data}")
-            return
-
-        print(f"❌ Unexpected response type from discussions: {type(data)} -> {data}")
+        return []
 
 
     @task()
     def create_vehicle(self):
-        """Tworzenie pojazdu oraz dodawanie zdjęć przez osobny endpoint"""
         if self.vehicle_created:
             return
         
@@ -158,7 +142,6 @@ class CarHistoryUser(HttpUser):
         vin = random_vin()
         rand_suffix = str(random.randint(1000, 9999))
 
-        # Tworzenie pojazdu
         data = {
             "vin": vin,
             "brand": f"Marka{rand_suffix}",
@@ -184,20 +167,15 @@ class CarHistoryUser(HttpUser):
             return
 
         self.vehicle_created = True
-
-        # Dodawanie zdjęć przez /api/vehicle/<vin>/images/
         num_images = random.randint(1, 3)
         files = []
 
         for i in range(num_images):
             img = Image.new("RGB", (200, 200),
-                            color=(random.randint(0, 255),
-                                   random.randint(0, 255),
-                                   random.randint(0, 255)))
+                            color=(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
             img_bytes = io.BytesIO()
             img.save(img_bytes, format="JPEG")
             img_bytes.seek(0)
-
             files.append(("images", (f"car_img_{i}.jpg", img_bytes, "image/jpeg")))
 
         img_response = self.client.post(
@@ -211,13 +189,13 @@ class CarHistoryUser(HttpUser):
 
     @task()
     def create_discussion_with_images(self):
-        """ Tworzenie dyskusji z losową kategorią i obrazkami """
-        self.refresh_discussions() 
-        remaining_categories = [c for c in CATEGORY_CHOICES if c not in self.created_categories]
-        if not remaining_categories:
+        """Każdy użytkownik tworzy po 1 dyskusji z każdej kategorii."""
+        remaining = [c for c in CATEGORY_CHOICES if c not in self.created_categories]
+
+        if not remaining:
             return
 
-        category = random.choice(remaining_categories)
+        category = random.choice(remaining)
         rand_suffix = str(random.randint(1000, 9999))
         title = f"{category.capitalize()} Discussion {rand_suffix}"
         content = f"Treść testowej dyskusji {rand_suffix} w kategorii {category}"
@@ -251,17 +229,16 @@ class CarHistoryUser(HttpUser):
 
     @task()
     def create_comment(self):
-        """ Tworzenie komentarza w losowej dyskusji z obrazkami """
-        self.refresh_discussions()
-        if not self.discussions_cache:
+        discussions = self.fetch_discussions()
+        if not discussions:
             return
 
-        # wybierz dyskusję, w której jeszcze nie dodano komentarza przez tego użytkownika
-        available_discussions = [d for d in self.discussions_cache if self.comments_count[d] < 3]
-        if not available_discussions:
+        available = [d for d in discussions if self.comments_count[d] < 3]
+
+        if not available:
             return
 
-        discussion_id = random.choice(available_discussions)
+        discussion_id = random.choice(available)
         rand_suffix = str(random.randint(1000, 9999))
         content = f"Testowy komentarz {rand_suffix}"
         num_images = random.randint(0, 3)
@@ -281,11 +258,11 @@ class CarHistoryUser(HttpUser):
             files=files
         )
 
-        if response.status_code in [200, 201]:
-            self.comments_count[discussion_id] += 1
-
-        elif response.status_code == 401:
+        if response.status_code == 401:
             self.login_user()
+
+        elif response.status_code in [200, 201]:
+            self.comments_count[discussion_id] += 1
 
         else:
             print(f"❌ Failed to create comment: {response.status_code}, {response.text}")
