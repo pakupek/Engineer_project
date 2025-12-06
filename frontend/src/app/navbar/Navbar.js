@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { authService, getCurrentUser } from '../Services/auth';
+import Image from "next/image";
 
 export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -76,28 +77,8 @@ export default function Navbar() {
     setIsDropdownOpen(false);
   };
 
-  const getUserInitials = () => {
-    if (!user) return 'U';
-    
-    const firstName = user.first_name || '';
-    const lastName = user.last_name || '';
-    
-    if (firstName && lastName) {
-      return `${firstName[0]}${lastName[0]}`.toUpperCase();
-    }
-    
-    if (user.username) {
-      return user.username[0].toUpperCase();
-    }
-    
-    if (user.email) {
-      return user.email[0].toUpperCase();
-    }
-    
-    return 'U';
-  };
 
-  // Funkcja do ręcznego wywołania aktualizacji (można wywołać z innych komponentów)
+  // Funkcja do ręcznego wywołania aktualizacji
   const refreshAuthStatus = () => {
     checkAuthStatus();
   };
@@ -107,7 +88,8 @@ export default function Navbar() {
     if (typeof window !== 'undefined') {
       window.refreshNavbar = refreshAuthStatus;
     }
-  }, []);
+  }, [refreshAuthStatus]);
+
   
   return (
     <main>
@@ -116,12 +98,18 @@ export default function Navbar() {
           <div className="container">
             <div className="navbar-brand">
               <span className="navbar-logo">
-                <a href="/home">
-                  <img src="/images/logo.jpg" style={{ height: '4.3rem', borderRadius: '2rem' }} alt="GaraZero"/>
-                </a>
+                <Link href="/home">
+                  <Image
+                    src="/images/logo.jpg"
+                    alt="GaraZero"
+                    width={69}
+                    height={69}
+                    style={{ borderRadius: '2rem' }}
+                  />
+                </Link>
               </span>
               <span className="navbar-caption-wrap">
-                <a className="navbar-caption text-black display-4" href="/home">GaraZero</a>
+                <Link className="navbar-caption text-black display-4" href="/home">GaraZero</Link>
               </span>
             </div>
             
@@ -141,16 +129,16 @@ export default function Navbar() {
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
               <ul className="navbar-nav nav-dropdown nav-right me-auto" data-app-modern-menu="true">
                 <li className="nav-item">
-                  <a className="nav-link link text-black display-4" href="/home">Strona główna</a>
+                  <Link className="nav-link link text-black display-4" href="/home">Strona główna</Link>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link link text-black display-4" href="/Forum">Forum</a>
+                  <Link className="nav-link link text-black display-4" href="/Forum">Forum</Link>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link link text-black display-4" href="/messages">Wiadomości</a>
+                  <Link className="nav-link link text-black display-4" href="/messages">Wiadomości</Link>
                 </li>
                 <li className="nav-item">
-                  <a className="nav-link link text-black display-4" href="/marketplace">Ogłoszenia</a>
+                  <Link className="nav-link link text-black display-4" href="/marketplace">Ogłoszenia</Link>
                 </li>
               </ul>
 
@@ -164,14 +152,18 @@ export default function Navbar() {
                       onClick={toggleDropdown}
                       onMouseEnter={() => setIsDropdownOpen(true)}
                     >
-                      {user?.avatar ? (
-                        <img 
-                          src={user.avatar}  
-                          alt="Avatar" 
-                          style={{ width: '40px', height: '40px', borderRadius: '50%' }} 
+                      {user ? (
+                        <img
+                          src={user.avatar}
+                          alt="Avatar"
+                          style={{ width: '40px', height: '40px', borderRadius: '50%' }}
                         />
                       ) : (
-                        <span>{getUserInitials()}</span>
+                        <img
+                          src="/default-avatar.png"
+                          alt="Default Avatar"
+                          style={{ width: '40px', height: '40px', borderRadius: '50%' }}
+                        />
                       )}
                     </button>
 
@@ -228,8 +220,8 @@ export default function Navbar() {
                 ) : (
                   // Dla niezalogowanych użytkowników - przyciski logowania i rejestracji
                   <div className="auth-buttons">
-                    <a className="btn btn-primary display-4 login-btn" href="/login">Logowanie</a>
-                    <a className="btn btn-primary display-4 register-btn" href="/register">Rejestracja</a>
+                    <Link className="btn btn-primary display-4 login-btn" href="/login">Logowanie</Link>
+                    <Link className="btn btn-primary display-4 register-btn" href="/register">Rejestracja</Link>
                   </div>
                 )}
               </div>

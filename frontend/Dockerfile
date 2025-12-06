@@ -2,10 +2,14 @@ FROM node:22-alpine
 
 WORKDIR /app/frontend
 
+# Ensure latest OS packages to reduce known vulnerabilities
+RUN apk update && apk upgrade --no-cache
+
 COPY package.json package-lock.json ./
 
 # Addet --legacy-peer-deps to ignore version conflicts
-RUN npm install --legacy-peer-deps
+# Use npm ci for a reproducible, lockfile-driven install
+RUN npm ci --legacy-peer-deps
 
 COPY . ./
 

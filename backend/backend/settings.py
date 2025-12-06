@@ -32,7 +32,7 @@ CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 
 
 
-TESTING = True
+TESTING = False
 
 # Pobranie klucza API 
 APITUBE_KEY = os.getenv("APITUBE_KEY")

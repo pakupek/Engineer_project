@@ -3,6 +3,7 @@
 import React from "react";
 import styles from "./UserVehiclesSaleCard.module.css";
 import { getToken } from "../Services/auth";
+import Image from "next/image";
 
 export default function VehicleSaleCard({ sale, onDelete }) {
   const v = sale.vehicle_info;
@@ -34,11 +35,19 @@ export default function VehicleSaleCard({ sale, onDelete }) {
   return (
     <div className={styles.card}>
         <div className={styles.imageWrapper}>
-            {sale.vehicle_info?.images?.length > 0 ? (
-            <img src={sale.vehicle_info.images[0]} alt={sale.title} />
-            ) : (
+          {sale.vehicle_info?.images?.length > 0 ? (
+            <Image
+              src={sale.vehicle_info.images[0]}
+              alt={sale.title}
+              width={300}       // dopasuj do stylów wrappera
+              height={200}      // dopasuj do stylów wrappera
+              className={styles.image}
+              objectFit="cover" // zachowanie proporcji i przycięcie w razie potrzeby
+              priority={true}   // jeśli to obraz powyżej folda
+            />
+          ) : (
             <div className={styles.noImage}>Brak zdjęcia</div>
-            )}
+          )}
         </div>
 
         <div className={styles.info}>
