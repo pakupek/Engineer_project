@@ -53,15 +53,14 @@ EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 SECRET_KEY = 'django-insecure-#j5l7mv-4a$5wsy15np2j^#yjn2^d30egulwbcz4e(ho1x*jg@'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
-    '82.139.134.185',  # Twój adres IP
-    'localhost',       # Dla rozwoju lokalnego
-    '127.0.0.1',       # Dla rozwoju lokalnego
+    'localhost',      
+    '127.0.0.1',       
     'dev-django',
-    '82.139.169.143',
-    'engineer-project.onrender.com'
+    'engineer-project.onrender.com',
+    'frontend-okdn.onrender.com'
 ]
 AUTH_USER_MODEL = 'car_history.User'
 
@@ -123,11 +122,13 @@ SIMPLE_JWT = {
 
 # Konfiguracja CORS
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # Adres Twojej aplikacji Next.js
+    "http://localhost:3000",
+    "https://frontend-okdn.onrender.com"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
+    "https://frontend-okdn.onrender.com"
 ]
 
 
