@@ -23,7 +23,7 @@ RUN python -m pip install --upgrade pip \
     && poetry install --only main --no-interaction --no-root
 
 # Copy the rest of the project including entrypoint.sh
-COPY . .
+COPY backend/ ./
 
 # Fix line endings and permissions for entrypoint
 RUN dos2unix entrypoint.sh \
