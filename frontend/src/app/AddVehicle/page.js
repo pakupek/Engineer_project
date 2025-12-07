@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getToken } from "@/app/Services/auth";
+import { getToken } from '@/Services/auth';
 import styles from "./AddVehicle.module.css"
 import DashboardLayout from '../DashboardLayout/page';
 

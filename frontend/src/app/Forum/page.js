@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "./Forum.css";
-import { getToken } from "../Services/auth.js";
+import { getToken } from '@/Services/auth';
 
 export default function Forum() {
     const [threads, setThreads] = useState([]);

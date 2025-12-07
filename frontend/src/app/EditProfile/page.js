@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { authService, logout } from "../Services/auth.js";
+import { authService, logout } from '@/Services/auth';
 import styles from "./EditProfile.module.css";
 import DashboardLayout from "../DashboardLayout/page";
 
