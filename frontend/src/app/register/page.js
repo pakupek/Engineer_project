@@ -53,7 +53,7 @@ export default function Register() {
     }
 
     try {
-      const res = await fetch("http://localhost:8000/api/send-verification-code/", {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/api/send-verification-code/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email })
