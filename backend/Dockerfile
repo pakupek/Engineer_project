@@ -16,6 +16,7 @@ RUN apt-get update \
     && apt-get clean
 
 COPY backend/pyproject.toml backend/poetry.lock ./
+COPY backend/entrypoint.sh ./
 
 RUN python -m pip install --upgrade pip \
     && pip install --no-cache-dir poetry \
