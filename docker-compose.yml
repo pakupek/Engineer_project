@@ -96,13 +96,10 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "10000:10000"
     environment:
       - NODE_ENV=production
       - PORT=10000
-    volumes:
-      - ./frontend:/app/frontend
-      - /app/frontend/node_modules
     networks:
       - app-network
 
