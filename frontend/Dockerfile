@@ -33,4 +33,4 @@ COPY --from=builder /app/package.json ./package.json
 EXPOSE 3000
 
 # Użyj wbudowanego serwera Next.js
-CMD ["npm", "start"]
+CMD ["npx", "next", "start"]
