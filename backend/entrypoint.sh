@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e  # zatrzymaj przy pierwszym błędzie
+
 echo "Makemigrations"
 poetry run python manage.py makemigrations --noinput
 echo "==============================="
@@ -12,4 +14,8 @@ poetry run python manage.py load_vehicles
 echo "==============================="
 
 echo "Start server"
-exec poetry run python manage.py runserver 0.0.0.0:8000
+# Gunicorn: 4 workerów, bind do portu Render
+exec poetry run gunicorn backend.wsgi:application \
+    --bind 0.0.0.0:${PORT:-8000} \
+    --workers 4 \
+    --log-level info
