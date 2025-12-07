@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8000/api/";
+const API_URL = process.env.NEXT_PUBLIC_API_URL + "/api/";
 
 // Konfiguracja axios z interceptors
 const api = axios.create({
@@ -99,7 +99,7 @@ export const authService = {
   // Logowanie
   async login(email, password) {
     try {
-      const response = await api.post('http://localhost:8000/api/login/', { 
+      const response = await api.post(API_URL + "login/", { 
         username: email, // Django często używa username zamiast email
         password 
       });
@@ -118,7 +118,7 @@ export const authService = {
   // Rejestracja
   async register(userData) {
     try {
-      const response = await api.post('http://localhost:8000/api/register/', userData);
+      const response = await api.post(API_URL + "register/", userData);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data || 'Błąd rejestracji');
@@ -128,7 +128,7 @@ export const authService = {
   // Pobieranie profilu użytkownika
   async getProfile() {
     try {
-      const response = await api.get('http://localhost:8000/api/profile/');
+      const response = await api.get(API_URL + "profile/");
       return response.data;
     } catch (error) {
       throw new Error('Błąd pobierania profilu');
@@ -150,7 +150,7 @@ export const authService = {
       }
 
       const response = await api.patch(
-        "http://localhost:8000/api/profile/",
+        API_URL + "profile/",
         userData,
         config
       );
@@ -168,7 +168,7 @@ export const authService = {
   // Zmiana hasła
   async changePassword(passwordData) {
     try {
-      const response = await api.post('http://localhost:8000/api/change-password/', passwordData);
+      const response = await api.post(API_URL + "change-password/", passwordData);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data || 'Błąd zmiany hasła');
@@ -209,7 +209,7 @@ export const checkAuthStatus = async () => {
     }
 
     // Używamy endpointu profile do sprawdzenia autoryzacji
-    const response = await api.get('http://localhost:8000/api/profile/');
+    const response = await api.get(API_URL + "profile/");
 
     if (response.status === 200) {
       return { 
@@ -231,7 +231,7 @@ export const checkAuthStatus = async () => {
 
 export const getCurrentUser = async () => {
   try {
-    const response = await api.get('http://localhost:8000/api/profile/');
+    const response = await api.get(API_URL + "profile/");
     return response.data;
   } catch (error) {
     console.error('Error getting current user:', error);
@@ -265,7 +265,7 @@ export const userService = {
       const formData = new FormData();
       formData.append('avatar', file);
       
-      const response = await api.patch('http://localhost:8000/api/profile/', formData, {
+      const response = await api.patch(API_URL + "profile/", formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
