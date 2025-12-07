@@ -11,7 +11,7 @@ RUN apt-get update \
         dos2unix \
     && apt-get clean
 
-COPY pyproject.toml poetry.lock ./
+COPY backend/pyproject.toml backend/poetry.lock ./
 
 RUN python -m pip install --upgrade pip \
     && pip install --no-cache-dir poetry \
