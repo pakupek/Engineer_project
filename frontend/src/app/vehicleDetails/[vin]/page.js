@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { getToken } from "../../Services/auth";
+import { getToken } from "../../services/auth";
 import styles from "./VehicleDetails.module.css";
 import sectionStyle from "./SectionStyle.module.css"
 

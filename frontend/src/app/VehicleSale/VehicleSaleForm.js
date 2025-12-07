@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getToken } from "../Services/auth";
+import { getToken } from "../services/auth";
 import DamageHistory from "../VehicleDetails/[vin]/DamageHistory/DamageHistory";
 import ServiceEntriesList from "../VehicleDetails/[vin]/ServiceEntryList/ServiceEntryList";
 import style from "./VehicleSaleForm.module.css";

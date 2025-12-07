@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { getToken } from "../Services/auth";
+import { getToken } from "../services/auth";
 import UserVehiclesSaleCard from "./UserVehiclesSaleCard";
 import styles from "./UserVehicleSalesList.module.css";
 import { ChevronDown, ChevronUp } from "lucide-react";

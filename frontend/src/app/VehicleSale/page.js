@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { getToken } from "../Services/auth";
+import { getToken } from "../services/auth";
 
 export default function SaleForm({ vin, onSaleAdded }) {
   const [title, setTitle] = useState("");

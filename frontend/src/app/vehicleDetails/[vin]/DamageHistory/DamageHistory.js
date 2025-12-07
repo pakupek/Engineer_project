@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getToken } from "../../../Services/auth";
+import { getToken } from "../../../services/auth";
 import DamageHistoryForm from "./DamageHistoryForm";
 
 export default function DamageHistory({ onEditDamage }) {

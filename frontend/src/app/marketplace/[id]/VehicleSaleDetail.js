@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import styles from "./VehicleSaleDetail.module.css";
-import { getToken } from "../../Services/auth";
+import { getToken } from "../../services/auth";
 
 
 export default function VehicleSaleDetail({ saleId }) {

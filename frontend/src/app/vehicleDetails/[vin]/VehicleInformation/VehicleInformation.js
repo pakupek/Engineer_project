@@ -5,7 +5,7 @@ import "./VehicleInformation.css";
 import VehicleSaleForm from "../../../VehicleSale/VehicleSaleForm.js";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { getToken } from "../../../Services/auth";
+import { getToken } from "../../../services/auth";
 import EditVehicle from "../EditVehicle/EditVehicle.js";
 
 export function VehicleInformationOverlay({ car }){

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { getToken } from "../../../Services/auth";
+import { getToken } from "../../../services/auth";
 import DamageForm from "./DamageForm";
 
 export default function DamageFormContainer({ damageToEdit, onEditComplete}) {

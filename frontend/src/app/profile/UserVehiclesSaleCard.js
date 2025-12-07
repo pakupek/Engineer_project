@@ -2,7 +2,7 @@
 
 import React from "react";
 import styles from "./UserVehiclesSaleCard.module.css";
-import { getToken } from "../Services/auth";
+import { getToken } from "../services/auth";
 import Image from "next/image";
 
 export default function VehicleSaleCard({ sale, onDelete }) {

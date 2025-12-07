@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import AuthGuard from "../components/AuthGuard";
-import { getToken } from "../Services/auth";
+import { getToken } from "../services/auth";
 import styles from './Messages.module.css';
 
 // Funkcja do generowania UUID - używa wbudowanego crypto.randomUUID()

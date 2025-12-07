@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { checkAuthStatus } from "../Services/auth";
+import { checkAuthStatus } from "../services/auth";
 
 export default function AuthGuard({ children, requireAuth = true }) {
   const [isChecking, setIsChecking] = useState(true);

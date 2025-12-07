@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getToken } from "../../../Services/auth";
+import { getToken } from "../../../services/auth";
 import "./ServiceEntryList.css";
 
 export default function ServiceEntriesList({ vin, onEditEntry }) {
