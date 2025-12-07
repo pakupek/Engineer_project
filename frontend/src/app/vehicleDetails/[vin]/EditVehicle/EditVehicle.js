@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import styles from "./EditVehicle.module.css";
-import { getToken } from "@/app/Services/auth";
+import { getToken } from "@/services/auth";
 
 export default function EditVehicleModal({ vin, onClose, onUpdated }) {
   const [vehicle, setVehicle] = useState(null);

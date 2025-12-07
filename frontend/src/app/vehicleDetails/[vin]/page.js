@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { getToken } from "../../services/auth";
-import styles from "./VehicleDetails.module.css";
+import styles from "./vehicleDetails.module.css";
 import sectionStyle from "./SectionStyle.module.css"
 
 // Importy komponentów

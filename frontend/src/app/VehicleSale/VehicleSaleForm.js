@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { getToken } from "../services/auth";
-import DamageHistory from "../VehicleDetails/[vin]/DamageHistory/DamageHistory";
-import ServiceEntriesList from "../VehicleDetails/[vin]/ServiceEntryList/ServiceEntryList";
 import style from "./VehicleSaleForm.module.css";
 
 export default function VehicleSaleForm({ vin, onSaleCreated }) {
@@ -11,8 +9,6 @@ export default function VehicleSaleForm({ vin, onSaleCreated }) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [vehicleData, setVehicleData] = useState(null);
-  const [damageReloadKey, setDamageReloadKey] = useState(0);
-  const [serviceReloadKey, setServiceReloadKey] = useState(0);
 
   // Pobierz dane pojazdu
   useEffect(() => {
