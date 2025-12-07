@@ -22,13 +22,15 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-# PORT domyślnie 10000 dla Render
-ENV PORT=10000
-EXPOSE $PORT
 
-COPY --from=builder /app/.next/standalone ./
+# Kopiuj wszystko co potrzebne
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-# Uruchom Next.js standalone na porcie $PORT i bind na 0.0.0.0
-CMD ["node", "server.js"]
+# Next.js automatycznie użyje PORT z environment
+EXPOSE 3000
+
+# Użyj wbudowanego serwera Next.js
+CMD ["npm", "start"]
