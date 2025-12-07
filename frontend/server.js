@@ -13,6 +13,6 @@ app.prepare().then(() => {
     handle(req, res, parsedUrl);
   }).listen(port, '0.0.0.0', (err) => {   // <-- WAŻNE: bind na 0.0.0.0
     if (err) throw err;
-    console.log(`> Ready on http://0.0.0.0:${PORT}`);
+    console.log(`> Ready on http://0.0.0.0:${port}`);
   });
 });
