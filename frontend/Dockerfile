@@ -22,13 +22,13 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-# PORT domyślnie 3000 dla lokalnego testu, Render nadpisze
-ENV PORT=3000
+# PORT domyślnie 10000 dla Render
+ENV PORT=10000
 EXPOSE $PORT
 
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static
 
-# Start Next.js na porcie $PORT
-CMD ["sh", "-c", "node server.js -p $PORT"]
+# Uruchom Next.js standalone na porcie $PORT i bind na 0.0.0.0
+CMD ["node", "server.js"]
