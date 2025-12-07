@@ -16,6 +16,6 @@ echo "==============================="
 echo "Start server"
 # Gunicorn: 4 workerów, bind do portu Render
 exec poetry run gunicorn backend.wsgi:application \
-    --bind 0.0.0.0:${PORT:-8000} \
+    --bind 0.0.0.0:8000 \
     --workers 4 \
     --log-level info
