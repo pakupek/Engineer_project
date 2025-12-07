@@ -61,6 +61,7 @@ ALLOWED_HOSTS = [
     '127.0.0.1',       # Dla rozwoju lokalnego
     'dev-django',
     '82.139.169.143',
+    'engineer-project.onrender.com'
 ]
 AUTH_USER_MODEL = 'car_history.User'
 
