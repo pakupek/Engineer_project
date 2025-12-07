@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import VehicleList from './VehicleList';
-import { getToken } from "@/app/Services/auth.js";
+import { getToken } from "../Services/auth.js";
 import styles from './VehiclePage.module.css'; 
 import DashboardLayout from '../DashboardLayout/page';
 import VehicleFilters from './VehicleFilters';

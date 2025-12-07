@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import styles from "./ForumDetail.module.css";
-import { getToken, getCurrentUser } from "@/app/Services/auth.js";
+import { getToken, getCurrentUser } from "../Services/auth.js";
 
 export default function ForumDetailClient({ initialDiscussion, initialComments, discussionId }) {
   const [discussion, setDiscussion] = useState(initialDiscussion);
