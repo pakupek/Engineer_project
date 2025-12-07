@@ -96,10 +96,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "10000:10000"
+      - "3000:3000"
     environment:
       - NODE_ENV=production
-      - PORT=10000
       - NEXT_PUBLIC_API_URL=https://engineer-project.onrender.com
     networks:
       - app-network
