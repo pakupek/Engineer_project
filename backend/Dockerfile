@@ -7,7 +7,11 @@ ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
+        build-essential \
         libpq-dev \
+        libcairo2-dev \
+        pkg-config \
+        python3-dev \
         dos2unix \
     && apt-get clean
 
