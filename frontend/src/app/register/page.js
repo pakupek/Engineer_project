@@ -17,7 +17,7 @@ export default function Register() {
   const [verificationStep, setVerificationStep] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const router = useRouter();
-  const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://engineer-project.onrender.com';
 
   const validateForm = () => {
     const newErrors = {};
@@ -61,7 +61,7 @@ export default function Register() {
       });
 
       if (!res.ok) throw new Error("Błąd wysyłki kodu");
-
+      console.log('🔍 API_URL:', API_URL);
       setVerificationStep(true);
       alert("Kod weryfikacyjny został wysłany na Twój email");
     } catch (err) {
