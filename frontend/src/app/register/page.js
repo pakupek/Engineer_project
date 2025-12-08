@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authService } from "../services/auth";
 import styles from './Register.module.css';
 
 export default function Register() {
@@ -14,8 +13,6 @@ export default function Register() {
     password2: ""
   });
   const [errors, setErrors] = useState({});
-  const [verificationStep, setVerificationStep] = useState(false);
-  const [verificationCode, setVerificationCode] = useState("");
   const router = useRouter();
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://engineer-project.onrender.com';
 
@@ -45,39 +42,10 @@ export default function Register() {
     if (errors[field]) setErrors(prev => ({ ...prev, [field]: "" }));
   };
 
-  // Wyślij kod weryfikacyjny
-  const handleSendCode = async () => {
+  const handleRegister = async () => {
     const formErrors = validateForm();
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
-      return;
-    }
-
-    try {    
-      const res = await fetch(`${API_URL}/api/send-verification-code/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Błąd wysyłki kodu");
-      }
-
-      setVerificationStep(true);
-      alert("Kod weryfikacyjny został wysłany na Twój email");
-    } catch (err) {
-      console.error('❌ Błąd:', err);
-      alert(err.message);
-    }
-  };
-
-  // Rejestracja użytkownika po weryfikacji kodu
-  const handleRegister = async () => {
-    if (!verificationCode.trim()) {
-      setErrors({ verification_code: "Kod weryfikacyjny jest wymagany" });
       return;
     }
 
@@ -90,8 +58,7 @@ export default function Register() {
           email: form.email,
           phone_number: form.phone_number,
           password: form.password,
-          password2: form.password2,
-          verification_code: verificationCode
+          password2: form.password2
         })
       });
 
@@ -103,7 +70,6 @@ export default function Register() {
         if (data.email) throw new Error(data.email[0]);
         if (data.phone_number) throw new Error(data.phone_number[0]);
         if (data.password) throw new Error(data.password[0]);
-        if (data.verification_code) throw new Error(data.verification_code[0]);
         throw new Error(data.error || "Błąd rejestracji");
       }
 
@@ -124,82 +90,65 @@ export default function Register() {
             <form className={styles.registerForm} onSubmit={e => e.preventDefault()}>
               <h2 className={styles.registerTitle}>Rejestracja</h2>
 
-              {!verificationStep ? (
-                <div className={styles.inputGroup}>
-                  <div className={styles.inputField}>
-                    <input
-                      placeholder="Nazwa użytkownika"
-                      value={form.username}
-                      onChange={(e) => handleInputChange("username", e.target.value)}
-                      className={`${styles.registerInput} ${errors.username ? styles.inputError : ''}`}
-                    />
-                    {errors.username && <span className={styles.errorText}>{errors.username}</span>}
-                  </div>
-
-                  <div className={styles.inputField}>
-                    <input
-                      type="email"
-                      placeholder="Adres email"
-                      value={form.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
-                      className={`${styles.registerInput} ${errors.email ? styles.inputError : ''}`}
-                    />
-                    {errors.email && <span className={styles.errorText}>{errors.email}</span>}
-                  </div>
-
-                  <div className={styles.inputField}>
-                    <input
-                      type="tel"
-                      placeholder="Numer telefonu (np. +48 123 456 789)"
-                      value={form.phone_number}
-                      onChange={(e) => handleInputChange("phone_number", e.target.value)}
-                      className={`${styles.registerInput} ${errors.phone_number ? styles.inputError : ''}`}
-                    />
-                    {errors.phone_number && <span className={styles.errorText}>{errors.phone_number}</span>}
-                  </div>
-
-                  <div className={styles.inputField}>
-                    <input
-                      type="password"
-                      placeholder="Hasło"
-                      value={form.password}
-                      onChange={(e) => handleInputChange("password", e.target.value)}
-                      className={`${styles.registerInput} ${errors.password ? styles.inputError : ''}`}
-                    />
-                    {errors.password && <span className={styles.errorText}>{errors.password}</span>}
-                  </div>
-
-                  <div className={styles.inputField}>
-                    <input
-                      type="password"
-                      placeholder="Potwierdź hasło"
-                      value={form.password2}
-                      onChange={(e) => handleInputChange("password2", e.target.value)}
-                      className={`${styles.registerInput} ${errors.password2 ? styles.inputError : ''}`}
-                    />
-                    {errors.password2 && <span className={styles.errorText}>{errors.password2}</span>}
-                  </div>
-
-                  <button type="button" className={styles.registerButton} onClick={handleSendCode}>
-                    Zarejestruj się
-                  </button>
+              <div className={styles.inputGroup}>
+                <div className={styles.inputField}>
+                  <input
+                    placeholder="Nazwa użytkownika"
+                    value={form.username}
+                    onChange={(e) => handleInputChange("username", e.target.value)}
+                    className={`${styles.registerInput} ${errors.username ? styles.inputError : ''}`}
+                  />
+                  {errors.username && <span className={styles.errorText}>{errors.username}</span>}
                 </div>
-              ) : (
-                <div className={styles.inputGroup}>
-                  <div className={styles.inputField}>
-                    <input
-                      placeholder="Wpisz kod weryfikacyjny"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      className={`${styles.registerInput} ${errors.verification_code ? styles.inputError : ''}`}
-                    />
-                    {errors.verification_code && <span className={styles.errorText}>{errors.verification_code}</span>}
-                  </div>
-                  <button type="button" className={styles.registerButton} onClick={handleRegister}>
-                    Potwierdź rejestrację
-                  </button>
+
+                <div className={styles.inputField}>
+                  <input
+                    type="email"
+                    placeholder="Adres email"
+                    value={form.email}
+                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    className={`${styles.registerInput} ${errors.email ? styles.inputError : ''}`}
+                  />
+                  {errors.email && <span className={styles.errorText}>{errors.email}</span>}
                 </div>
-              )}
+
+                <div className={styles.inputField}>
+                  <input
+                    type="tel"
+                    placeholder="Numer telefonu (np. +48 123 456 789)"
+                    value={form.phone_number}
+                    onChange={(e) => handleInputChange("phone_number", e.target.value)}
+                    className={`${styles.registerInput} ${errors.phone_number ? styles.inputError : ''}`}
+                  />
+                  {errors.phone_number && <span className={styles.errorText}>{errors.phone_number}</span>}
+                </div>
+
+                <div className={styles.inputField}>
+                  <input
+                    type="password"
+                    placeholder="Hasło"
+                    value={form.password}
+                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    className={`${styles.registerInput} ${errors.password ? styles.inputError : ''}`}
+                  />
+                  {errors.password && <span className={styles.errorText}>{errors.password}</span>}
+                </div>
+
+                <div className={styles.inputField}>
+                  <input
+                    type="password"
+                    placeholder="Potwierdź hasło"
+                    value={form.password2}
+                    onChange={(e) => handleInputChange("password2", e.target.value)}
+                    className={`${styles.registerInput} ${errors.password2 ? styles.inputError : ''}`}
+                  />
+                  {errors.password2 && <span className={styles.errorText}>{errors.password2}</span>}
+                </div>
+
+                <button type="button" className={styles.registerButton} onClick={handleRegister}>
+                  Zarejestruj się
+                </button>
+              </div>
 
               <div className={styles.registerFooter}>
                 <p>Masz już konto? <a href="/login" className={styles.loginLink}>Zaloguj się</a></p>

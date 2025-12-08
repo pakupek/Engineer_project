@@ -398,25 +398,17 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)
-    verification_code = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'phone_number', 'password', 'password2', 'verification_code')
-        extra_kwargs = {
-            'email': {'required': True},
-        }
+        fields = ('username', 'email', 'phone_number', 'password', 'password2')
+        extra_kwargs = {'email': {'required': True}}
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Hasła nie są identyczne."})
         if User.objects.filter(email=attrs['email']).exists():
             raise serializers.ValidationError({"email": "Użytkownik z tym adresem email już istnieje."})
-
-        # Weryfikacja kodu
-        cached_code = cache.get(f'verification_code_{attrs["email"]}')
-        if cached_code != attrs['verification_code']:
-            raise serializers.ValidationError({"verification_code": "Niepoprawny kod weryfikacyjny."})
         return attrs
 
     def create(self, validated_data):
