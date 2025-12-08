@@ -3,16 +3,42 @@ from django.core.mail import send_mail
 import os
 from django.core.cache import cache
 from .models import Discussion
+import logging
+from django.conf import settings
 
-@shared_task
-def send_verification_email_task(email, code):
+logger = logging.getLogger(__name__)
+
+@shared_task(bind=True, max_retries=3)
+def send_verification_email_task(self, email, code):
     """Wysyłka maila z kodem w tle przez Celery"""
-    send_mail(
-        subject="GaraZero: Kod weryfikacyjny",
-        message=f"Twój kod weryfikacyjny: {code}",
-        from_email=os.getenv("EMAIL_HOST_USER"),
-        recipient_list=[email],
-    )
+
+    
+    try:
+        result = send_mail(
+            subject="GaraZero: Kod weryfikacyjny",
+            message=f"Twój kod weryfikacyjny: {code}\n\nKod jest ważny przez 5 minut.",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[email],
+            fail_silently=False, 
+        )
+        
+        if result == 1:
+            logger.info(f"Email wysłany pomyślnie do: {email}")
+            return {"status": "success", "email": email}
+        else:
+            logger.error(f"Email nie został wysłany")
+            raise Exception("Email nie został wysłany")
+            
+    except Exception as e:
+        logger.error(f"Błąd wysyłania emaila do {email}: {str(e)}")
+        logger.exception(e)  
+        
+        # Retry po 10 sekundach, maksymalnie 3 razy
+        try:
+            raise self.retry(exc=e, countdown=10)
+        except self.MaxRetriesExceededError:
+            logger.error(f"Przekroczono maksymalną liczbę prób dla {email}")
+            raise
 
 CACHE_KEY = "discussion_list"
 CACHE_TTL = 30  # czas życia cache w sekundach
