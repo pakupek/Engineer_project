@@ -2864,6 +2864,23 @@ urllib3 = {version = ">=2.5.0,<3.0", extras = ["socks"]}
 websocket-client = ">=1.8.0,<2.0"
 
 [[package]]
+name = "sib-api-v3-sdk"
+version = "7.6.0"
+description = "SendinBlue API"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "sib-api-v3-sdk-7.6.0.tar.gz", hash = "sha256:8975108c4a66ca2280532017190150f98ac826eacdda6c2f859ff104d2828266"},
+]
+
+[package.dependencies]
+certifi = ">=2017.4.17"
+python-dateutil = ">=2.1"
+six = ">=1.10"
+urllib3 = ">=1.23"
+
+[[package]]
 name = "simple-websocket"
 version = "1.1.0"
 description = "Simple WebSocket server and client for Python"
@@ -3367,4 +3384,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "98c55f2612b83e7488e227460c5cc3221344240694caa2b2d93de5c2e01d1614"
+content-hash = "bef890d56a13b8d4a502120a357413257702773ddd828b9ea8ce9c633ff15a85"
