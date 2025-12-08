@@ -17,7 +17,7 @@ export default function Register() {
   const [verificationStep, setVerificationStep] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const router = useRouter();
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://engineer-project.onrender.com';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const validateForm = () => {
     const newErrors = {};
@@ -53,30 +53,64 @@ export default function Register() {
       return;
     }
 
-    try {
-      const res = await fetch(`${API_URL}/api/register/`, {
+    try {    
+      const res = await fetch(`${API_URL}/api/send-verification-code/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email })
       });
 
-      if (!res.ok) throw new Error("Błąd wysyłki kodu");
-      console.log('🔍 API_URL:', API_URL);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Błąd wysyłki kodu");
+      }
+
       setVerificationStep(true);
       alert("Kod weryfikacyjny został wysłany na Twój email");
     } catch (err) {
+      console.error('❌ Błąd:', err);
       alert(err.message);
     }
   };
 
   // Rejestracja użytkownika po weryfikacji kodu
   const handleRegister = async () => {
-    try {
-      await authService.register({ ...form, verification_code: verificationCode });
+    if (!verificationCode.trim()) {
+      setErrors({ verification_code: "Kod weryfikacyjny jest wymagany" });
+      return;
+    }
+
+    try {      
+      const res = await fetch(`${API_URL}/api/register/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: form.username,
+          email: form.email,
+          phone_number: form.phone_number,
+          password: form.password,
+          password2: form.password2,
+          verification_code: verificationCode
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Wyświetl konkretne błędy z backendu
+        if (data.username) throw new Error(data.username[0]);
+        if (data.email) throw new Error(data.email[0]);
+        if (data.phone_number) throw new Error(data.phone_number[0]);
+        if (data.password) throw new Error(data.password[0]);
+        if (data.verification_code) throw new Error(data.verification_code[0]);
+        throw new Error(data.error || "Błąd rejestracji");
+      }
+
       alert("Rejestracja zakończona pomyślnie!");
       router.push("/login");
     } catch (err) {
-      console.error(err);
+      console.error('❌ Błąd:', err);
       alert(err.message);
     }
   };
