@@ -1,7 +1,8 @@
 from celery import shared_task
 from django.conf import settings
 import logging
-import requests
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
 from django.core.cache import cache
 from .models import Discussion
 
@@ -10,12 +11,17 @@ logger = logging.getLogger(__name__)
 
 @shared_task(bind=True, max_retries=3)
 def send_verification_email_task(self, email, code):
-    """Wysyłanie emaila przez Brevo API (Sendinblue)"""
+    """Wysyłka emaila przez Brevo API (sib_api_v3_sdk)"""
 
     logger.info(f"📧 Wysyłanie emaila do: {email} przez Brevo API")
 
-    subject = "GaraZero: Kod weryfikacyjny"
+    # Konfiguracja klienta Brevo
+    configuration = sib_api_v3_sdk.Configuration()
+    configuration.api_key['api-key'] = settings.BREVO_API_KEY
+    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
 
+    # Treść wiadomości
+    subject = "GaraZero: Kod weryfikacyjny"
     html_content = f"""
     <!DOCTYPE html>
     <html>
@@ -29,41 +35,25 @@ def send_verification_email_task(self, email, code):
     </html>
     """
 
-    url = "https://api.brevo.com/v3/smtp/email"
-    headers = {
-        "accept": "application/json",
-        "api-key": settings.BREVO_API_KEY,
-        "content-type": "application/json",
-    }
+    sender = {"name": "GaraZero", "email": "no-reply@brevo.com"}  # bez własnej domeny
 
-    payload = {
-        "sender": {
-            "name": "GaraZero",
-            "email": "no-reply@brevo.com"
-        },
-        "to": [{"email": email}],
-        "subject": subject,
-        "htmlContent": html_content,
-    }
+    to = [{"email": email}]
+
+    send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+        to=to,
+        sender=sender,
+        subject=subject,
+        html_content=html_content
+    )
 
     try:
-        response = requests.post(url, headers=headers, json=payload)
-        data = response.json()
+        api_response = api_instance.send_transac_email(send_smtp_email)
+        logger.info(f"✅ Email wysłany pomyślnie! Brevo ID: {api_response['messageId']}")
+        return {"status": "success", "email": email, "message_id": api_response['messageId']}
 
-        if response.status_code not in (200, 201):
-            logger.error(f"❌ Brevo error: {response.status_code} -> {response.text}")
-            if self.request.retries < self.max_retries:
-                logger.info(f"Retry za 10s... próba {self.request.retries + 1}/3")
-                raise self.retry(exc=Exception(response.text), countdown=10)
-            else:
-                raise Exception("Przekroczono limit prób wysyłki przez Brevo")
+    except ApiException as e:
+        logger.error(f"❌ Brevo API Exception: {e}")
 
-        message_id = data.get("messageId", "unknown")
-        logger.info(f"✅ Email wysłany pomyślnie! Brevo ID: {message_id}")
-        return {"status": "success", "email": email, "message_id": message_id}
-
-    except Exception as e:
-        logger.error(f"Błąd połączenia z Brevo: {str(e)}")
         if self.request.retries < self.max_retries:
             logger.info(f"Retry za 10s... próba {self.request.retries + 1}/3")
             raise self.retry(exc=e, countdown=10)
