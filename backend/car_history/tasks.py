@@ -15,12 +15,10 @@ def send_verification_email_task(self, email, code):
 
     logger.info(f"📧 Wysyłanie emaila do: {email} przez Brevo API")
 
-    # Konfiguracja klienta Brevo
     configuration = sib_api_v3_sdk.Configuration()
     configuration.api_key['api-key'] = settings.BREVO_API_KEY
     api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
 
-    # Treść wiadomości
     subject = "GaraZero: Kod weryfikacyjny"
     html_content = f"""
     <!DOCTYPE html>
@@ -36,7 +34,6 @@ def send_verification_email_task(self, email, code):
     """
 
     sender = {"name": "GaraZero", "email": "no-reply@brevo.com"}  # bez własnej domeny
-
     to = [{"email": email}]
 
     send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
@@ -48,12 +45,11 @@ def send_verification_email_task(self, email, code):
 
     try:
         api_response = api_instance.send_transac_email(send_smtp_email)
-        logger.info(f"✅ Email wysłany pomyślnie! Brevo ID: {api_response['messageId']}")
-        return {"status": "success", "email": email, "message_id": api_response['messageId']}
+        logger.info(f"✅ Email wysłany pomyślnie! Brevo ID: {api_response.message_id}")
+        return {"status": "success", "email": email, "message_id": api_response.message_id}
 
     except ApiException as e:
         logger.error(f"❌ Brevo API Exception: {e}")
-
         if self.request.retries < self.max_retries:
             logger.info(f"Retry za 10s... próba {self.request.retries + 1}/3")
             raise self.retry(exc=e, countdown=10)
