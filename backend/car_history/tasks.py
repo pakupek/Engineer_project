@@ -18,7 +18,7 @@ def send_verification_email_task(self, email, code):
     
     try:
         params = {
-            "from": f"GaraZero <{settings.EMAIL_HOST_USER}>",
+            "from": "GaraZero <onboarding@resend.dev>",
             "to": [email],
             "subject": "GaraZero: Kod weryfikacyjny",
             "html": f"""
