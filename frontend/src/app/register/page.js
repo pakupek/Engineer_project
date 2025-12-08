@@ -17,6 +17,7 @@ export default function Register() {
   const [verificationStep, setVerificationStep] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const router = useRouter();
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const validateForm = () => {
     const newErrors = {};
@@ -53,7 +54,7 @@ export default function Register() {
     }
 
     try {
-      const res = await fetch(`https://engineer-project.onrender.com/api/send-verification-code/`, {
+      const res = await fetch(`${API_URL}/api/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: form.email })

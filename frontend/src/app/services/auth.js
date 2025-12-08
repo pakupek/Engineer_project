@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL + "/api/";
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Konfiguracja axios z interceptors
 const api = axios.create({
@@ -51,7 +51,7 @@ export const refreshToken = async () => {
     const refresh = localStorage.getItem("refresh_token");
     if (!refresh) throw new Error("No refresh token found");
     
-    const response = await axios.post(API_URL + "token/refresh/", { refresh });
+    const response = await axios.post(`${API_URL}/api/token/refresh/`, { refresh });
     localStorage.setItem("access_token", response.data.access);
     return response.data.access;
   } catch (err) {
@@ -99,7 +99,7 @@ export const authService = {
   // Logowanie
   async login(email, password) {
     try {
-      const response = await api.post(API_URL + "login/", { 
+      const response = await api.post(`${API_URL}/api/login/`, { 
         username: email, // Django często używa username zamiast email
         password 
       });
@@ -118,7 +118,7 @@ export const authService = {
   // Rejestracja
   async register(userData) {
     try {
-      const response = await api.post(API_URL + "register/", userData);
+      const response = await api.post(`${API_URL}/api/register/`, userData);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data || 'Błąd rejestracji');
@@ -128,7 +128,7 @@ export const authService = {
   // Pobieranie profilu użytkownika
   async getProfile() {
     try {
-      const response = await api.get(API_URL + "profile/");
+      const response = await api.get(`${API_URL}/api/profile/`);
       return response.data;
     } catch (error) {
       throw new Error('Błąd pobierania profilu');
@@ -149,11 +149,7 @@ export const authService = {
         config.headers["Content-Type"] = "application/json";
       }
 
-      const response = await api.patch(
-        API_URL + "profile/",
-        userData,
-        config
-      );
+      const response = await api.patch(`${API_URL}/api/profile/`, userData, config);
 
       return response.data;
     } catch (error) {
@@ -168,7 +164,7 @@ export const authService = {
   // Zmiana hasła
   async changePassword(passwordData) {
     try {
-      const response = await api.post(API_URL + "change-password/", passwordData);
+      const response = await api.post(`${API_URL}/api/change-password/`, passwordData);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data || 'Błąd zmiany hasła');
@@ -180,7 +176,7 @@ export const authService = {
       const refresh = localStorage.getItem("refresh_token");
       if (!refresh) throw new Error("No refresh token found");
     
-      const response = await axios.post(API_URL + "token/refresh/", { refresh });
+      const response = await axios.post(`${API_URL}/api/token/refresh/`, { refresh });
       localStorage.setItem("access_token", response.data.access);
       return response.data.access;
     } catch (err) {
@@ -209,7 +205,7 @@ export const checkAuthStatus = async () => {
     }
 
     // Używamy endpointu profile do sprawdzenia autoryzacji
-    const response = await api.get(API_URL + "profile/");
+    const response = await api.get(`${API_URL}/api/profile/`);
 
     if (response.status === 200) {
       return { 
@@ -231,7 +227,7 @@ export const checkAuthStatus = async () => {
 
 export const getCurrentUser = async () => {
   try {
-    const response = await api.get(API_URL + "profile/");
+    const response = await api.get(`${API_URL}/api/profile/`);
     return response.data;
   } catch (error) {
     console.error('Error getting current user:', error);
@@ -265,7 +261,7 @@ export const userService = {
       const formData = new FormData();
       formData.append('avatar', file);
       
-      const response = await api.patch(API_URL + "profile/", formData, {
+      const response = await api.patch(`${API_URL}/api/profile/`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
