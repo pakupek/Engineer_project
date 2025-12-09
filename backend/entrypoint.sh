@@ -14,7 +14,7 @@ poetry run python manage.py load_vehicles
 echo "==============================="
 
 echo "Upload media files to cloudinary"
-poetry run python manage.py upload_to_cloudinary
+poetry run python manage.py upload_cloudinary
 echo "==============================="
 
 echo "Collect static files"
