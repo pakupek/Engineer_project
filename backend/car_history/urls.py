@@ -104,6 +104,3 @@ urlpatterns = [
 
     path("automotive-news/", AutomotiveNewsView.as_view(), name="automotive_news"),
 ]
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -20,19 +20,47 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Katalog, w którym będą przechowywane pliki użytkowników
-MEDIA_ROOT = '/app/backend/media'
-
-# URL do serwowania tych plików w przeglądarce
 MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.0/howto/static-files/
+
+STATIC_URL = 'static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+
+
+# Cloudinary configuration
+if os.getenv('CLOUDINARY_CLOUD_NAME'):
+    # Produkcja - Cloudinary
+    import cloudinary
+    import cloudinary.uploader
+    import cloudinary.api
+    
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+        'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET')
+    }
+    
+    # Użyj Cloudinary jako storage dla media files
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    
+else:
+    # Development - lokalny storage
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Celery settings
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
-
-
-
-TESTING = False
 
 # Pobranie klucza API 
 APITUBE_KEY = os.getenv("APITUBE_KEY")
@@ -73,6 +101,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage', 
+    'cloudinary',
     'django.contrib.staticfiles',
     'car_history',
     'rest_framework',
@@ -217,14 +247,5 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
-STATIC_URL = 'static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
