@@ -15,6 +15,7 @@ export default function VehicleSalesList() {
   });
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
+  const API_URL = 'https://engineer-project.onrender.com';
 
   // Pobranie listy ogłoszeń + filtrów
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function VehicleSalesList() {
       if (filters.priceMin) queryParams.append("price_min", filters.priceMin);
       if (filters.priceMax) queryParams.append("price_max", filters.priceMax);
 
-      const res = await fetch(`http://localhost:8000/api/sales/?${queryParams.toString()}`, {
+      const res = await fetch(`${API_URL}/api/sales/?${queryParams.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -46,7 +47,7 @@ export default function VehicleSalesList() {
   // Pobieramy listę marek i modeli
   useEffect(() => {
     const fetchMakes = async () => {
-      const res = await fetch("http://localhost:8000/api/makes/");
+      const res = await fetch(`${API_URL}/api/makes/`);
       const data = await res.json();
       setMakes(data);
     };
@@ -57,7 +58,7 @@ export default function VehicleSalesList() {
   useEffect(() => {
     if (filters.make) {
       const fetchModels = async () => {
-        const res = await fetch(`http://localhost:8000/api/models/?make=${filters.make}`);
+        const res = await fetch(`${API_URL}/api/models/?make=${filters.make}`);
         const data = await res.json();
         setModels(data);
       };

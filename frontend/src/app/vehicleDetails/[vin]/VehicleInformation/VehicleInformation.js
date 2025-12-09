@@ -39,7 +39,7 @@ export function VehicleInformation({ car, setCar }){
   const [showSaleForm, setShowSaleForm] = useState(false);
   const router = useRouter();
   const [showEdit, setShowEdit] = useState(false);
-
+  const API_URL = 'https://engineer-project.onrender.com';
   // Funkcja do odświeżania danych po edycji
   const handleVehicleUpdated = (updatedVehicle) => {
     setCar(updatedVehicle); // aktualizuje dane od razu
@@ -51,7 +51,7 @@ export function VehicleInformation({ car, setCar }){
 
     try {
       const token = getToken();
-      const response = await fetch(`http://localhost:8000/api/vehicles/${car.vin}/delete/`, {
+      const response = await fetch(`${API_URL}/api/vehicles/${car.vin}/delete/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

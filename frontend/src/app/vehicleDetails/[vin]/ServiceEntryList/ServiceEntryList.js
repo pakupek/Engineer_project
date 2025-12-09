@@ -11,7 +11,7 @@ export default function ServiceEntriesList({ vin, onEditEntry }) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  
+  const API_URL = 'https://engineer-project.onrender.com';
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   // 🔹 Blokada scrollowania strony gdy modal jest otwarty
@@ -111,7 +111,7 @@ export default function ServiceEntriesList({ vin, onEditEntry }) {
   const fetchServiceEntries = async () => {
     try {
       const token = getToken();
-      const res = await fetch(`http://localhost:8000/api/service-entry/${vin}/`, {
+      const res = await fetch(`${API_URL}/api/service-entry/${vin}/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -144,7 +144,7 @@ export default function ServiceEntriesList({ vin, onEditEntry }) {
     try {
       const token = getToken();
       const res = await fetch(
-        `http://localhost:8000/api/service-entry/${vin}/${entryId}/`,
+        `${API_URL}/api/service-entry/${vin}/${entryId}/`,
         {
           method: "DELETE",
           headers: {
@@ -189,7 +189,7 @@ export default function ServiceEntriesList({ vin, onEditEntry }) {
                       src={
                         entry.invoice_image.startsWith("http")
                           ? entry.invoice_image
-                          : `http://localhost:8000${entry.invoice_image}`
+                          : `${API_URL}${entry.invoice_image}`
                       }
                       alt="Faktura"
                       className="thumbnail"
@@ -197,7 +197,7 @@ export default function ServiceEntriesList({ vin, onEditEntry }) {
                         setPreviewImage(
                           entry.invoice_image.startsWith("http")
                             ? entry.invoice_image
-                            : `http://localhost:8000${entry.invoice_image}`
+                            : `${API_URL}${entry.invoice_image}`
                         );
                         setZoom(1);
                         setPosition({ x: 0, y: 0 });

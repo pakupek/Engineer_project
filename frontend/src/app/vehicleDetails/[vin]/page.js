@@ -17,6 +17,7 @@ import VehicleImages from "./VehicleImages/VehicleImages";
 import { VehicleInformation, VehicleInformationOverlay } from "./VehicleInformation/VehicleInformation";
 import DamageFormContainer from "./DamageForm/DamageFormContainer";
 
+
 export default function CarDetails() {
   const { vin } = useParams();
   const [car, setCar] = useState(null);
@@ -30,7 +31,7 @@ export default function CarDetails() {
   const [editingDamage, setEditingDamage] = useState(null);
   const handleEditEntry = (entry) => setEditingEntry(entry);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
-  
+  const API_URL = 'https://engineer-project.onrender.com';
 
   const handleSave = () => {
     setEditingEntry(null);
@@ -47,8 +48,7 @@ export default function CarDetails() {
       setDownloadingPdf(true);
       const token = getToken();
       
-      const response = await fetch(
-        `http://localhost:8000/api/vehicles/${vin}/history/pdf/`,
+      const response = await fetch(`${API_URL}/api/vehicles/${vin}/history/pdf/`,
         {
           method: "GET",
           headers: { 
@@ -108,7 +108,7 @@ export default function CarDetails() {
     const fetchCar = async () => {
       try {
         const token = getToken();
-        const response = await fetch(`http://localhost:8000/api/vehicles/${vin}/`, {
+        const response = await fetch(`${API_URL}/api/vehicles/${vin}/`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,

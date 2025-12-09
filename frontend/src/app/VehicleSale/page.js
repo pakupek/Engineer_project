@@ -7,10 +7,11 @@ export default function SaleForm({ vin, onSaleAdded }) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [history, setHistory] = useState({ damages: [], services: [] });
+  const API_URL = 'https://engineer-project.onrender.com';
 
   useEffect(() => {
     if (vin) {
-      fetch(`http://localhost:8000/api/vehicles/${vin}/`)
+      fetch(`${API_URL}/api/vehicles/${vin}/`)
         .then((res) => res.json())
         .then((data) => {
           setHistory({
@@ -25,7 +26,7 @@ export default function SaleForm({ vin, onSaleAdded }) {
     e.preventDefault();
     const token = getToken();
 
-    const response = await fetch("http://localhost:8000/api/sales/", {
+    const response = await fetch(`${API_URL}/api/sales/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

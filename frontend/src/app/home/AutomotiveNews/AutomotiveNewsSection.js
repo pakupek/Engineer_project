@@ -7,11 +7,12 @@ export default function AutomotiveNewsSection() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const API_URL = 'https://engineer-project.onrender.com';
 
   useEffect(() => {
     async function loadData() {
       try {
-        const res = await fetch("http://localhost:8000/api/automotive-news/");
+        const res = await fetch(`${API_URL}/api/automotive-news/`);
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
         }

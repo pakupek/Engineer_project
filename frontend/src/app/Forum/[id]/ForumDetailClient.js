@@ -29,6 +29,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
   };
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const API_URL = 'https://engineer-project.onrender.com';
 
 
   const handleSortClick = (type) => {
@@ -92,7 +93,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
 
   const fetchDiscussion = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/discussions/${discussionId}/`);
+      const res = await fetch(`${API_URL}/api/discussions/${discussionId}/`);
       const data = await res.json();
       setDiscussion(data);
     } catch (error) {
@@ -104,7 +105,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
     if (confirm("Czy na pewno chcesz zamknąć tę dyskusję?")) {
       try {
         const token = getToken();
-        const res = await fetch(`http://localhost:8000/api/discussions/${discussionId}/close/`, {
+        const res = await fetch(`${API_URL}/api/discussions/${discussionId}/close/`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -134,7 +135,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
         return;
       }
 
-      const res = await fetch(`http://localhost:8000/api/discussions/${discussionId}/vote/`, {
+      const res = await fetch(`${API_URL}/api/discussions/${discussionId}/vote/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -170,7 +171,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
         return;
       }
 
-      const res = await fetch(`http://localhost:8000/api/discussions/${discussionId}/favorite/`, {
+      const res = await fetch(`${API_URL}/api/discussions/${discussionId}/favorite/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -205,7 +206,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
         sort: sort,
       });
 
-      const res = await fetch(`http://localhost:8000/api/discussions/${discussionId}/comments/?${params.toString()}`, {
+      const res = await fetch(`${API_URL}/api/discussions/${discussionId}/comments/?${params.toString()}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

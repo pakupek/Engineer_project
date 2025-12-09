@@ -10,16 +10,17 @@ export default function UserVehicleSalesList() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
+  const API_URL = 'https://engineer-project.onrender.com';
   
-    const handleDeleteSale = (id) => {
+  const handleDeleteSale = (id) => {
     setSales((prev) => prev.filter((sale) => sale.id !== id));
-    };
+  };
     
   useEffect(() => {
     const fetchSales = async () => {
       try {
         const token = getToken();
-        const res = await fetch("http://localhost:8000/api/sales/", {
+        const res = await fetch(`${API_URL}/api/sales/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

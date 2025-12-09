@@ -6,13 +6,14 @@ import styles from "./VehicleImages.module.css";
 
 export default function VehicleImages({ car }) {
     const [current, setCurrent] = useState(0);
+    const API_URL = 'https://engineer-project.onrender.com';
     const images =
         car?.images
         ?.filter((imgObj) => imgObj?.image && imgObj.image.trim() !== "")
         .map((imgObj) =>
             imgObj.image.startsWith("http")
             ? imgObj.image
-            : `http://localhost:8000${imgObj.image}`
+            : `${API_URL}${imgObj.image}`
         ) || [];
 
     // Autoplay co 5 sekund

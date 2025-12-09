@@ -8,6 +8,7 @@ export default function DamageFormContainer({ damageToEdit, onEditComplete}) {
   const { vin } = useParams();
   const [markers, setMarkers] = useState([]);
   const [selectedSeverity, setSelectedSeverity] = useState("drobne");
+  const API_URL = 'https://engineer-project.onrender.com';
 
   // Wczytaj istniejące markery przy edycji
   useEffect(() => {
@@ -56,8 +57,8 @@ export default function DamageFormContainer({ damageToEdit, onEditComplete}) {
     const isEditing = Boolean(damageToEdit);
 
     const url = isEditing
-      ? `http://localhost:8000/api/damage-entry/${vin}/${damageToEdit.id}/`
-      : `http://localhost:8000/api/damage-entry/${vin}/`;
+      ? `${API_URL}/api/damage-entry/${vin}/${damageToEdit.id}/`
+      : `${API_URL}/api/damage-entry/${vin}/`;
 
     const method = isEditing ? "PATCH" : "POST";
 

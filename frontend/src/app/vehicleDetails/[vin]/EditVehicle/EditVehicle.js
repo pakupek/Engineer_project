@@ -9,6 +9,7 @@ export default function EditVehicleModal({ vin, onClose, onUpdated }) {
   const [images, setImages] = useState([]);
   const [formData, setFormData] = useState({});
   const token = getToken();
+  const API_URL = 'https://engineer-project.onrender.com';
 
   // Blokowanie scrolla w tle przy otwartym modalu
   useEffect(() => {
@@ -21,7 +22,7 @@ export default function EditVehicleModal({ vin, onClose, onUpdated }) {
   // Pobieranie danych pojazdu
   useEffect(() => {
     const fetchVehicle = async () => {
-      const res = await fetch(`http://localhost:8000/api/vehicles/${vin}/`, {
+      const res = await fetch(`${API_URL}/api/vehicles/${vin}/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -58,8 +59,7 @@ export default function EditVehicleModal({ vin, onClose, onUpdated }) {
       form.append("images", f);
     }
 
-    const res = await fetch(
-      `http://localhost:8000/api/vehicles/${vin}/images/`,
+    const res = await fetch(`${API_URL}/api/vehicles/${vin}/images/`,
       {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -77,8 +77,7 @@ export default function EditVehicleModal({ vin, onClose, onUpdated }) {
 
   // Usuwanie zdjęcia
   const deleteImage = async (imageId) => {
-    const res = await fetch(
-      `http://localhost:8000/api/vehicles/${vin}/images/${imageId}/`,
+    const res = await fetch(`${API_URL}/api/vehicles/${vin}/images/${imageId}/`,
       {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
@@ -99,8 +98,7 @@ export default function EditVehicleModal({ vin, onClose, onUpdated }) {
 
   // Zapis zmian pojazdu
   const saveChanges = async () => {
-    const res = await fetch(
-      `http://localhost:8000/api/vehicles/${vin}/`,
+    const res = await fetch(`${API_URL}/api/vehicles/${vin}/`,
       {
         method: "PATCH",
         headers: {

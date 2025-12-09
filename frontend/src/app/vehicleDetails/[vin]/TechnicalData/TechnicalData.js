@@ -5,12 +5,12 @@ import "./TechnicalData.css";
 
 export default function TechnicalData({ vin }) {
     const [technicalData, setTechnicalData] = useState(null);
-
+    const API_URL = 'https://engineer-project.onrender.com';
     // Pobranie danych technicznych pojazdu
     useEffect(() => {
         const fetchTechnicalData = async () => {
           try {
-            const res = await fetch(`http://localhost:8000/api/vehicle-history/${vin}/`);
+            const res = await fetch(`${API_URL}/api/vehicle-history/${vin}/`);
             const data = await res.json();
             if (data.success) {
               setTechnicalData(data.technical_data);

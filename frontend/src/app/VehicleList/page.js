@@ -13,6 +13,7 @@ export default function VehiclesPage() {
   const [filters, setFilters] = useState({});
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const API_URL = 'https://engineer-project.onrender.com';
 
   const handleFilterChange = (updatedFilters) => {
     setFilters(updatedFilters);
@@ -39,7 +40,7 @@ export default function VehiclesPage() {
         // Dodajemy paginację
         params.append("page", page);
 
-        const response = await fetch(`http://localhost:8000/api/vehicles/my-vehicles/?${params}`, {
+        const response = await fetch(`${API_URL}/api/vehicles/my-vehicles/?${params}`, {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -70,7 +71,7 @@ export default function VehiclesPage() {
   const handleDeleteVehicle = async (vin) => {
     try {
       const token = getToken();
-      const response = await fetch(`http://localhost:8000/api/vehicles/${vin}/delete/`, {
+      const response = await fetch(`${API_URL}/api/vehicles/${vin}/delete/`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

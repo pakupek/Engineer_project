@@ -12,6 +12,7 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
     cost: "",
     invoice_image: null,
   });
+  const API_URL = 'https://engineer-project.onrender.com';
 
   // 🔹 Gdy kliknięto "Edytuj" — wypełnij formularz danymi wpisu
   useEffect(() => {
@@ -61,8 +62,8 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
 
       const isEditing = !!editingEntry;
       const url = isEditing
-        ? `http://localhost:8000/api/service-entry/${vin}/${editingEntry.id}/`
-        : `http://localhost:8000/api/service-entry/${vin}/`;
+        ? `${API_URL}/api/service-entry/${vin}/${editingEntry.id}/`
+        : `${API_URL}/api/service-entry/${vin}/`;
 
       const method = isEditing ? "PATCH" : "POST";
 

@@ -39,6 +39,8 @@ export default function AddVehiclePage() {
     registration:''
   });
 
+  const API_URL = 'https://engineer-project.onrender.com';
+
   const handleImageChange = (e) => {
     let selectedFiles = Array.from(e.target.files);
 
@@ -78,7 +80,7 @@ export default function AddVehiclePage() {
     const token = getToken();
 
     try {
-      const response = await fetch(`http://localhost:8000/api/vehicles/${vin}/images/`, {
+      const response = await fetch(`${API_URL}/api/vehicles/${vin}/images/`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -104,7 +106,7 @@ export default function AddVehiclePage() {
     const fetchMakes = async () => {
       try {
         const token = getToken();
-        const res = await fetch('http://localhost:8000/api/makes/', {
+        const res = await fetch(`${API_URL}/api/makes/`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -132,7 +134,7 @@ export default function AddVehiclePage() {
     const fetchModels = async () => {
       try {
         const token = getToken();
-        const res = await fetch(`http://localhost:8000/api/models/?make=${selectedMake}`, {
+        const res = await fetch(`${API_URL}/api/models/?make=${selectedMake}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         const data = await res.json();
@@ -146,7 +148,7 @@ export default function AddVehiclePage() {
 
   useEffect(() => {
     if (selectedModel) {
-      fetch(`http://localhost:8000/api/generations/?model=${selectedModel}`)
+      fetch(`${API_URL}/api/generations/?model=${selectedModel}`)
         .then(res => res.json())
         .then(data => setGenerations(data))
         .catch(err => console.error(err));
@@ -200,7 +202,7 @@ export default function AddVehiclePage() {
 
     try {
       const token = getToken();
-      const response = await fetch('http://localhost:8000/api/vehicles/create/', {
+      const response = await fetch(`${API_URL}/api/vehicles/create/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

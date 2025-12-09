@@ -9,13 +9,14 @@ export default function VehicleSaleForm({ vin, onSaleCreated }) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [vehicleData, setVehicleData] = useState(null);
+  const API_URL = 'https://engineer-project.onrender.com';
 
   // Pobierz dane pojazdu
   useEffect(() => {
     const fetchVehicle = async () => {
       try {
         const token = getToken();
-        const response = await fetch(`http://localhost:8000/api/vehicles/${vin}/`, {
+        const response = await fetch(`${API_URL}/api/vehicles/${vin}/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
@@ -40,7 +41,7 @@ export default function VehicleSaleForm({ vin, onSaleCreated }) {
       vehicle: vin 
     });
 
-    const response = await fetch(`http://localhost:8000/api/sales/`, {
+    const response = await fetch(`${API_URL}/api/sales/`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,

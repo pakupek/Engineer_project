@@ -25,6 +25,7 @@ function MessagesContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const messagesEndRef = useRef(null);
   const router = useRouter();
+  const API_URL = 'https://engineer-project.onrender.com';
 
   // Auto-scroll do najnowszej wiadomości
   const scrollToBottom = () => {
@@ -39,7 +40,7 @@ function MessagesContent() {
   const fetchUsers = async () => {
     try {
       const token = getToken();
-      const response = await fetch('http://localhost:8000/api/users/', {
+      const response = await fetch(`${API_URL}/api/users/`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -59,7 +60,7 @@ function MessagesContent() {
     try {
       setLoading(true);
       const token = getToken();
-      const response = await fetch(`http://localhost:8000/api/messages/conversation/${userId}/`, {
+      const response = await fetch(`${API_URL}/api/messages/conversation/${userId}/`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -82,7 +83,7 @@ function MessagesContent() {
 
     try {
       const token = getToken();
-      const response = await fetch('http://localhost:8000/api/messages/', {
+      const response = await fetch(`${API_URL}/api/messages/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +113,7 @@ function MessagesContent() {
   const fetchUnreadCount = async () => {
     try {
       const token = getToken();
-      const response = await fetch('http://localhost:8000/api/messages/unread-count/', {
+      const response = await fetch(`${API_URL}/api/messages/unread-count/`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

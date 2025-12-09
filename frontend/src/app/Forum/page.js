@@ -34,8 +34,8 @@ export default function Forum() {
 
     const [page, setPage] = useState(1); 
     const [pageCount, setPageCount] = useState(1);
-
     const [images, setImages] = useState([]);
+    const API_URL = 'https://engineer-project.onrender.com';
 
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
@@ -59,7 +59,7 @@ export default function Forum() {
                 search: filters.search || "",
                 page: pageNumber,
                 }).toString();
-            const res = await fetch(`http://localhost:8000/api/discussions/?${query}`, {
+            const res = await fetch(`${API_URL}/api/discussions/?${query}`, {
                 method: "GET",
                 headers: {
                 "Content-Type": "application/json",
@@ -136,7 +136,7 @@ export default function Forum() {
             images.forEach((file) => {
                 formData.append("images", file);
             });
-            const res = await fetch("http://localhost:8000/api/discussions/", {
+            const res = await fetch(`${API_URL}/api/discussions/`, {
                 method: "POST",
                 headers: {
                 Authorization: `Bearer ${token}`,

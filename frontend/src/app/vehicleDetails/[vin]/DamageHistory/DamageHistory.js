@@ -8,13 +8,13 @@ export default function DamageHistory({ onEditDamage }) {
   const [loading, setLoading] = useState(true);
   const { vin } = useParams();
   const [editingDamage, setEditingDamage] = useState(null);
+  const API_URL = 'https://engineer-project.onrender.com';
   
 
   const fetchDamageHistory = async () => {
     try {
       const token = getToken();
-      const response = await fetch(
-        `http://localhost:8000/api/damage-entry/${vin}/`,
+      const response = await fetch(`${API_URL}/api/damage-entry/${vin}/`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -44,7 +44,7 @@ export default function DamageHistory({ onEditDamage }) {
 
     try {
       const token = getToken();
-      const res = await fetch(`http://localhost:8000/api/damage-entry/${vin}/${entryId}/`, {
+      const res = await fetch(`${API_URL}/api/damage-entry/${vin}/${entryId}/`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

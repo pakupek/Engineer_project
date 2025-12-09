@@ -10,14 +10,14 @@ export default function VehicleSaleDetail({ saleId }) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const API_URL = 'https://engineer-project.onrender.com';
 
   const handleDownloadPdf = async () => {
     try {
       setDownloadingPdf(true);
       const token = getToken();
       
-      const response = await fetch(
-        `http://localhost:8000/api/vehicles/${sale.vehicle}/history/pdf/`,
+      const response = await fetch(`${API_URL}/api/vehicles/${sale.vehicle}/history/pdf/`,
         {
           method: "GET",
           headers: { 
@@ -53,7 +53,7 @@ export default function VehicleSaleDetail({ saleId }) {
     const fetchSale = async () => {
       try {
         const token = getToken();
-        const res = await fetch(`http://localhost:8000/api/sales/${saleId}/`, {
+        const res = await fetch(`${API_URL}/api/sales/${saleId}/`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();

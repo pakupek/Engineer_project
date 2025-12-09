@@ -8,6 +8,7 @@ const Timeline = ({ vin }) => {
   const [timeline, setTimeline] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const API_URL = 'https://engineer-project.onrender.com';
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -15,7 +16,7 @@ const Timeline = ({ vin }) => {
       setError(null);
 
       try {
-        const res = await fetch(`http://localhost:8000/api/vehicle-history/${vin}/`);
+        const res = await fetch(`${API_URL}/api/vehicle-history/${vin}/`);
         const data = await res.json();
 
         if (data.success) {

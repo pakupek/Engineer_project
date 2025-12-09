@@ -7,6 +7,7 @@ import Image from "next/image";
 
 export default function VehicleSaleCard({ sale, onDelete }) {
   const v = sale.vehicle_info;
+  const API_URL = 'https://engineer-project.onrender.com';
 
   const handleDelete = async () => {
     if (!confirm("Czy na pewno chcesz usunąć to ogłoszenie?")) return;
@@ -14,7 +15,7 @@ export default function VehicleSaleCard({ sale, onDelete }) {
     try {
         const token = getToken();
     
-        const res = await fetch(`http://localhost:8000/api/sales/${sale.id}/`, {
+        const res = await fetch(`${API_URL}/api/sales/${sale.id}/`, {
             method: "DELETE",
             headers: {
             Authorization: `Bearer ${token}`,
