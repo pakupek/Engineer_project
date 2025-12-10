@@ -30,7 +30,7 @@ def user_avatar_path(instance, filename):
 
 def default_avatar_path():
     # Domyślna ścieżka do default avatar dla użytkowników
-    return "avatars/default_avatar.jpg"
+    return "https://res.cloudinary.com/dsopzzzrl/image/upload/v123/avatars/default_avatar.jpg"
 
 
 def discussion_image_path(instance, filename):
