@@ -645,40 +645,6 @@ class CommentStatsUpdateAPIView(generics.UpdateAPIView):
         }, status=status.HTTP_200_OK)
 
 
-class SendVerificationCodeView(generics.CreateAPIView):
-    """
-    Widok wysyłania kodu weryfikacyjnego
-    """
-
-    serializer_class = EmailSerializer
-    permission_classes = [AllowAny]
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        email = serializer.validated_data['email']
-
-        # W trybie testowym zawsze generujemy ten sam kod
-        if getattr(settings, "TESTING", False):
-            code = "123456"
-        else:
-            code = generate_verification_code()
-
-        # Zapis kodu w cache na 5 minut
-        cache.set(f'verification_code_{email}', code, 300)
-
-        # Wysyłka maila tylko w trybie produkcyjnym
-        if not getattr(settings, "TESTING", False):
-            send_verification_email_task.delay(email, code)
-
-        # Response dla testów może zawierać kod (tylko w trybie TESTING)
-        response_data = {"message": "Kod weryfikacyjny wysłany"}
-        if getattr(settings, "TESTING", False):
-            response_data["verification_code"] = code  # opcjonalnie dla testów automatycznych
-
-        return Response(response_data, status=status.HTTP_200_OK)
-
 class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]

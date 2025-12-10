@@ -33,7 +33,6 @@ from .views import (
     CommentStatsUpdateAPIView,
     DiscussionStatsView,
     DiscussionFavoriteView,
-    SendVerificationCodeView,
     VehicleImageDetailView,
 )
 from rest_framework_simplejwt.views import (
@@ -47,7 +46,6 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('register/', UserRegistrationView.as_view(), name='register'),
-    path('send-verification-code/', SendVerificationCodeView.as_view(), name='send_verification_code'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
 
