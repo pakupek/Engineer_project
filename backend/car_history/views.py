@@ -64,7 +64,6 @@ from rest_framework.throttling import UserRateThrottle
 from django.core.cache import cache
 from .pagination import CommentPagination, DiscussionPagination, TenPerPagePagination
 from .filters import DiscussionFilter
-from .utils import generate_verification_code
 from django.db.models import F, Prefetch
 from .tasks import send_verification_email_task, refresh_discussions_cache_task
 
