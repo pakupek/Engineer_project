@@ -11,16 +11,11 @@ from .utils import (
     discussion_image_path, 
     comment_image_path)
 import time, logging
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
-from datetime import date, datetime
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
+from datetime import datetime
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from django.db.models import Count
-from cloudinary.models import CloudinaryField
+from playwright.sync_api import sync_playwright, TimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -491,68 +486,67 @@ class VehicleImage(models.Model):
 
 class VehicleHistory:
     """
-    Model odpowiedzialny za webscraping historii i danych technicznych pojazdu z portalu
-    historiapojazdu.gov.pl
+    Model odpowiedzialny za webscraping historii i danych technicznych pojazdu
+    z portalu historiapojazdu.gov.pl (Playwright)
     """
-    def __init__(self, rejestracja, vin, rocznik, options=[]):
+
+    def __init__(self, rejestracja, vin, rocznik):
         self.registration_plate = rejestracja
         self.vin = vin
         self.production_date = rocznik
+        self.url = "https://historiapojazdu.gov.pl/"
 
-        self.url = 'https://historiapojazdu.gov.pl/'
-		
-        chrome_options = Options()
-
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-
-        self.driver = webdriver.Remote(
-            command_executor="http://standalone-chrome-production-0141.up.railway.app:4444/wd/hub",
-            options=chrome_options
+        self.playwright = sync_playwright().start()
+        self.browser = self.playwright.chromium.launch(
+            headless=True,
+            args=["--no-sandbox", "--disable-dev-shm-usage"]
         )
+        self.context = self.browser.new_context()
+        self.page = self.context.new_page()
 
-    def closeBrowser(self):
-        if self.driver:
-            self.driver.quit()
-
-    def _fill_form(self, date_str, wait):
-        """Uzupełnianie formularza"""
-
-        rejestracja_field = wait.until(EC.presence_of_element_located((By.ID, "registrationNumber")))
-        vin_field = wait.until(EC.presence_of_element_located((By.ID, "VINNumber")))
-        data_rejestracji = wait.until(EC.presence_of_element_located((By.ID, "firstRegistrationDate")))
-
-        rejestracja_field.clear()
-        rejestracja_field.send_keys(self.registration_plate)
-
-        vin_field.clear()
-        vin_field.send_keys(self.vin)
-
-        data_rejestracji.clear()
-        data_rejestracji.send_keys(Keys.HOME)
-        data_rejestracji.send_keys(date_str)
-
-        submit = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button.nforms-button")))
-        submit.click()
-        time.sleep(3)
-
-    def _extract_technical_data(self,wait):
-        """Pobiera dane techniczne pojazdu"""
-
+    def close_browser(self):
         try:
-            # Znajdź sekcję z danymi technicznymi
-            tech_section = wait.until(EC.presence_of_element_located(
-                (By.XPATH, "//section[.//h2[contains(., 'Dane techniczne')]]")
-            ))
-            
-            # Pobierz cały HTML sekcji
-            tech_html = tech_section.get_attribute("outerHTML")
-            logger.info("Pobrano sekcję 'Dane techniczne'.")
-            soup = BeautifulSoup(tech_html, "html.parser")
+            self.context.close()
+            self.browser.close()
+            self.playwright.stop()
+        except Exception:
+            pass
+
+
+    # FORMULARZ
+    def _fill_form(self, date_str):
+        logger.info("Uzupełnianie formularza")
+
+        self.page.wait_for_selector("#registrationNumber", timeout=10000)
+
+        self.page.fill("#registrationNumber", self.registration_plate)
+        self.page.fill("#VINNumber", self.vin)
+
+        self.page.click("#firstRegistrationDate")
+        self.page.keyboard.press("Control+A")
+        self.page.keyboard.press("Backspace")
+        self.page.type("#firstRegistrationDate", date_str)
+
+        self.page.click("button.nforms-button")
+        self.page.wait_for_load_state("networkidle")
+        time.sleep(2)
+
+
+    # DANE TECHNICZNE
+    def _extract_technical_data(self):
+        try:
+            self.page.wait_for_selector(
+                "//section[.//h2[contains(., 'Dane techniczne')]]",
+                timeout=10000
+            )
+
+            section_html = self.page.locator(
+                "//section[.//h2[contains(., 'Dane techniczne')]]"
+            ).inner_html()
+
+            soup = BeautifulSoup(section_html, "html.parser")
             data = {}
-            
-            # Mapowanie polskich nazw na klucze
+
             field_map = {
                 "Pojemność silnika": "engine_capacity",
                 "Moc silnika": "engine_power",
@@ -561,85 +555,76 @@ class VehicleHistory:
                 "Masa własna pojazdu": "mass_own",
                 "Dopuszczalna masa całkowita": "mass_total",
                 "Maks. masa całkowita przyczepy z hamulcem": "trailer_with_brake",
-                "Maks. masa całkowita przyczepy bez hamulca": "trailer_without_brake"
+                "Maks. masa całkowita przyczepy bez hamulca": "trailer_without_brake",
             }
 
-            # Szukamy wszystkich elementów app-label-value w sekcji
-            label_values = soup.find_all("app-label-value")
-            
-            for element in label_values:
-                # Pobierz label z atrybutu
+            for element in soup.find_all("app-label-value"):
                 label = element.get("label", "").strip()
-                
-                # Jeśli nie ma w atrybucie, spróbuj pobrać z tekstu
+
                 if not label:
                     label_elem = element.find("p", class_="label")
                     if label_elem:
                         label = label_elem.get_text(strip=True).replace(":", "")
-                
-                # Pobierz wartość
+
                 value_elem = element.find("p", class_="value")
-                if value_elem and label:
-                    value = value_elem.get_text(strip=True)
-                    
-                    # Mapuj na angielskie klucze
-                    if label in field_map:
-                        data[field_map[label]] = value
+                if label in field_map and value_elem:
+                    data[field_map[label]] = value_elem.get_text(strip=True)
 
             logger.info(f"Sparsowano {len(data)} pól danych technicznych")
             return data
 
+        except TimeoutError:
+            logger.warning("Nie znaleziono sekcji 'Dane techniczne'")
+            return {}
         except Exception as e:
-            logger.error(f"Błąd podczas pobierania danych technicznych: {e}")
+            logger.error(f"Błąd parsowania danych technicznych: {e}")
             return {}
 
-    def _extract_timeline(self, wait):
-        """Pobranie 'Oś czasu'"""
+
+    # OŚ CZASU
+    def _extract_timeline(self):
         try:
-            timeline_tab = wait.until(EC.element_to_be_clickable(
-                (By.XPATH, "//div[@role='tab' and contains(., 'Oś czasu')]")
-            ))
-            timeline_tab.click()
+            self.page.click("//div[@role='tab' and contains(., 'Oś czasu')]")
             time.sleep(2)
-            logger.info("Przełączono na zakładkę 'Oś czasu'.")
 
-            timeline_container = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "app-axis ul")))
-            return timeline_container.get_attribute("outerHTML")
+            self.page.wait_for_selector("app-axis ul", timeout=10000)
+            return self.page.locator("app-axis ul").inner_html()
 
-        except Exception as e:
-            logger.warning(f"Nie udało się pobrać osi czasu: {e}")
+        except TimeoutError:
+            logger.warning("Nie udało się pobrać osi czasu")
             return None
 
+ 
+    # MAIN
     def search(self):
-        """Pobieranie historii i danych technicznych"""
         try:
             date_obj = datetime.strptime(str(self.production_date), "%d%m%Y")
             date_str = date_obj.strftime("%d%m%Y")
-            logger.info(f"Pobieranie danych dla VIN={self.vin}, rej={self.registration_plate}, data={date_str}")
 
-            self.driver.get(self.url)
-            wait = WebDriverWait(self.driver, 10)
-            self._fill_form(date_str, wait)
+            logger.info(
+                f"Pobieranie danych VIN={self.vin}, rej={self.registration_plate}, data={date_str}"
+            )
 
-            # Pobranie danych technicznych
-            technical_data = self._extract_technical_data(wait)
+            self.page.goto(self.url, wait_until="networkidle")
+            self._fill_form(date_str)
 
-            # Pobranie osi czasu
-            timeline_html = self._extract_timeline(wait)
+            technical_data = self._extract_technical_data()
+            timeline_html = self._extract_timeline()
 
             return {
                 "vin": self.vin,
                 "registration": self.registration_plate,
                 "data_rejestracji": date_str,
                 "technical_data": technical_data,
-                "timeline_html": timeline_html
+                "timeline_html": timeline_html,
             }
 
         except Exception as e:
-            logger.error(f"Błąd podczas scrapowania dla VIN={self.vin}: {e}")
+            logger.error(f"Błąd scrapowania VIN={self.vin}: {e}")
             return None
+
         finally:
-            self.closeBrowser()
+            self.close_browser()
 
     
 class Message(models.Model):
