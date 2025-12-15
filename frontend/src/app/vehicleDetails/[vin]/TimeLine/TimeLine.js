@@ -63,7 +63,7 @@ const Timeline = ({ vin }) => {
 
   if (loading) return <p>Ładowanie osi czasu...</p>;
   if (error) return <p className="error">{error}</p>;
-  if (!timeline.length) return <p>Brak danych do wyświetlenia.</p>;
+  if (!timeline) return <p>Brak danych do wyświetlenia.</p>;
 
   return (
     <section id="cd-timeline" className="cd-container">
