@@ -1043,11 +1043,16 @@ def vehicle_history(request, vin):
     """
     Endpoint zwraca dane techniczne i oś czasu pojazdu w JSON.
     """
-    vin = request.GET.get("vin")
-    year = request.GET.get("year")  # np. "01012020"
-    registration = request.GET.get("registration")  # np. "ABC1234"
+    try:
+        vehicle = Vehicle.objects.get(vin=vin)
+    except Vehicle.DoesNotExist:
+        return JsonResponse({"error": "Pojazd nie istnieje"}, status=404)
+    
+    registration = vehicle.registration
+    year = vehicle.production_year
     if not vin or not year or not registration:
         return JsonResponse({"error": "Brak wymaganych parametrów: vin, year, registration"}, status=400)
+    
     # enqueue zadania Celery
     fetch_vehicle_history.delay(registration, vin, year)
 

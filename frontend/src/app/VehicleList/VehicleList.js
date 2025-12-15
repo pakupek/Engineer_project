@@ -26,7 +26,7 @@ export default function VehicleList({ vehicles, onDeleteVehicle }) {
           key={vehicle.vin} 
           vehicle={vehicle} 
           onDelete={onDeleteVehicle}
-          onViewDetails={(vin) => window.location.href = `/VehicleDetails/${vin}`}
+          onViewDetails={(vin) => window.location.href = `/vehicleDetails/${vin}`}
         />
       ))}
     </div>
