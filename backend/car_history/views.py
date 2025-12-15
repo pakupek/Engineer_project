@@ -553,34 +553,22 @@ class CommentListCreateView(generics.ListCreateAPIView):
         return context
 
     def perform_create(self, serializer):
-        discussion_id = self.kwargs.get("discussion_id")
+        discussion = get_object_or_404(
+            Discussion, pk=self.kwargs["discussion_id"]
+        )
 
         if discussion.locked:
             raise ValidationError("Dyskusja jest zamknięta")
-    
+
         comment = serializer.save(
             author=self.request.user,
-            discussion_id=discussion_id  
+            discussion=discussion
         )
 
-        # Obsługa zdjęć (maks. 5)
-        images = self.request.FILES.getlist('images')
+        images = self.request.FILES.getlist("images")[:5]
         CommentImage.objects.bulk_create([
-            CommentImage(comment=comment, image=img) for img in images[:5]
+            CommentImage(comment=comment, image=img) for img in images
         ])
-
-         # Tworzymy statystyki komentarza, jeśli wymagane
-        if not CommentStats.objects.filter(comment=comment, user=self.request.user).exists():
-            CommentStats.objects.create(comment=comment, user=self.request.user)
-
-        # Aktualizacja statystyk dyskusji
-        discussion = comment.discussion
-        Discussion.objects.filter(pk=discussion.pk).update(
-            comments_count=F('comments_count') + 1,
-            last_activity=timezone.now()
-        )
-        discussion.update_last_activity()
-        discussion.save(update_fields=["comments_count", "last_activity"])
 
 
 class CommentStatsUpdateAPIView(generics.UpdateAPIView):
