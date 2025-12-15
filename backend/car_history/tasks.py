@@ -1,61 +1,121 @@
 from celery import shared_task
-from django.conf import settings
-import logging
-import sib_api_v3_sdk
-from sib_api_v3_sdk.rest import ApiException
+import logging, time
 from django.core.cache import cache
 from .models import Discussion
+from celery import shared_task
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
+from bs4 import BeautifulSoup
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 
-@shared_task(bind=True, max_retries=3)
-def send_verification_email_task(self, email, code):
-    """Wysyłka emaila przez Brevo API (sib_api_v3_sdk)"""
-
-    logger.info(f"📧 Wysyłanie emaila do: {email} przez Brevo API")
-
-    configuration = sib_api_v3_sdk.Configuration()
-    configuration.api_key['api-key'] = settings.BREVO_API_KEY
-    api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
-
-    subject = "GaraZero: Kod weryfikacyjny"
-    html_content = f"""
-    <!DOCTYPE html>
-    <html>
-    <body style="font-family: Arial, sans-serif;">
-        <h2>Twój kod weryfikacyjny:</h2>
-        <div style="border: 2px dashed #667eea; padding: 20px; text-align: center;">
-            <h1 style="color: #667eea; font-size: 42px;">{code}</h1>
-        </div>
-        <p>Kod ważny przez 5 minut.</p>
-    </body>
-    </html>
+@shared_task
+def fetch_vehicle_history(registration, vin, production_date):
     """
+    Task Celery do pobierania historii pojazdu.
+    """
+    url = "https://historiapojazdu.gov.pl/"
 
-    sender = {"name": "GaraZero", "email": "no-reply@brevo.com"}  # bez własnej domeny
-    to = [{"email": email}]
+    chrome_options = Options()
+    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
 
-    send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
-        to=to,
-        sender=sender,
-        subject=subject,
-        html_content=html_content
+    driver = webdriver.Remote(
+        command_executor="http://standalone-chrome-production-0141.up.railway.app:4444/wd/hub",
+        options=chrome_options
     )
 
     try:
-        api_response = api_instance.send_transac_email(send_smtp_email)
-        logger.info(f"✅ Email wysłany pomyślnie! Brevo ID: {api_response.message_id}")
-        return {"status": "success", "email": email, "message_id": api_response.message_id}
+        date_obj = datetime.strptime(str(production_date), "%d%m%Y")
+        date_str = date_obj.strftime("%d%m%Y")
+        logger.info(f"Pobieranie danych dla VIN={vin}, rej={registration}, data={date_str}")
 
-    except ApiException as e:
-        logger.error(f"❌ Brevo API Exception: {e}")
-        if self.request.retries < self.max_retries:
-            logger.info(f"Retry za 10s... próba {self.request.retries + 1}/3")
-            raise self.retry(exc=e, countdown=10)
-        else:
-            logger.error(f"Przekroczono limit prób dla {email}")
-            raise
+        driver.get(url)
+        wait = WebDriverWait(driver, 10)
+
+        # --- Fill form ---
+        rejestracja_field = wait.until(EC.presence_of_element_located((By.ID, "registrationNumber")))
+        vin_field = wait.until(EC.presence_of_element_located((By.ID, "VINNumber")))
+        data_rejestracji = wait.until(EC.presence_of_element_located((By.ID, "firstRegistrationDate")))
+
+        rejestracja_field.clear()
+        rejestracja_field.send_keys(registration)
+
+        vin_field.clear()
+        vin_field.send_keys(vin)
+
+        data_rejestracji.clear()
+        data_rejestracji.send_keys(Keys.HOME)
+        data_rejestracji.send_keys(date_str)
+
+        submit = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button.nforms-button")))
+        submit.click()
+        time.sleep(3)
+
+        # --- Extract technical data ---
+        tech_section = wait.until(EC.presence_of_element_located(
+            (By.XPATH, "//section[.//h2[contains(., 'Dane techniczne')]]")
+        ))
+        tech_html = tech_section.get_attribute("outerHTML")
+        soup = BeautifulSoup(tech_html, "html.parser")
+        field_map = {
+            "Pojemność silnika": "engine_capacity",
+            "Moc silnika": "engine_power",
+            "Norma euro": "euro_norm",
+            "Liczba miejsc ogółem": "seats_total",
+            "Masa własna pojazdu": "mass_own",
+            "Dopuszczalna masa całkowita": "mass_total",
+            "Maks. masa całkowita przyczepy z hamulcem": "trailer_with_brake",
+            "Maks. masa całkowita przyczepy bez hamulca": "trailer_without_brake"
+        }
+
+        data = {}
+        for element in soup.find_all("app-label-value"):
+            label = element.get("label", "").strip()
+            if not label:
+                label_elem = element.find("p", class_="label")
+                if label_elem:
+                    label = label_elem.get_text(strip=True).replace(":", "")
+            value_elem = element.find("p", class_="value")
+            if value_elem and label and label in field_map:
+                data[field_map[label]] = value_elem.get_text(strip=True)
+
+        # --- Extract timeline ---
+        timeline_html = None
+        try:
+            timeline_tab = wait.until(EC.element_to_be_clickable(
+                (By.XPATH, "//div[@role='tab' and contains(., 'Oś czasu')]")
+            ))
+            timeline_tab.click()
+            time.sleep(2)
+            timeline_container = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "app-axis ul")))
+            timeline_html = timeline_container.get_attribute("outerHTML")
+        except Exception as e:
+            logger.warning(f"Nie udało się pobrać osi czasu: {e}")
+
+        result = {
+            "vin": vin,
+            "registration": registration,
+            "data_rejestracji": date_str,
+            "technical_data": data,
+            "timeline_html": timeline_html
+        }
+
+        logger.info("Zakończono scrapowanie pojazdu.")
+        return result
+
+    except Exception as e:
+        logger.error(f"Błąd podczas scrapowania dla VIN={vin}: {e}")
+        return None
+    finally:
+        driver.quit()
 
 
 # -------------------------------

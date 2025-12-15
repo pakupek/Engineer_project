@@ -65,7 +65,7 @@ from django.core.cache import cache
 from .pagination import CommentPagination, DiscussionPagination, TenPerPagePagination
 from .filters import DiscussionFilter
 from django.db.models import F, Prefetch
-from .tasks import send_verification_email_task, refresh_discussions_cache_task
+from .tasks import fetch_vehicle_history, refresh_discussions_cache_task
 
 from django.contrib.staticfiles import finders
 
@@ -1043,44 +1043,15 @@ def vehicle_history(request, vin):
     """
     Endpoint zwraca dane techniczne i oś czasu pojazdu w JSON.
     """
-    try:
-        vehicle = Vehicle.objects.filter(vin=vin).first()
-        if not vehicle:
-            return JsonResponse({
-                "success": False,
-                "message": "Nie znaleziono pojazdu o podanym VIN."
-            })
+    vin = request.GET.get("vin")
+    year = request.GET.get("year")  # np. "01012020"
+    registration = request.GET.get("registration")  # np. "ABC1234"
+    if not vin or not year or not registration:
+        return JsonResponse({"error": "Brak wymaganych parametrów: vin, year, registration"}, status=400)
+    # enqueue zadania Celery
+    fetch_vehicle_history.delay(registration, vin, year)
 
-        # Sprawdź cache lub pobierz 
-        data = get_vehicle_history(
-            rejestracja=vehicle.registration,
-            vin=vehicle.vin,
-            rocznik=vehicle.first_registration.strftime("%d%m%Y")
-        )
-
-        if not data:
-            return JsonResponse({
-                "success": False,
-                "message": "Nie udało się pobrać danych pojazdu."
-            })
-
-        # Parsowanie osi czasu
-        timeline = parse_timeline_html(data.get("timeline_html"))
-        
-
-        return JsonResponse({
-            "success": True,
-            "vin": vin,
-            "technical_data": data.get("technical_data",{}),
-            "timeline": timeline
-        })
-
-    except Exception as e:
-        logger.error(f"Błąd w endpointcie vehicle_history: {e}", exc_info=True)
-        return JsonResponse({
-            "success": False,
-            "error": str(e)
-        })
+    return JsonResponse({"status": "queued"})
     
 
 class ServiceEntryView(generics.GenericAPIView):
