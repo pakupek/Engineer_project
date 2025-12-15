@@ -248,7 +248,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "votes",
             "images"
         ]
-        read_only_fields = ["author", "created_at", 'likes_count', 'dislikes_count']
+        read_only_fields = ["author", "discussion","created_at", 'likes_count', 'dislikes_count']
 
     def get_user_vote(self, obj):
         request = self.context.get('request')
