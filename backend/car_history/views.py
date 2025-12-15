@@ -65,7 +65,7 @@ from django.core.cache import cache
 from .pagination import CommentPagination, DiscussionPagination, TenPerPagePagination
 from .filters import DiscussionFilter
 from django.db.models import F, Prefetch
-from .tasks import fetch_vehicle_history, refresh_discussions_cache_task
+from .tasks import scrape_vehicle_history, refresh_discussions_cache_task
 
 from django.contrib.staticfiles import finders
 
@@ -1054,7 +1054,7 @@ def vehicle_history(request, vin):
         return JsonResponse({"error": "Brak wymaganych parametrów: vin, year, registration"}, status=400)
     
     # enqueue zadania Celery
-    fetch_vehicle_history.delay(registration, vin, year)
+    scrape_vehicle_history.delay(registration, vin, year)
 
     return JsonResponse({"status": "queued"})
     
