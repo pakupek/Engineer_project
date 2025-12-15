@@ -502,15 +502,14 @@ class VehicleHistory:
         self.url = 'https://historiapojazdu.gov.pl/'
 		
         chrome_options = Options()
-        chrome_options.add_argument("--headless")  # uruchom Chrome w tle
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
 
         for option in options:
             chrome_options.add_argument(option)
 
-        # Zamiast Remote, używamy lokalnego Chromedriver
-        self.driver = webdriver.Chrome(options=chrome_options)
+        self.driver = webdriver.Remote(
+            command_executor="http://selenium-hub-production-7007.up.railway.app:4444/wd/hub",
+            options=chrome_options
+        )
 
     def closeBrowser(self):
         if self.driver:
