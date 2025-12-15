@@ -7,16 +7,12 @@ from .models import VehicleHistory
 
 logger = logging.getLogger(__name__)
 
-@shared_task(
-    autoretry_for=(Exception,),
-    retry_kwargs={"max_retries": 3, "countdown": 10},
-    retry_backoff=True
-)
+@shared_task()
 def scrape_vehicle_history(registration, vin, production_date):
     """
     Wywołuje async scraper Playwright w synchronej powłoce Celery
     """
-    # Uruchamiamy async funkcję w loopie
+    # Uruchamiamy async 
     return asyncio.run(_scrape_async(registration, vin, production_date))
 
 
