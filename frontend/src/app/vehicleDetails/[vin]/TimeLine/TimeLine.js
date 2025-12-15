@@ -8,31 +8,57 @@ const Timeline = ({ vin }) => {
   const [timeline, setTimeline] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [taskId, setTaskId] = useState(null);
   const API_URL = 'https://engineer-project.onrender.com';
 
   useEffect(() => {
-    const fetchHistory = async () => {
+    if (!vin) return;
+
+    const startFetch = async () => {
       setLoading(true);
       setError(null);
 
       try {
+        // 1. Wywołanie endpointu, który startuje zadanie Celery
         const res = await fetch(`${API_URL}/api/vehicle-history/${vin}/`);
         const data = await res.json();
 
-        if ( res.ok && data.timeline ) {
-          setTimeline(data.timeline);
-        } else {
-          setError(data.message || data.error);
+        if (!res.ok) {
+          setError(data.error || "Błąd serwera");
+          setLoading(false);
+          return;
         }
+
+        const id = data.task_id;
+        setTaskId(id);
+
+        // 2. Polling co 2s aż zadanie się zakończy
+        const poll = async () => {
+          const statusRes = await fetch(`${API_URL}/api/vehicle-history/status/${id}/`);
+          const statusData = await statusRes.json();
+
+          if (statusData.status === "success") {
+            setTimeline(statusData.timeline_html);
+            setLoading(false);
+          } else if (statusData.status === "failure") {
+            setError(statusData.error || "Błąd w zadaniu Celery");
+            setLoading(false);
+          } else {
+            // PENDING lub inne stany → czekaj 2s i odpytywanie ponownie
+            setTimeout(poll, 2000);
+          }
+        };
+
+        poll();
+
       } catch (err) {
         setError("Błąd połączenia z serwerem");
-      } finally {
         setLoading(false);
       }
     };
 
-    fetchHistory();
-  }, [vin]);
+    startFetch();
+  }, [vin, API_URL]);
 
 
   if (loading) return <p>Ładowanie osi czasu...</p>;

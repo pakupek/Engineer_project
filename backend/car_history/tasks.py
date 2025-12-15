@@ -6,6 +6,7 @@ from celery import shared_task
 from .models import VehicleHistory
 
 logger = logging.getLogger(__name__)
+_vehicle_history_cache = {}
 
 @shared_task()
 def scrape_vehicle_history(registration, vin, production_date):
@@ -22,6 +23,8 @@ async def _scrape_async(registration, vin, production_date):
     """
     vh = VehicleHistory(registration, vin, production_date)
     result = await vh.search()
+    if result:
+        _vehicle_history_cache[vin] = result  # zapis do wspólnego cache w procesie Celery
     return result
 
 

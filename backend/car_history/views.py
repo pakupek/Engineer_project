@@ -66,6 +66,7 @@ from .pagination import CommentPagination, DiscussionPagination, TenPerPagePagin
 from .filters import DiscussionFilter
 from django.db.models import F, Prefetch
 from .tasks import scrape_vehicle_history, refresh_discussions_cache_task
+from celery.result import AsyncResult
 
 from django.contrib.staticfiles import finders
 
@@ -979,27 +980,6 @@ class VehicleDeleteView(generics.DestroyAPIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-_vehicle_history_cache = {}
-
-def get_vehicle_history(rejestracja, vin, rocznik):
-    """
-    Zwraca dane historii i danych technicznych pojazdu — z cache lub scrapując.
-    """
-    if vin in _vehicle_history_cache:
-        logger.debug(f"Dane VIN={vin} pobrane z cache.")
-        return _vehicle_history_cache[vin]
-
-    historia = VehicleHistory(rejestracja, vin, rocznik, ['--headless', '--no-sandbox'])
-    result = historia.search()
-
-    if result:
-        _vehicle_history_cache[vin] = result
-        logger.debug(f"Zapisano dane VIN={vin} do cache.")
-        return result
-
-    logger.warning(f"Nie udało się pobrać danych dla VIN={vin}")
-    return None
-
 
 def parse_timeline_html(html):
     """
@@ -1054,10 +1034,37 @@ def vehicle_history(request, vin):
         return JsonResponse({"error": "Brak wymaganych parametrów: vin, year, registration"}, status=400)
     
     # enqueue zadania Celery
-    scrape_vehicle_history.delay(registration, vin, year)
+    task = scrape_vehicle_history.delay(registration, vin, year)
 
-    return JsonResponse({"status": "queued"})
+    return JsonResponse({"status": "queued", "task_id": task.id})
     
+
+def vehicle_history_status(request, task_id):
+    """
+    Sprawdza status zadania Celery i zwraca dane jeśli gotowe
+    """
+    task_result = AsyncResult(task_id)
+
+    if task_result.state == "PENDING":
+        return JsonResponse({"status": "pending"})
+    elif task_result.state == "FAILURE":
+        return JsonResponse({"status": "failure", "error": str(task_result.result)}, status=500)
+    elif task_result.state == "SUCCESS":
+        result = task_result.result
+        if not result:
+            return JsonResponse({"status": "failure", "error": "Brak wyników"}, status=500)
+
+        # Parsowanie osi czasu
+        timeline = parse_timeline_html(result.get("timeline_html"))
+
+        return JsonResponse({
+            "status": "success",
+            "vin": result.get("vin"),
+            "registration": result.get("registration"),
+            "data_rejestracji": result.get("data_rejestracji"),
+            "technical_data": result.get("technical_data"),
+            "timeline": timeline
+        })
 
 class ServiceEntryView(generics.GenericAPIView):
     """

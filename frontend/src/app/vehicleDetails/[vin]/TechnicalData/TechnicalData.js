@@ -5,24 +5,58 @@ import "./TechnicalData.css";
 
 export default function TechnicalData({ vin }) {
     const [technicalData, setTechnicalData] = useState(null);
+    const [taskId, setTaskId] = useState(null);
     const API_URL = 'https://engineer-project.onrender.com';
     // Pobranie danych technicznych pojazdu
     useEffect(() => {
-        const fetchTechnicalData = async () => {
-          try {
-            const res = await fetch(`${API_URL}/api/vehicle-history/${vin}/`);
-            const data = await res.json();
-            console.log("Dane techniczne pojazdu:", data);
-            if (res.ok && data.technical_data) {
-              setTechnicalData(data.technical_data);
-            }
-          } catch (err) {
-            console.error("Błąd przy pobieraniu danych technicznych:", err);
+      let interval;
+
+      const startVehicleHistoryTask = async () => {
+        try {
+          setLoading(true);
+          // Wywołanie endpointu, który enqueue'uje zadanie Celery
+          const res = await fetch(`${API_URL}/api/vehicle-history/${vin}/`);
+          const data = await res.json();
+
+          if (res.ok && data.task_id) {
+            setTaskId(data.task_id);
+
+            // Polling co 2 sekundy
+            interval = setInterval(async () => {
+              try {
+                const statusRes = await fetch(
+                  `${API_URL}/api/vehicle-history/status/${data.task_id}/`
+                );
+                const statusData = await statusRes.json();
+
+                if (statusData.status === "success") {
+                  setTechnicalData(statusData.technical_data);
+                  setLoading(false);
+                  clearInterval(interval); // zatrzymanie polling
+                } else if (statusData.status === "failure") {
+                  console.error("Błąd pobierania danych:", statusData.error);
+                  setLoading(false);
+                  clearInterval(interval);
+                }
+                // w przeciwnym razie status = pending → kontynuuj polling
+              } catch (err) {
+                console.error("Błąd przy polling statusu:", err);
+                setLoading(false);
+                clearInterval(interval);
+              }
+            }, 2000);
           }
-        };
-    
-        if (vin) fetchTechnicalData();
-      }, [vin]);
+        } catch (err) {
+          console.error("Błąd przy uruchamianiu zadania Celery:", err);
+          setLoading(false);
+        }
+      };
+
+      if (vin) startVehicleHistoryTask();
+
+      // Cleanup przy odmontowaniu komponentu
+      return () => clearInterval(interval);
+    }, [vin]);
 
     return (
         <div className="technical-section">
