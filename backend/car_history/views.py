@@ -1049,7 +1049,7 @@ def vehicle_history(request, vin):
         return JsonResponse({"error": "Pojazd nie istnieje"}, status=404)
     
     registration = vehicle.registration
-    year = vehicle.production_year
+    year = vehicle.first_registration
     if not vin or not year or not registration:
         return JsonResponse({"error": "Brak wymaganych parametrów: vin, year, registration"}, status=400)
     
