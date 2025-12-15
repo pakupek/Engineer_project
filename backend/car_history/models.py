@@ -503,11 +503,12 @@ class VehicleHistory:
 		
         chrome_options = Options()
 
-        for option in options:
-            chrome_options.add_argument(option)
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
 
         self.driver = webdriver.Remote(
-            command_executor="http://selenium-hub-production-7007.up.railway.app:4444/wd/hub",
+            command_executor="http://standalone-chrome-production-0141.up.railway.app:4444/wd/hub",
             options=chrome_options
         )
 
