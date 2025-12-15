@@ -1,5 +1,5 @@
 from celery import shared_task
-import logging, time
+import logging, time, os
 from django.core.cache import cache
 from .models import Discussion
 from celery import shared_task
@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
-
+BROWSERLESS_TOKEN = os.getenv("BROWSERLESS_TOKEN")
 
 @shared_task
 def fetch_vehicle_history(registration, vin, production_date):
@@ -28,7 +28,7 @@ def fetch_vehicle_history(registration, vin, production_date):
     chrome_options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Remote(
-        command_executor="http://standalone-chrome-production-0141.up.railway.app:4444/wd/hub",
+        command_executor=f"https://production-sfo.browserless.io/webdriver?token={BROWSERLESS_TOKEN}",
         options=chrome_options
     )
 
