@@ -20,8 +20,9 @@ COPY backend/entrypoint.sh ./
 
 RUN python -m pip install --upgrade pip \
     && pip install --no-cache-dir poetry \
-    && poetry install --only main --no-interaction --no-root
-
+    && poetry install --only main --no-interaction --no-root \
+    && pip install --no-cache-dir playwright \
+    && playwright install --with-deps
 # Copy the rest of the project including entrypoint.sh
 COPY backend/ ./
 
