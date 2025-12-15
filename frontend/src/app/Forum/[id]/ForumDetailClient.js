@@ -214,7 +214,6 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
           },
         });
       const data = await res.json();
-      console.log("Fetched comments data:", data);
       const commentsData = data.results || data;
       setComments(commentsData);
       // Ustaw liczbę stron
@@ -240,16 +239,21 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
       const token = getToken();
       const formData = new FormData();
       formData.append("content", content);
-      formData.append("discussion", discussionId);
       images.forEach((file) => formData.append("images", file));
 
-      await fetch(`http://localhost:8000/api/discussions/${discussionId}/comments/`, {
+      const res = await fetch(`${API_URL}/api/discussions/${discussionId}/comments/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
         body: formData,
       });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Nie udało się dodać komentarza");
+      }
+
       setContent("");
        if (editorRef.current) {
         editorRef.current.innerHTML = "";
@@ -277,7 +281,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
         return;
       }
 
-      const res = await fetch(`http://localhost:8000/api/comments/${commentId}/vote/`, {
+      const res = await fetch(`${API_URL}/api/comments/${commentId}/vote/`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

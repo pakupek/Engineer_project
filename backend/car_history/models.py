@@ -258,20 +258,10 @@ class Comment(models.Model):
             models.Index(fields=['discussion', '-content_length']),
             models.Index(fields=['author']),
         ]
-
-    def save(self, *args, **kwargs):
-        is_new = self.pk is None
-        user = kwargs.pop('user', None)
-        super().save(*args, **kwargs)
-        
-        # Aktualizujemy last_activity dyskusji po dodaniu komentarza
-        if is_new:
-            # inkrementacja liczby komentarzy w dyskusji i aktualizacja last_activity
-            Discussion.objects.filter(pk=self.discussion_id).update(
-                comments_count=F('comments_count') + 1,
-                last_activity=timezone.now()
-            )
            
+    def save(self, *args, **kwargs):
+        self.content_length = len(self.content or "")
+        super().save(*args, **kwargs)
 
     def update_votes_count(self):
         """Aktualizuje liczniki like/dislike na podstawie głosów"""

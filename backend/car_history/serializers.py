@@ -256,24 +256,6 @@ class CommentSerializer(serializers.ModelSerializer):
             return obj.get_user_vote(request.user)
         return None
 
-    def create(self, validated_data):
-        validated_data["author"] = self.context['request'].user
-
-        comment = super().create(validated_data)
-
-        # Tworzymy statystyki komentarza
-        CommentStats.objects.create(
-            comment=comment,
-            user=comment.author
-        )
-
-        # Aktualizacja statystyk dyskusji
-        discussion = comment.discussion
-        discussion.comments_count = Comment.objects.filter(discussion=discussion).count()
-        discussion.update_last_activity()
-        discussion.save(update_fields=["comments_count", "last_activity"])
-
-        return comment
 
 class DiscussionStatsSerializer(serializers.ModelSerializer):
     """

@@ -539,9 +539,9 @@ class CommentListCreateView(generics.ListCreateAPIView):
         elif sort == "liked":
             qs = qs.order_by("-likes_count")              # najwięcej polubień
         elif sort == "longest":
-            qs.order_by('-content_length')              # najdłuższe
+            qs = qs.order_by('-content_length')              # najdłuższe
         elif sort == "shortest":
-            qs.order_by('content_length')             # najkrótsze
+            qs = qs.order_by('content_length')             # najkrótsze
         else:
             qs = qs.order_by("-created_at")         # default
 
@@ -554,6 +554,10 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         discussion_id = self.kwargs.get("discussion_id")
+
+        if discussion.locked:
+            raise ValidationError("Dyskusja jest zamknięta")
+    
         comment = serializer.save(
             author=self.request.user,
             discussion_id=discussion_id  
@@ -571,7 +575,10 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
         # Aktualizacja statystyk dyskusji
         discussion = comment.discussion
-        discussion.comments_count = Comment.objects.filter(discussion=discussion).count()
+        Discussion.objects.filter(pk=discussion.pk).update(
+            comments_count=F('comments_count') + 1,
+            last_activity=timezone.now()
+        )
         discussion.update_last_activity()
         discussion.save(update_fields=["comments_count", "last_activity"])
 
