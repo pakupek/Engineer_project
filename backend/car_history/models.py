@@ -549,7 +549,7 @@ class VehicleHistory:
 
             section_html = await self.page.locator(
                 "//section[.//h2[contains(., 'Dane techniczne')]]"
-            ).inner_html()
+            ).nth(1).inner_html()
 
             soup = BeautifulSoup(section_html, "html.parser")
             data = {}
