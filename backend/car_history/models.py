@@ -19,7 +19,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-from django.db.models import Count, Sum, F
+from django.db.models import Count
+from cloudinary.models import CloudinaryField
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +177,7 @@ class CommentImage(models.Model):
     """
 
     comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to=comment_image_path, max_length=255)
+    image = CloudinaryField('image')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
