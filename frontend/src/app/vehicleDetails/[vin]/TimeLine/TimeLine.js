@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import "./TimeLine.css"; 
-
+import "./TimeLine.css";
 
 const Timeline = ({ vin }) => {
   const [timeline, setTimeline] = useState([]);
@@ -14,12 +13,12 @@ const Timeline = ({ vin }) => {
   useEffect(() => {
     if (!vin) return;
 
-    const startFetch = async () => {
+    const startTask = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // 1. Wywołanie endpointu, który startuje zadanie Celery
+        // 1️⃣ Startujemy zadanie Celery
         const res = await fetch(`${API_URL}/api/vehicle-history/${vin}/`);
         const data = await res.json();
 
@@ -32,74 +31,75 @@ const Timeline = ({ vin }) => {
         const id = data.task_id;
         setTaskId(id);
 
-        // 2. Polling co 2s aż zadanie się zakończy
+        // 2️⃣ Polling co 2s
         const poll = async () => {
-          const statusRes = await fetch(`${API_URL}/api/vehicle-history/status/${id}/`);
-          const statusData = await statusRes.json();
+          try {
+            const statusRes = await fetch(`${API_URL}/api/vehicle-history/status/${id}/`);
+            const statusData = await statusRes.json();
 
-          if (statusData.status === "success") {
-            setTimeline(statusData.timeline_html);
+            if (statusData.status === "success") {
+              // Parsujemy HTML osi czasu
+              const timelineHtml = statusData.timeline_html || "";
+              const parsedTimeline = parseTimelineHtml(timelineHtml);
+              setTimeline(parsedTimeline);
+              setLoading(false);
+            } else if (statusData.status === "failure") {
+              setError(statusData.error || "Błąd w zadaniu Celery");
+              setLoading(false);
+            } else {
+              // PENDING → odpytywanie ponownie za 2 sekundy
+              setTimeout(poll, 2000);
+            }
+          } catch (err) {
+            setError("Błąd podczas sprawdzania statusu zadania");
             setLoading(false);
-          } else if (statusData.status === "failure") {
-            setError(statusData.error || "Błąd w zadaniu Celery");
-            setLoading(false);
-          } else {
-            // PENDING lub inne stany → czekaj 2s i odpytywanie ponownie
-            setTimeout(poll, 2000);
           }
         };
 
         poll();
-
       } catch (err) {
         setError("Błąd połączenia z serwerem");
         setLoading(false);
       }
     };
 
-    startFetch();
-  }, [vin, API_URL]);
+    startTask();
+  }, [vin]);
 
+  // Funkcja do parsowania HTML osi czasu do obiektów JS
+  const parseTimelineHtml = (html) => {
+    if (!html) return [];
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const items = Array.from(doc.querySelectorAll("app-axis-item .item"));
+
+    return items.map((item) => {
+      const date = item.querySelector(".item-timestamp-text")?.textContent || "";
+      const title = item.querySelector(".item-content-header")?.textContent || "";
+
+      const details = {};
+      item.querySelectorAll(".item-content-details-row").forEach((row) => {
+        const key = row.querySelector(".item-content-details-row-key")?.textContent || "";
+        const value = row.querySelector(".item-content-details-row-value")?.textContent || "";
+        if (key && value) details[key] = value;
+      });
+
+      return { date, title, details };
+    });
+  };
 
   if (loading) return <p>Ładowanie osi czasu...</p>;
   if (error) return <p className="error">{error}</p>;
-  if (!timeline) return <p>Brak danych do wyświetlenia.</p>;
+  if (!timeline.length) return <p>Brak danych do wyświetlenia.</p>;
 
   return (
     <section id="cd-timeline" className="cd-container">
       {timeline.map((item, index) => (
         <div key={index} className="cd-timeline-block">
-          
-          
-          <div className={`cd-timeline-img ${item.iconClass || "cd-picture"}`}>
-          </div>
-
+          <div className={`cd-timeline-img ${item.iconClass || "cd-picture"}`}></div>
           <div className="cd-timeline-content">
-         
             <h2>{item.title}</h2>
 
-          
-            {item.info && (
-              <div className="timeline-content-info">
-                {item.info.title && (
-                  <span className="timeline-content-info-title">
-                    <i className="fa fa-certificate" aria-hidden="true"></i>
-                    {item.info.title}
-                  </span>
-                )}
-                {item.info.date && (
-                  <span className="timeline-content-info-date">
-                    <i className="fa fa-calendar-o" aria-hidden="true"></i>
-                    {item.info.date}
-                  </span>
-                )}
-              </div>
-            )}
-
-          
-            <p>{item.description}</p>
-
-            
             {item.details && Object.keys(item.details).length > 0 && (
               <ul className="content-skills">
                 {Object.entries(item.details).map(([key, value], idx) => (
@@ -110,9 +110,7 @@ const Timeline = ({ vin }) => {
               </ul>
             )}
 
-            {item.date && !item.info?.date && (
-              <span className="cd-date">{item.date}</span>
-            )}
+            {item.date && <span className="cd-date">{item.date}</span>}
           </div>
         </div>
       ))}
