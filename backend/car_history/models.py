@@ -591,22 +591,30 @@ class VehicleHistory:
     # OŚ CZASU
     async def _extract_timeline(self):
         try:
-            # Znajdź zakładkę 'Oś czasu' i poczekaj, aż będzie widoczna
-            timeline_tab = self.page.locator("//div[@role='tab' and contains(., 'Oś czasu')]")
-            await timeline_tab.wait_for(state="visible", timeout=10000)
-            await timeline_tab.click()
+            tab = self.page.locator(
+                "div[role='tab']",
+                has_text="Oś czasu"
+            )
 
-            # Poczekaj, aż pierwszy element osi czasu się pojawi
-            timeline_items = self.page.locator("app-axis ul li")
-            await timeline_items.first.wait_for(state="visible", timeout=10000)
+            # poczekaj aż zakładka będzie dostępna
+            await tab.wait_for(state="visible", timeout=10000)
 
-            # Pobierz HTML całej osi czasu
-            timeline_html = await self.page.locator("app-axis ul").inner_html()
-            return timeline_html
+            # klik przez JS (KLUCZOWE)
+            await tab.evaluate("el => el.click()")
+
+            # poczekaj aż Angular załaduje oś czasu
+            await self.page.wait_for_selector(
+                "app-axis ul li",
+                timeout=10000
+            )
+
+            # pobierz całość
+            return await self.page.locator("app-axis ul").inner_html()
 
         except Exception as e:
             logger.warning(f"Nie udało się pobrać osi czasu: {e}")
             return None
+
 
 
     # MAIN
