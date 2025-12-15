@@ -129,7 +129,7 @@ export default function VehiclesPage() {
         <VehicleList 
           vehicles={vehicles} 
           onDeleteVehicle={handleDeleteVehicle}
-          onViewDetails={(vehicleVin) => window.location.href = `/VehicleDetails/${vehicleVin}`} 
+          onViewDetails={(vehicleVin) => window.location.href = `/vehicleDetails/${vehicleVin}`} 
         />
         <div className={styles.pagination}>
           <button
