@@ -19,7 +19,7 @@ const Timeline = ({ vin }) => {
         const res = await fetch(`${API_URL}/api/vehicle-history/${vin}/`);
         const data = await res.json();
 
-        if (data.success) {
+        if ( res.ok && data.timeline ) {
           setTimeline(data.timeline);
         } else {
           setError(data.message || data.error);

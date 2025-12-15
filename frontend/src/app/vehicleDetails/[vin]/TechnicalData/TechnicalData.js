@@ -12,7 +12,7 @@ export default function TechnicalData({ vin }) {
           try {
             const res = await fetch(`${API_URL}/api/vehicle-history/${vin}/`);
             const data = await res.json();
-            if (data.success) {
+            if (res.ok && data.technical_data) {
               setTechnicalData(data.technical_data);
             }
           } catch (err) {
