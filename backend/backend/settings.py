@@ -33,26 +33,16 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
-
-# Cloudinary configuration
-if os.getenv('CLOUDINARY_CLOUD_NAME'):
-    # Produkcja - Cloudinary
-    import cloudinary
-    import cloudinary.uploader
-    import cloudinary.api
     
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-        'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-        'API_SECRET': os.getenv('CLOUDINARY_API_SECRET')
-    }
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET')
+}
     
-    # Użyj Cloudinary jako storage dla media files
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# Użyj Cloudinary jako storage dla media files
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
     
-else:
-    # Development - lokalny storage
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Celery settings
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
@@ -106,6 +96,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_filters',
     'django_extensions',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
