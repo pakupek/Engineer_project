@@ -1054,8 +1054,6 @@ def vehicle_history_status(request, task_id):
         if not result:
             return JsonResponse({"status": "failure", "error": "Brak wyników"}, status=500)
 
-        # Parsowanie osi czasu
-        timeline = parse_timeline_html(result.get("timeline_html"))
 
         return JsonResponse({
             "status": "success",
@@ -1063,7 +1061,7 @@ def vehicle_history_status(request, task_id):
             "registration": result.get("registration"),
             "data_rejestracji": result.get("data_rejestracji"),
             "technical_data": result.get("technical_data"),
-            "timeline": timeline
+            "timeline": result.get("timeline")
         })
 
 class ServiceEntryView(generics.GenericAPIView):

@@ -38,10 +38,10 @@ const Timeline = ({ vin }) => {
             const statusData = await statusRes.json();
 
             if (statusData.status === "success") {
-              // Parsujemy HTML osi czasu
-              const timelineHtml = statusData.timeline_html || "";
-              const parsedTimeline = parseTimelineHtml(timelineHtml);
-              setTimeline(parsedTimeline);
+              // ✅ Backend zwraca już sparsowane dane w polu "timeline"
+              const timelineData = statusData.timeline || [];
+              console.log("✅ Otrzymana oś czasu:", timelineData);
+              setTimeline(timelineData);
               setLoading(false);
             } else if (statusData.status === "failure") {
               setError(statusData.error || "Błąd w zadaniu Celery");
@@ -51,6 +51,7 @@ const Timeline = ({ vin }) => {
               setTimeout(poll, 2000);
             }
           } catch (err) {
+            console.error("❌ Błąd pollingu:", err);
             setError("Błąd podczas sprawdzania statusu zadania");
             setLoading(false);
           }
@@ -58,6 +59,7 @@ const Timeline = ({ vin }) => {
 
         poll();
       } catch (err) {
+        console.error("❌ Błąd startowania:", err);
         setError("Błąd połączenia z serwerem");
         setLoading(false);
       }
@@ -65,28 +67,6 @@ const Timeline = ({ vin }) => {
 
     startTask();
   }, [vin]);
-
-  // Funkcja do parsowania HTML osi czasu do obiektów JS
-  const parseTimelineHtml = (html) => {
-    if (!html) return [];
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-    const items = Array.from(doc.querySelectorAll("app-axis-item .item"));
-
-    return items.map((item) => {
-      const date = item.querySelector(".item-timestamp-text")?.textContent || "";
-      const title = item.querySelector(".item-content-header")?.textContent || "";
-
-      const details = {};
-      item.querySelectorAll(".item-content-details-row").forEach((row) => {
-        const key = row.querySelector(".item-content-details-row-key")?.textContent || "";
-        const value = row.querySelector(".item-content-details-row-value")?.textContent || "";
-        if (key && value) details[key] = value;
-      });
-
-      return { date, title, details };
-    });
-  };
 
   if (loading) return <p>Ładowanie osi czasu...</p>;
   if (error) return <p className="error">{error}</p>;
