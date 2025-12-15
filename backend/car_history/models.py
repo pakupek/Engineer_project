@@ -591,14 +591,21 @@ class VehicleHistory:
     # OŚ CZASU
     async def _extract_timeline(self):
         try:
-            await self.page.click("//div[@role='tab' and contains(., 'Oś czasu')]")
-            await asyncio.sleep(2)
+            # Znajdź zakładkę 'Oś czasu' i poczekaj, aż będzie widoczna
+            timeline_tab = self.page.locator("//div[@role='tab' and contains(., 'Oś czasu')]")
+            await timeline_tab.wait_for(state="visible", timeout=10000)
+            await timeline_tab.click()
 
-            await self.page.wait_for_selector("app-axis ul", timeout=10000)
-            return await self.page.locator("app-axis ul").inner_html()
+            # Poczekaj, aż pierwszy element osi czasu się pojawi
+            timeline_items = self.page.locator("app-axis ul li")
+            await timeline_items.first.wait_for(state="visible", timeout=10000)
 
-        except TimeoutError:
-            logger.warning("Nie udało się pobrać osi czasu")
+            # Pobierz HTML całej osi czasu
+            timeline_html = await self.page.locator("app-axis ul").inner_html()
+            return timeline_html
+
+        except Exception as e:
+            logger.warning(f"Nie udało się pobrać osi czasu: {e}")
             return None
 
 
