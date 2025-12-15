@@ -1,5 +1,5 @@
 from celery import shared_task
-import logging
+import logging, asyncio
 from django.core.cache import cache
 from .models import Discussion
 from celery import shared_task
@@ -7,15 +7,30 @@ from .models import VehicleHistory
 
 logger = logging.getLogger(__name__)
 
-@shared_task
+@shared_task(
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_kwargs={"max_retries": 3, "countdown": 10},
+    retry_backoff=True
+)
 def scrape_vehicle_history(registration, vin, production_date):
+    """
+    Wywołuje async scraper Playwright w synchronej powłoce Celery
+    """
+    # Uruchamiamy async funkcję w loopie
+    return asyncio.run(_scrape_async(registration, vin, production_date))
+
+
+async def _scrape_async(registration, vin, production_date):
+    """
+    Funkcja async wywołująca scraper
+    """
     vh = VehicleHistory(registration, vin, production_date)
-    return vh.search()
+    result = await vh.search()
+    return result
 
 
-# -------------------------------
 #  CACHE REFRESH TASK
-# -------------------------------
 
 CACHE_KEY = "discussion_list"
 CACHE_TTL = 30

@@ -10,12 +10,11 @@ from .utils import (
     user_avatar_path, 
     discussion_image_path, 
     comment_image_path)
-import time, logging
+import logging, asyncio
 from datetime import datetime
-from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 from django.db.models import Count
-from playwright.sync_api import sync_playwright, TimeoutError
+from playwright.async_api import async_playwright, TimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -495,52 +494,60 @@ class VehicleHistory:
         self.vin = vin
         self.production_date = rocznik
         self.url = "https://historiapojazdu.gov.pl/"
+        self.playwright = None
+        self.browser = None
+        self.context = None
+        self.page = None
 
-        self.playwright = sync_playwright().start()
-        self.browser = self.playwright.chromium.launch(
+    async def _start_browser(self):
+        self.playwright = await async_playwright().start()
+        self.browser = await self.playwright.chromium.launch(
             headless=True,
             args=["--no-sandbox", "--disable-dev-shm-usage"]
         )
-        self.context = self.browser.new_context()
-        self.page = self.context.new_page()
+        self.context = await self.browser.new_context()
+        self.page = await self.context.new_page()
 
-    def close_browser(self):
+    async def _close_browser(self):
         try:
-            self.context.close()
-            self.browser.close()
-            self.playwright.stop()
+            if self.context:
+                await self.context.close()
+            if self.browser:
+                await self.browser.close()
+            if self.playwright:
+                await self.playwright.stop()
         except Exception:
             pass
 
 
     # FORMULARZ
-    def _fill_form(self, date_str):
+    async def _fill_form(self, date_str):
         logger.info("Uzupełnianie formularza")
 
-        self.page.wait_for_selector("#registrationNumber", timeout=10000)
+        await self.page.wait_for_selector("#registrationNumber", timeout=10000)
 
-        self.page.fill("#registrationNumber", self.registration_plate)
-        self.page.fill("#VINNumber", self.vin)
+        await self.page.fill("#registrationNumber", self.registration_plate)
+        await self.page.fill("#VINNumber", self.vin)
 
-        self.page.click("#firstRegistrationDate")
-        self.page.keyboard.press("Control+A")
-        self.page.keyboard.press("Backspace")
-        self.page.type("#firstRegistrationDate", date_str)
+        await self.page.click("#firstRegistrationDate")
+        await self.page.keyboard.press("Control+A")
+        await self.page.keyboard.press("Backspace")
+        await self.page.type("#firstRegistrationDate", date_str)
 
-        self.page.click("button.nforms-button")
-        self.page.wait_for_load_state("networkidle")
-        time.sleep(2)
+        await self.page.click("button.nforms-button")
+        await self.page.wait_for_load_state("networkidle")
+        await asyncio.sleep(2)
 
-
+  
     # DANE TECHNICZNE
-    def _extract_technical_data(self):
+    async def _extract_technical_data(self):
         try:
-            self.page.wait_for_selector(
+            await self.page.wait_for_selector(
                 "//section[.//h2[contains(., 'Dane techniczne')]]",
                 timeout=10000
             )
 
-            section_html = self.page.locator(
+            section_html = await self.page.locator(
                 "//section[.//h2[contains(., 'Dane techniczne')]]"
             ).inner_html()
 
@@ -580,24 +587,26 @@ class VehicleHistory:
             logger.error(f"Błąd parsowania danych technicznych: {e}")
             return {}
 
-
+ 
     # OŚ CZASU
-    def _extract_timeline(self):
+    async def _extract_timeline(self):
         try:
-            self.page.click("//div[@role='tab' and contains(., 'Oś czasu')]")
-            time.sleep(2)
+            await self.page.click("//div[@role='tab' and contains(., 'Oś czasu')]")
+            await asyncio.sleep(2)
 
-            self.page.wait_for_selector("app-axis ul", timeout=10000)
-            return self.page.locator("app-axis ul").inner_html()
+            await self.page.wait_for_selector("app-axis ul", timeout=10000)
+            return await self.page.locator("app-axis ul").inner_html()
 
         except TimeoutError:
             logger.warning("Nie udało się pobrać osi czasu")
             return None
 
- 
+
     # MAIN
-    def search(self):
+    async def search(self):
         try:
+            await self._start_browser()
+
             date_obj = datetime.strptime(str(self.production_date), "%d%m%Y")
             date_str = date_obj.strftime("%d%m%Y")
 
@@ -605,11 +614,11 @@ class VehicleHistory:
                 f"Pobieranie danych VIN={self.vin}, rej={self.registration_plate}, data={date_str}"
             )
 
-            self.page.goto(self.url, wait_until="networkidle")
-            self._fill_form(date_str)
+            await self.page.goto(self.url, wait_until="networkidle")
+            await self._fill_form(date_str)
 
-            technical_data = self._extract_technical_data()
-            timeline_html = self._extract_timeline()
+            technical_data = await self._extract_technical_data()
+            timeline_html = await self._extract_timeline()
 
             return {
                 "vin": self.vin,
@@ -624,7 +633,7 @@ class VehicleHistory:
             return None
 
         finally:
-            self.close_browser()
+            await self._close_browser()
 
     
 class Message(models.Model):
