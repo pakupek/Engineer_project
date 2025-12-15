@@ -8,7 +8,7 @@ from .models import VehicleHistory
 logger = logging.getLogger(__name__)
 
 @shared_task
-def scrape_vehicle_history(self, registration, vin, production_date):
+def scrape_vehicle_history(registration, vin, production_date):
     vh = VehicleHistory(registration, vin, production_date)
     return vh.search()
 
