@@ -607,8 +607,7 @@ class VehicleHistory:
         try:
             await self._start_browser()
 
-            date_obj = datetime.strptime(str(self.production_date), "%d%m%Y")
-            date_str = date_obj.strftime("%d%m%Y")
+            date_str = datetime.strptime(str(self.production_date), "%d%m%Y")
 
             logger.info(
                 f"Pobieranie danych VIN={self.vin}, rej={self.registration_plate}, data={date_str}"
