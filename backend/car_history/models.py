@@ -636,6 +636,7 @@ class VehicleHistory:
             timeline_html = await self._extract_timeline()
 
             return {
+                "success": True,
                 "vin": self.vin,
                 "registration": self.registration_plate,
                 "data_rejestracji": date_str,
