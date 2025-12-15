@@ -176,7 +176,7 @@ class CommentImage(models.Model):
     """
 
     comment = models.ForeignKey('Comment', on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to=comment_image_path)
+    image = models.ImageField(upload_to=comment_image_path, max_length=255)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
