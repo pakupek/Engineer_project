@@ -17,6 +17,15 @@ from datetime import timedelta
 
 load_dotenv()
 
+# Limity uploadów
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50MB total request
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760   # 10MB per file
+
+# File upload handlers
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

@@ -55,7 +55,7 @@ from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.shortcuts import get_object_or_404
 from django.http import Http404, JsonResponse, HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-import logging, shutil, os, json, requests, django_filters, threading
+import logging, shutil, os, json, requests, django_filters, base64
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from bs4 import BeautifulSoup
@@ -65,7 +65,7 @@ from django.core.cache import cache
 from .pagination import CommentPagination, DiscussionPagination, TenPerPagePagination
 from .filters import DiscussionFilter
 from django.db.models import F, Prefetch
-from .tasks import scrape_vehicle_history, refresh_discussions_cache_task
+from .tasks import scrape_vehicle_history, refresh_discussions_cache_task, process_vehicle_images
 from celery.result import AsyncResult
 
 from django.contrib.staticfiles import finders
@@ -682,6 +682,8 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
     """
     serializer_class = VehicleImageSerializer
     MAX_IMAGES = 30
+    MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         vin = self.kwargs['vin']
@@ -689,30 +691,96 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         vin = self.kwargs['vin']
-        vehicle = get_object_or_404(Vehicle, vin=vin)
+        
+        try:
+            vehicle = get_object_or_404(Vehicle, vin=vin)
+            files = request.FILES.getlist('images')
+            
+            if not files:
+                return Response(
+                    {"detail": "Nie wybrano żadnych plików."}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        files = request.FILES.getlist('image')
-        if not files:
-            return Response({"detail": "Nie wybrano żadnych plików."}, status=400)
+            # Walidacja rozmiaru plików
+            for file in files:
+                if file.size > self.MAX_FILE_SIZE:
+                    return Response(
+                        {"detail": f"Plik {file.name} jest za duży. Maksymalny rozmiar to 10MB."}, 
+                        status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+                    )
 
-        remaining_slots = self.MAX_IMAGES - getattr(vehicle, 'images_count', vehicle.images.count())
-        if remaining_slots <= 0:
-            return Response({"detail": f"Osiągnięto limit {self.MAX_IMAGES} zdjęć."}, status=400)
+            # Sprawdź limit zdjęć
+            current_count = vehicle.images.count()
+            remaining_slots = self.MAX_IMAGES - current_count
+            
+            if remaining_slots <= 0:
+                return Response(
+                    {"detail": f"Osiągnięto limit {self.MAX_IMAGES} zdjęć."}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        files_to_save = files[:remaining_slots]
+            files_to_save = files[:remaining_slots]
+            
+            # Przygotuj dane do Celery (konwersja do base64)
+            files_data = []
+            for file in files_to_save:
+                file.seek(0)  # Reset file pointer
+                content = file.read()
+                files_data.append({
+                    'name': file.name,
+                    'content': base64.b64encode(content).decode('utf-8'),
+                    'content_type': file.content_type
+                })
+            
+            # Wyślij task do Celery
+            task = process_vehicle_images.delay(vehicle.id, files_data)
+            
+            return Response({
+                "detail": "Zdjęcia są przetwarzane w tle.",
+                "task_id": task.id,
+                "files_count": len(files_to_save),
+                "status": "processing"
+            }, status=status.HTTP_202_ACCEPTED)
+            
+        except Exception as e:
+            logger.error(f"Error uploading images for vehicle {vin}: {str(e)}", exc_info=True)
+            return Response(
+                {"detail": "Wystąpił błąd podczas przesyłania zdjęć."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-        # Bulk create
-        vehicle_images = [VehicleImage(vehicle=vehicle, image=file) for file in files_to_save]
-        VehicleImage.objects.bulk_create(vehicle_images)
 
-        # Aktualizacja licznika zdjęć
-        Vehicle.objects.filter(pk=vehicle.pk).update(images_count=F('images_count') + len(files_to_save))
-
-        serializer = self.get_serializer(vehicle_images, many=True)
-        return Response(serializer.data, status=201)
-
-
+class VehicleImageUploadStatusView(generics.GenericAPIView):
+    """
+    Sprawdza status uploadu zdjęć na podstawie task_id.
+    """
     
+    def get(self, request, task_id):
+        from celery.result import AsyncResult
+        
+        task_result = AsyncResult(task_id)
+        
+        response_data = {
+            'task_id': task_id,
+            'state': task_result.state,
+        }
+        
+        if task_result.state == 'PENDING':
+            response_data['status'] = 'pending'
+            response_data['detail'] = 'Task jest w kolejce'
+        elif task_result.state == 'PROGRESS':
+            response_data['status'] = 'processing'
+            response_data['detail'] = 'Przetwarzanie w toku'
+        elif task_result.state == 'SUCCESS':
+            response_data['status'] = 'completed'
+            response_data['result'] = task_result.result
+        elif task_result.state == 'FAILURE':
+            response_data['status'] = 'failed'
+            response_data['error'] = str(task_result.info)
+        
+        return Response(response_data)
+     
 
 class VehicleImageDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
