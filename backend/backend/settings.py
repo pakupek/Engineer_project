@@ -74,7 +74,9 @@ ALLOWED_HOSTS = [
     '127.0.0.1',       
     'dev-django',
     'engineer-project.onrender.com',
-    'frontend-okdn.onrender.com'
+    'frontend-okdn.onrender.com',
+    'backend-production-8ce8.up.railway.app',
+    'frontend-production-9908.up.railway.app',
 ]
 AUTH_USER_MODEL = 'car_history.User'
 
