@@ -39,7 +39,7 @@ export default function AddVehiclePage() {
     registration:''
   });
 
-  const API_URL = 'https://engineer-project.onrender.com';
+  const API_URL = 'https://backend-production-8ce8.up.railway.app';
 
   const handleImageChange = (e) => {
     let selectedFiles = Array.from(e.target.files);

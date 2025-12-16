@@ -139,12 +139,14 @@ SIMPLE_JWT = {
 # Konfiguracja CORS
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://frontend-okdn.onrender.com"
+    "https://frontend-okdn.onrender.com",
+    "https://frontend-production-9908.up.railway.app",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
-    "https://frontend-okdn.onrender.com"
+    "https://frontend-okdn.onrender.com",
+    "https://frontend-production-9908.up.railway.app",
 ]
 
 
