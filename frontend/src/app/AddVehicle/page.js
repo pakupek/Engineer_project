@@ -17,7 +17,7 @@ export default function AddVehiclePage() {
   const [success, setSuccess] = useState('');
   const [images, setImages] = useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
-  
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [generations, setGenerations] = useState([]);
   const [selectedGeneration, setSelectedGeneration] = useState('');
@@ -68,37 +68,40 @@ export default function AddVehiclePage() {
   const uploadImages = async (vin, files) => {
     if (!files || files.length === 0) return;
 
-    // Sprawdź czy nie przekracza limitu
-    if (files.length > 30) {
-      console.error("Przekroczono limit 30 zdjęć");
-      return;
-    }
-
-    const formData = new FormData();
-    files.forEach((file) => formData.append("image", file));
-
+    const BATCH_SIZE = 5;
     const token = getToken();
+    const totalBatches = Math.ceil(files.length / BATCH_SIZE);
 
-    try {
-      const response = await fetch(`${API_URL}/api/vehicles/${vin}/images/`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+    for (let i = 0; i < files.length; i += BATCH_SIZE) {
+      const batch = files.slice(i, i + BATCH_SIZE);
+      const formData = new FormData();
+      batch.forEach(file => formData.append("images", file));
 
-      const data = await response.json();
-      if (response.ok) {
-        console.info("Zdjęcia zostały przesłane pomyślnie:");
-      } else {
-        console.error("Błąd przy przesyłaniu zdjęć:", data);
+      try {
+        const response = await fetch(`${API_URL}/api/vehicles/${vin}/images/`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          console.error(`Błąd uploadu paczki zdjęć (index ${i}):`, data);
+        } else {
+          console.info(`Paczka zdjęć przesłana pomyślnie: index ${i}`);
+        }
+
+        // Aktualizacja progresu
+        setUploadProgress(Math.min(((i + batch.length) / files.length) * 100, 100));
+
+      } catch (err) {
+        console.error(`Błąd uploadu paczki zdjęć (index ${i}):`, err);
       }
-
-    } catch (err) {
-      console.error("Błąd uploadu zdjęć:", err);
     }
   };
+
 
 
   useEffect(() => {
@@ -543,6 +546,12 @@ export default function AddVehiclePage() {
               <p className={styles.imagesInfo}>
                 Możesz dodać maksymalnie 30 zdjęć. Wybrano: {images.length}/30
               </p>
+              {uploadProgress > 0 && (
+                <div className={styles.progressWrapper}>
+                  <div className={styles.progressBar} style={{ width: `${uploadProgress}%` }} />
+                  <span>{Math.round(uploadProgress)}%</span>
+                </div>
+              )}
             </div>
 
             {images.length > 0 && (
