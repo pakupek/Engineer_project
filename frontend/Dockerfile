@@ -1,37 +1,32 @@
 # =========================
 # Stage 1: Install dependencies
 # =========================
-FROM node:22-alpine AS deps
-WORKDIR /app
-COPY package.json package-lock.json ./
+FROM node:20-alpine AS deps
+WORKDIR /app/frontend
+COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci --legacy-peer-deps
 
 # =========================
 # Stage 2: Build the app
 # =========================
-FROM node:22-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN ls -la && echo "=== package.json content ===" && cat package.json
+FROM node:20-alpine AS builder
+WORKDIR /app/frontend
+COPY --from=deps /app/frontend/node_modules ./node_modules
+COPY frontend .
 RUN npm run build
 
 # =========================
 # Stage 3: Production image
 # =========================
-FROM node:22-alpine AS runner
-WORKDIR /app
+FROM node:20-alpine AS runner
+WORKDIR /app/frontend
 
 ENV NODE_ENV=production
 
-# Kopiuj wszystko co potrzebne
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/frontend/.next ./.next
+COPY --from=builder /app/frontend/public ./public
+COPY --from=builder /app/frontend/node_modules ./node_modules
+COPY --from=builder /app/frontend/package.json ./package.json
 
-# Next.js automatycznie użyje PORT z environment
 EXPOSE 3000
-
-# Użyj wbudowanego serwera Next.js
-CMD ["npx", "next", "start"]
+CMD ["npm", "start"]
