@@ -38,9 +38,9 @@ const Timeline = ({ vin }) => {
             const statusData = await statusRes.json();
 
             if (statusData.status === "success") {
-              // ✅ Backend zwraca już sparsowane dane w polu "timeline"
               const timelineData = statusData.timeline || [];
-              console.log("✅ Otrzymana oś czasu:", timelineData);
+              console.log("✅ Otrzymana odpowiedź:", statusRes);
+              console.log("✅ Otrzymana odpowiedź w json:", statusData);
               setTimeline(timelineData);
               setLoading(false);
             } else if (statusData.status === "failure") {
