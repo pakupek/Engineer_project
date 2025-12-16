@@ -75,7 +75,7 @@ export default function AddVehiclePage() {
     for (let i = 0; i < files.length; i += BATCH_SIZE) {
       const batch = files.slice(i, i + BATCH_SIZE);
       const formData = new FormData();
-      batch.forEach(file => formData.append("images", file));
+      batch.forEach(file => formData.append("image", file));
 
       try {
         const response = await fetch(`${API_URL}/api/vehicles/${vin}/images/`, {

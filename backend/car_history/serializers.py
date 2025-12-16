@@ -45,7 +45,7 @@ class VehicleImageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VehicleImage
-        fields = ['id', 'vehicle', 'images', 'uploaded_at']
+        fields = ['id', 'vehicle', 'image', 'uploaded_at']
         read_only_fields = ['id', 'uploaded_at', 'vehicle']
 
     def validate(self, attrs):
