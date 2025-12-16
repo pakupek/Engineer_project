@@ -12,7 +12,7 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
     cost: "",
     invoice_image: null,
   });
-  const API_URL = 'https://engineer-project.onrender.com';
+  const API_URL = 'https://backend-production-8ce8.up.railway.app';
 
   // 🔹 Gdy kliknięto "Edytuj" — wypełnij formularz danymi wpisu
   useEffect(() => {

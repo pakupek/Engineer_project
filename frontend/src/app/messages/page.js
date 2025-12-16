@@ -25,7 +25,7 @@ function MessagesContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const messagesEndRef = useRef(null);
   const router = useRouter();
-  const API_URL = 'https://engineer-project.onrender.com';
+  const API_URL = 'https://backend-production-8ce8.up.railway.app';
 
   // Auto-scroll do najnowszej wiadomości
   const scrollToBottom = () => {

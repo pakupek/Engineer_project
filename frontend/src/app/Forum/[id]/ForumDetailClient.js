@@ -29,7 +29,7 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
   };
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const API_URL = 'https://engineer-project.onrender.com';
+  const API_URL = 'https://backend-production-8ce8.up.railway.app';
 
 
   const handleSortClick = (type) => {

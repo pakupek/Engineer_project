@@ -35,7 +35,7 @@ export default function Forum() {
     const [page, setPage] = useState(1); 
     const [pageCount, setPageCount] = useState(1);
     const [images, setImages] = useState([]);
-    const API_URL = 'https://engineer-project.onrender.com';
+    const API_URL = 'https://backend-production-8ce8.up.railway.app';
 
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);
@@ -67,7 +67,6 @@ export default function Forum() {
                 },
             });
             const data = await res.json();
-            console.log("Fetched discussions data:", data);
             setThreads(
                 data.results.map((d) => ({
                 id: d.id,
