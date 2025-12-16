@@ -26,4 +26,6 @@ echo "Start server"
 exec poetry run gunicorn backend.wsgi:application \
     --bind 0.0.0.0:${PORT} \
     --workers 4 \
-    --log-level info
+    --log-level info \
+    --limit-request-field_size 0 \
+    --limit-request-line 0

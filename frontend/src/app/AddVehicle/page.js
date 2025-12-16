@@ -70,26 +70,29 @@ export default function AddVehiclePage() {
 
     setUploading(true);
 
-    const fd = new FormData();
-    files.forEach((file) => fd.append("image", file));
-
     try {
       const token = getToken();
-      const res = await fetch(`${API_URL}/api/vehicles/${vin}/images/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: fd,
-      });
 
-      const data = await res.json();
+      for (const file of files) {
+        const fd = new FormData();
+        fd.append("image", file);
 
-      if (!res.ok) {
-        throw new Error(data.detail || "Błąd uploadu zdjęć");
+        const res = await fetch(`${API_URL}/api/vehicles/${vin}/images/`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: fd,
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || "Błąd uploadu zdjęć");
+        }
       }
 
-      setSuccess(`Dodano ${data.saved_count} zdjęć`);
+      setSuccess(`Dodano ${files.length} zdjęć`);
       setImages([]);
     } catch (err) {
       setError(err.message);
@@ -97,6 +100,7 @@ export default function AddVehiclePage() {
       setUploading(false);
     }
   };
+
 
 
   useEffect(() => {
