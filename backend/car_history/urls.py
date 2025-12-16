@@ -103,4 +103,4 @@ urlpatterns = [
     
 
     path("automotive-news/", AutomotiveNewsView.as_view(), name="automotive_news"),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
