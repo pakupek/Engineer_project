@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getToken } from '@/services/auth';
 import styles from "./AddVehicle.module.css"
@@ -16,13 +16,8 @@ export default function AddVehiclePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [images, setImages] = useState([]);
-  const [selectedFiles, setSelectedFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [taskId, setTaskId] = useState(null);
-  const [status, setStatus] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState('');
-   // Ref do przechowywania timeout ID
-  const pollingTimeoutRef = useRef(null);
+ 
 
   const [generations, setGenerations] = useState([]);
   const [selectedGeneration, setSelectedGeneration] = useState('');
@@ -45,15 +40,6 @@ export default function AddVehiclePage() {
   });
 
   const API_URL = 'https://backend-production-8ce8.up.railway.app';
-
-  // Cleanup timeout przy unmount
-  useEffect(() => {
-    return () => {
-      if (pollingTimeoutRef.current) {
-        clearTimeout(pollingTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const handleImageChange = (e) => {
     let selectedFiles = Array.from(e.target.files);
@@ -80,87 +66,37 @@ export default function AddVehiclePage() {
 
 
   const uploadImages = async (vin, files) => {
-    if (!files || files.length === 0) return;
+    if (!files.length) return;
 
     setUploading(true);
-    setUploadProgress('Przesyłanie zdjęć...');
-    
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append('image', file);
-    });
+
+    const fd = new FormData();
+    files.forEach((file) => fd.append("image", file));
 
     try {
       const token = getToken();
-      const response = await fetch(`${API_URL}/api/vehicles/${vin}/images/`, {
-        method: 'POST',
+      const res = await fetch(`${API_URL}/api/vehicles/${vin}/images/`, {
+        method: "POST",
         headers: {
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: formData,
+        body: fd,
       });
 
-      const data = await response.json();
-      
-      if (response.status === 202) {
-        setUploadProgress('Przetwarzanie zdjęć w tle...');
-        // Rozpocznij polling statusu
-        pollStatus(data.task_id);
-      } else {
-        throw new Error(data.detail || 'Błąd podczas przesyłania zdjęć');
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.detail || "Błąd uploadu zdjęć");
       }
-    } catch (error) {
-      console.error('Upload error:', error);
-      setError('Błąd podczas przesyłania zdjęć: ' + error.message);
+
+      setSuccess(`Dodano ${data.saved_count} zdjęć`);
+      setImages([]);
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setUploading(false);
-      setUploadProgress('');
     }
   };
-
-  // POPRAWIONY pollStatus z czyszczeniem timeout
-  const pollStatus = async (taskId) => {
-    const checkStatus = async () => {
-      try {
-        const token = getToken();
-        const response = await fetch(`${API_URL}/api/upload-status/${taskId}/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        const data = await response.json();
-        
-        if (data.state === 'SUCCESS') {
-          console.log('Upload completed!', data.result);
-          setUploadProgress(`Sukces! Przesłano ${data.result?.saved_count || 0} zdjęć.`);
-          setUploading(false);
-          setImages([]); // Wyczyść preview
-          
-          // Opcjonalnie: odśwież dane pojazdu jeśli jesteś na stronie szczegółów
-        } else if (data.state === 'FAILURE') {
-          console.error('Upload failed:', data.error);
-          setError('Błąd podczas przetwarzania zdjęć: ' + (data.error || 'Nieznany błąd'));
-          setUploading(false);
-          setUploadProgress('');
-        } else if (data.state === 'PENDING' || data.state === 'PROGRESS') {
-          // Sprawdź ponownie za 2 sekundy
-          setUploadProgress('Przetwarzanie zdjęć... ' + data.state);
-          pollingTimeoutRef.current = setTimeout(checkStatus, 2000);
-        } else {
-          // Nieznany stan
-          setUploadProgress('Przetwarzanie zdjęć... ' + data.state);
-          pollingTimeoutRef.current = setTimeout(checkStatus, 2000);
-        }
-      } catch (error) {
-        console.error('Status check error:', error);
-        setError('Błąd podczas sprawdzania statusu: ' + error.message);
-        setUploading(false);
-        setUploadProgress('');
-      }
-    };
-
-    checkStatus();
-  };
-
 
 
   useEffect(() => {
@@ -605,11 +541,6 @@ export default function AddVehiclePage() {
               <p className={styles.imagesInfo}>
                 Możesz dodać maksymalnie 30 zdjęć. Wybrano: {images.length}/30
               </p>
-              {uploading && (
-                <div className={styles.uploadingStatus}>
-                  <p>{uploadProgress}</p>
-                </div>
-              )}
             </div>
 
             {images.length > 0 && (

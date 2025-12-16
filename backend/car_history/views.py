@@ -67,6 +67,7 @@ from .filters import DiscussionFilter
 from django.db.models import F, Prefetch
 from .tasks import scrape_vehicle_history, refresh_discussions_cache_task, process_vehicle_images
 from celery.result import AsyncResult
+from cloudinary.uploader import upload
 
 from django.contrib.staticfiles import finders
 
@@ -684,71 +685,58 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
     MAX_IMAGES = 30
     MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
         vin = self.kwargs['vin']
         return VehicleImage.objects.filter(vehicle__vin=vin)
 
     def post(self, request, *args, **kwargs):
-        vin = self.kwargs['vin']
-        
-        try:
-            vehicle = get_object_or_404(Vehicle, vin=vin)
-            files = request.FILES.getlist('image')
-            
-            if not files:
-                return Response(
-                    {"detail": "Nie wybrano żadnych plików."}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        vin = self.kwargs["vin"]
+        vehicle = get_object_or_404(Vehicle, vin=vin)
 
-            # Walidacja rozmiaru plików
-            for file in files:
-                if file.size > self.MAX_FILE_SIZE:
-                    return Response(
-                        {"detail": f"Plik {file.name} jest za duży. Maksymalny rozmiar to 10MB."}, 
-                        status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
-                    )
+        files = request.FILES.getlist("image")
 
-            # Sprawdź limit zdjęć
-            current_count = vehicle.images.count()
-            remaining_slots = self.MAX_IMAGES - current_count
-            
-            if remaining_slots <= 0:
-                return Response(
-                    {"detail": f"Osiągnięto limit {self.MAX_IMAGES} zdjęć."}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            files_to_save = files[:remaining_slots]
-            
-            # Przygotuj dane do Celery (konwersja do base64)
-            files_data = []
-            for file in files_to_save:
-                file.seek(0)  # Reset file pointer
-                content = file.read()
-                files_data.append({
-                    'name': file.name,
-                    'content': base64.b64encode(content).decode('utf-8'),
-                    'content_type': file.content_type
-                })
-            
-            # Wyślij task do Celery
-            task = process_vehicle_images.delay(vehicle.id, files_data)
-            
-            return Response({
-                "detail": "Zdjęcia są przetwarzane w tle.",
-                "task_id": task.id,
-                "files_count": len(files_to_save),
-                "status": "processing"
-            }, status=status.HTTP_202_ACCEPTED)
-            
-        except Exception as e:
-            logger.error(f"Error uploading images for vehicle {vin}: {str(e)}", exc_info=True)
+        if not files:
             return Response(
-                {"detail": "Wystąpił błąd podczas przesyłania zdjęć."},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"detail": "Nie wybrano żadnych plików."},
+                status=status.HTTP_400_BAD_REQUEST
             )
+
+        current_count = vehicle.images.count()
+        remaining = self.MAX_IMAGES - current_count
+
+        if remaining <= 0:
+            return Response(
+                {"detail": f"Limit {self.MAX_IMAGES} zdjęć został osiągnięty."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        uploaded = []
+
+        for file in files[:remaining]:
+            if file.size > self.MAX_FILE_SIZE:
+                return Response(
+                    {"detail": f"{file.name} przekracza 10MB"},
+                    status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+                )
+
+            # UPLOAD DO CLOUDINARY
+            result = upload(
+                file,
+                folder=f"vehicles/{vehicle.vin}",
+                resource_type="image"
+            )
+
+            img = VehicleImage.objects.create(
+                vehicle=vehicle,
+                image=result["secure_url"]
+            )
+
+            uploaded.append(img)
+
+        serializer = self.get_serializer(uploaded, many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 class VehicleImageUploadStatusView(generics.GenericAPIView):

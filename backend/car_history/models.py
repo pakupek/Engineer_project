@@ -471,7 +471,7 @@ class VehicleImage(models.Model):
     vehicle = models.ForeignKey(
         Vehicle, on_delete=models.CASCADE, related_name='images', verbose_name='Pojazd'
     )
-    image = models.ImageField(upload_to=vehicle_image_path, verbose_name='Zdjęcie')
+    image = models.URLField(max_length=500, verbose_name='Zdjęcie', null=True, blank=True)
     uploaded_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
