@@ -694,7 +694,7 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
         
         try:
             vehicle = get_object_or_404(Vehicle, vin=vin)
-            files = request.FILES.getlist('images')
+            files = request.FILES.getlist('image')
             
             if not files:
                 return Response(
