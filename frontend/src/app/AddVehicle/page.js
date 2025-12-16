@@ -75,7 +75,7 @@ export default function AddVehiclePage() {
     }
 
     const formData = new FormData();
-    files.forEach((file) => formData.append("images", file));
+    files.forEach((file) => formData.append("image", file));
 
     const token = getToken();
 
