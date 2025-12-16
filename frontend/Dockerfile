@@ -11,6 +11,7 @@ RUN npm ci --legacy-peer-deps
 # =========================
 FROM node:22-alpine AS builder
 WORKDIR /app
+COPY package.json package-lock.json ./
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
