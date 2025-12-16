@@ -20,6 +20,7 @@ export default function AddVehiclePage() {
   const [uploading, setUploading] = useState(false);
   const [taskId, setTaskId] = useState(null);
   const [status, setStatus] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState('');
    // Ref do przechowywania timeout ID
   const pollingTimeoutRef = useRef(null);
 
