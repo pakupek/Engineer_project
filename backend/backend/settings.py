@@ -154,9 +154,21 @@ CORS_ALLOWED_ORIGINS = [
     "https://frontend-production-9908.up.railway.app",
 ]
 
+CORS_ALLOW_HEADERS = [
+    "authorization",
+    "content-type",
+    "accept",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
-    "https://frontend-okdn.onrender.com",
     "https://frontend-production-9908.up.railway.app",
 ]
 
