@@ -717,7 +717,7 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
         for file in files[:remaining]:
             if file.size > self.MAX_FILE_SIZE:
                 return Response(
-                    {"detail": f"{file.name} przekracza 50MB"},
+                    {"detail": f"{file.name} przekracza 10MB"},
                     status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
                 )
 
@@ -725,7 +725,12 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
             result = upload(
                 file,
                 folder=f"vehicles/{vehicle.vin}",
-                resource_type="image"
+                resource_type="image",
+                transformation=[
+                    {"quality": "auto"},
+                    {"fetch_format": "auto"},
+                    {"strip_metadata": True},
+                ]
             )
 
             img = VehicleImage.objects.create(

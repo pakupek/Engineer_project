@@ -50,7 +50,6 @@ export default function VehiclesPage() {
         const data = await response.json();
 
         if (response.ok) {
-          console.log('Pobrane pojazdy:', data);
           setVehicles(data.results);
           setTotalPages(Math.ceil(data.count / 10)); 
         } else {

@@ -49,14 +49,14 @@ export default function EditVehicleModal({ vin, onClose, onUpdated }) {
     fetchVehicle();
   }, [vin]);
 
-  // ➕ Upload zdjęć
+  // Upload zdjęć
   const uploadImages = async (e) => {
     const files = e.target.files;
     if (!files.length) return;
 
     const form = new FormData();
     for (let f of files) {
-      form.append("images", f);
+      form.append("image", f);
     }
 
     const res = await fetch(`${API_URL}/api/vehicles/${vin}/images/`,
@@ -70,6 +70,7 @@ export default function EditVehicleModal({ vin, onClose, onUpdated }) {
     if (res.ok) {
       const newImages = await res.json();
       setImages((prev) => [...prev, ...newImages]);
+      e.target.value = "";
     } else {
       console.error(await res.json());
     }
@@ -77,19 +78,29 @@ export default function EditVehicleModal({ vin, onClose, onUpdated }) {
 
   // Usuwanie zdjęcia
   const deleteImage = async (imageId) => {
-    const res = await fetch(`${API_URL}/api/vehicles/${vin}/images/${imageId}/`,
-      {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    if (!window.confirm("Czy na pewno usunąć to zdjęcie?")) return;
 
-    if (res.status === 204) {
-      setImages((prev) => prev.filter((i) => i.id !== imageId));
-    } else {
-      console.error(await res.json());
+    try {
+      const res = await fetch(`${API_URL}/api/vehicles/${vin}/images/${imageId}/`,{
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.status === 204) {
+        setImages((prev) => prev.filter((img) => img.id !== imageId));
+      } else {
+        const data = await res.json();
+        alert(data.detail || "Nie udało się usunąć zdjęcia");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Błąd połączenia z serwerem");
     }
   };
+
 
   // Zmiany w formularzu
   const handleChange = (e) => {
