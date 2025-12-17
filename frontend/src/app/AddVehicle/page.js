@@ -247,10 +247,9 @@ export default function AddVehiclePage() {
         setSelectedMake('');
         setSelectedModel('');
         setSelectedGeneration('');
+
+        window.location.href = '/VehicleList';
         
-        setTimeout(() => {
-           window.location.href = '/VehicleList';
-        }, 3000);
 
       } else {
         setError(JSON.stringify(data, null, 2));

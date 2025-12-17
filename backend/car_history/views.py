@@ -65,7 +65,7 @@ from django.core.cache import cache
 from .pagination import CommentPagination, DiscussionPagination, TenPerPagePagination
 from .filters import DiscussionFilter
 from django.db.models import F, Prefetch
-from .tasks import scrape_vehicle_history, refresh_discussions_cache_task, process_vehicle_images
+from .tasks import scrape_vehicle_history, refresh_discussions_cache_task
 from celery.result import AsyncResult
 from cloudinary.uploader import upload
 
@@ -683,7 +683,7 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
     """
     serializer_class = VehicleImageSerializer
     MAX_IMAGES = 30
-    MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+    MAX_FILE_SIZE = 50 * 1024 * 1024  # 50 MB
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
@@ -717,7 +717,7 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
         for file in files[:remaining]:
             if file.size > self.MAX_FILE_SIZE:
                 return Response(
-                    {"detail": f"{file.name} przekracza 10MB"},
+                    {"detail": f"{file.name} przekracza 50MB"},
                     status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
                 )
 
@@ -737,37 +737,6 @@ class VehicleImageListCreateView(generics.ListCreateAPIView):
 
         serializer = self.get_serializer(uploaded, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class VehicleImageUploadStatusView(generics.GenericAPIView):
-    """
-    Sprawdza status uploadu zdjęć na podstawie task_id.
-    """
-    
-    def get(self, request, task_id):
-        from celery.result import AsyncResult
-        
-        task_result = AsyncResult(task_id)
-        
-        response_data = {
-            'task_id': task_id,
-            'state': task_result.state,
-        }
-        
-        if task_result.state == 'PENDING':
-            response_data['status'] = 'pending'
-            response_data['detail'] = 'Task jest w kolejce'
-        elif task_result.state == 'PROGRESS':
-            response_data['status'] = 'processing'
-            response_data['detail'] = 'Przetwarzanie w toku'
-        elif task_result.state == 'SUCCESS':
-            response_data['status'] = 'completed'
-            response_data['result'] = task_result.result
-        elif task_result.state == 'FAILURE':
-            response_data['status'] = 'failed'
-            response_data['error'] = str(task_result.info)
-        
-        return Response(response_data)
      
 
 class VehicleImageDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -1169,29 +1138,32 @@ class ServiceEntryView(generics.GenericAPIView):
         entry_id = self.kwargs.get("entry_id")
 
         try:
-            entry = ServiceEntry.objects.get(id=entry_id, vehicle__vin=vin)
+            entry = ServiceEntry.objects.get(
+                id=entry_id,
+                vehicle__vin=vin
+            )
         except ServiceEntry.DoesNotExist:
-            return Response({"success": False, "message": "Nie znaleziono wpisu"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"success": False, "message": "Nie znaleziono wpisu"},
+                status=status.HTTP_404_NOT_FOUND
+            )
 
-        old_image_path = None
+        # 🔹 Jeśli użytkownik wysyła NOWE zdjęcie → usuń stare
+        if "invoice_image" in request.FILES and entry.invoice_image:
+            entry.invoice_image.delete(save=False)
 
-        if "invoice_image" in request.data:
-            if entry.invoice_image:
-                old_image_path = entry.invoice_image.path
-
-        serializer = self.get_serializer(entry, data=request.data, partial=True)
+        serializer = self.get_serializer(
+            entry,
+            data=request.data,
+            partial=True
+        )
 
         if serializer.is_valid():
             serializer.save()
-
-            if old_image_path:
-                import os
-                if os.path.isfile(old_image_path):
-                    os.remove(old_image_path)
-                    
             return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
 
-        return Response({"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response( {"success": False, "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
     # DELETE
     def delete(self, request, *args, **kwargs):
@@ -1199,25 +1171,28 @@ class ServiceEntryView(generics.GenericAPIView):
         entry_id = self.kwargs.get("entry_id")
 
         try:
-            entry = ServiceEntry.objects.get(id=entry_id, vehicle__vin=vin)
+            entry = ServiceEntry.objects.get(
+                id=entry_id,
+                vehicle__vin=vin
+            )
         except ServiceEntry.DoesNotExist:
             return Response(
-                {"success": False, "message": "Nie znaleziono wpisu serwisowego dla podanego VIN i ID"},
+                {"success": False, "message": "Nie znaleziono wpisu serwisowego"},
                 status=status.HTTP_404_NOT_FOUND
             )
 
-       
+        # 🔹 Usuń plik przez storage (Cloudinary / S3 / local)
         if entry.invoice_image:
-            image_path = entry.invoice_image.path  
+            entry.invoice_image.delete(save=False)
 
-            if os.path.isfile(image_path):
-                os.remove(image_path)
-
+        # 🔹 Usuń rekord
         entry.delete()
+
         return Response(
             {"success": True, "message": "Wpis serwisowy został usunięty"},
             status=status.HTTP_200_OK
         )
+
 
         
 class DamageEntryView(generics.GenericAPIView):
@@ -1260,79 +1235,70 @@ class DamageEntryView(generics.GenericAPIView):
         entry_id = kwargs.get("entry_id")
         entry = get_object_or_404(DamageEntry, id=entry_id)
 
-    
-        # Aktualizacja markerów
+        # MARKERY
         markers_data = None
         if "markers" in request.data:
             try:
                 markers_data = json.loads(request.data["markers"])
-                
-            except json.JSONDecodeError as e:
+            except json.JSONDecodeError:
                 markers_data = []
 
-        # Obsługa zdjęć
-        existing_photos = []
+        # ISTNIEJĄCE ZDJĘCIA
         if "existingPhotos" in request.data:
             try:
                 existing_photos_data = request.data["existingPhotos"]
-                if isinstance(existing_photos_data, str):
-                    existing_photos = json.loads(existing_photos_data)
-                else:
-                    existing_photos = existing_photos_data
-               
-            except (json.JSONDecodeError, TypeError) as e:
+                existing_photos = (
+                    json.loads(existing_photos_data)
+                    if isinstance(existing_photos_data, str)
+                    else existing_photos_data
+                )
+            except (json.JSONDecodeError, TypeError):
                 existing_photos = []
         else:
-            # Jeśli nie ma existingPhotos, użyj wszystkich obecnych zdjęć
-            existing_photos = list(entry.photos.values('id', 'image'))
+            existing_photos = list(entry.photos.values("id"))
 
-        # Sprawdź serializer PRZED obsługą zdjęć
-        serializer = self.get_serializer(entry, data=request.data, partial=True, context={"vehicle": entry.vehicle, "request": request})
-        
+        existing_photo_ids = [
+            p.get("id") for p in existing_photos if p.get("id")
+        ]
+
+        serializer = self.get_serializer(entry, data=request.data, partial=True, context={"vehicle": entry.vehicle, "request": request},)
+
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Usuń zdjęcia, które zostały usunięte w formularzu
-        existing_photo_ids = [p.get("id") for p in existing_photos if p.get("id")]
-        
         photos_to_delete = entry.photos.exclude(id__in=existing_photo_ids)
 
-        # Usuń fizyczne pliki zdjęć przed usunięciem z bazy
         for photo in photos_to_delete:
-            if photo.image and os.path.isfile(photo.image.path):
-                try:
-                    os.remove(photo.image.path)
-                except OSError as e:
-                    logger.error(f"Error deleting photo file {e}")
-        
-        # Usuń rekordy z bazy
+            if photo.image:
+                photo.image.delete(save=False)
+
         photos_to_delete.delete()
 
-        # Dodaj nowe zdjęcia
-        new_photos_count = len(request.FILES.getlist("new_photos"))
-        
+        # DODAJ NOWE ZDJĘCIA
         for file in request.FILES.getlist("new_photos"):
             DamagePhoto.objects.create(damage_entry=entry, image=file)
 
-        # Zapisz przez serializer
         entry = serializer.save()
 
-        # Zaktualizuj markery
+        # AKTUALIZACJA MARKERÓW
         if markers_data is not None:
             entry.markers.all().delete()
             for marker in markers_data:
                 if marker.get("x_percent") is not None and marker.get("y_percent") is not None:
                     entry.markers.create(
-                        x_percent=marker.get("x_percent"),
-                        y_percent=marker.get("y_percent"),
+                        x_percent=marker["x_percent"],
+                        y_percent=marker["y_percent"],
                         severity=marker.get("severity", "drobne"),
                     )
 
         return Response({
-            "success": True,
-            "message": "Wpis został zaktualizowany",
-            "data": self.get_serializer(entry).data
-        })
+                "success": True,
+                "message": "Wpis został zaktualizowany",
+                "data": self.get_serializer(entry).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
 
     # DELETE – usuń wpis
     def delete(self, request, *args, **kwargs):
@@ -1340,50 +1306,30 @@ class DamageEntryView(generics.GenericAPIView):
         entry = get_object_or_404(DamageEntry, id=entry_id)
 
         try:
-            # Ścieżka do folderu ze zdjęciami tego wpisu
-            damage_folder_path = os.path.join(
-                settings.MEDIA_ROOT, 
-                'vehicles', 
-                entry.vehicle.vin, 
-                'damage', 
-                str(entry.id)
-            )
-            
-            # Najpierw usuń fizyczne pliki zdjęć
-            photos = entry.photos.all()
-            for photo in photos:
-                if photo.image and os.path.isfile(photo.image.path):
-                    try:
-                        os.remove(photo.image.path)
-                        print(f"Deleted photo file: {photo.image.path}")
-                    except OSError as e:
-                        print(f"Error deleting photo file {photo.image.path}: {e}")
-            
-            # Usuń rekordy zdjęć z bazy
+            for photo in entry.photos.all():
+                if photo.image:
+                    photo.image.delete(save=False)
+
             entry.photos.all().delete()
-            
-            # Usuń cały folder (jeśli istnieje)
-            if os.path.exists(damage_folder_path) and os.path.isdir(damage_folder_path):
-                try:
-                    shutil.rmtree(damage_folder_path)  # Usuwa rekursywnie cały folder
-                    print(f"Deleted damage folder: {damage_folder_path}")
-                except OSError as e:
-                    print(f"Error deleting folder {damage_folder_path}: {e}")
-            
-            # Na końcu usuń wpis z bazy
             entry.delete()
-            
-            return Response({
-                "success": True, 
-                "message": "Wpis o szkodzie został usunięty"
-            }, status=status.HTTP_204_NO_CONTENT)
-            
+
+            return Response(
+                {
+                    "success": True,
+                    "message": "Wpis o szkodzie został usunięty",
+                },
+                status=status.HTTP_200_OK,
+            )
+
         except Exception as e:
-            print(f"Error during deletion: {e}")
+            logger.error(f"Error deleting damage entry {entry_id}: {e}", exc_info=True)
             return Response({
-                "success": False,
-                "message": f"Błąd podczas usuwania: {str(e)}"
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    "success": False,
+                    "message": "Błąd podczas usuwania wpisu",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
 
     
 

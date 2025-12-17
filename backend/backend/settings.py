@@ -18,8 +18,8 @@ from datetime import timedelta
 load_dotenv()
 
 # Limity uploadów
-DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600  # 100 MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600   # 10MB per file
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104_857_600  # 100 MB na całe żądanie
+FILE_UPLOAD_MAX_MEMORY_SIZE = 104_857_600 # 100 MB na pojedynczy plik
 
 # File upload handlers
 FILE_UPLOAD_HANDLERS = [
