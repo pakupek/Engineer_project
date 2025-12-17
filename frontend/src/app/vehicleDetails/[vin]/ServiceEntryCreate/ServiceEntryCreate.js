@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getToken } from "../../../services/auth";
 import style from "./ServiceEntry.module.css";
+import { compressImage } from "@/utils/imageCompression";
 
 export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
   const [formData, setFormData] = useState({
@@ -46,7 +47,7 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
     }
   };
 
-  // 🔹 Obsługa wysłania formularza (POST / PATCH)
+  // Obsługa wysłania formularza (POST / PATCH)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -54,10 +55,21 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
       const token = getToken();
       const requestData = new FormData();
 
-      for (const key in formData) {
-        if (formData[key] !== null && formData[key] !== "") {
+      for (const key of ["description", "mileage", "date", "cost"]) {
+        if (formData[key]) {
           requestData.append(key, formData[key]);
         }
+      }
+
+      // Kompresja zdjęcia 
+      if (formData.invoice_image) {
+        const compressed = await compressImage(formData.invoice_image);
+
+        if (compressed.size > 10 * 1024 * 1024) {
+          throw new Error("Zdjęcie po kompresji nadal przekracza 10MB");
+        }
+
+        requestData.append("invoice_image", compressed, compressed.name);
       }
 
       const isEditing = !!editingEntry;
@@ -82,6 +94,7 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
       }
 
       alert(isEditing ? "Wpis został zaktualizowany!" : "Wpis został dodany!");
+
       setFormData({
         description: "",
         mileage: "",
@@ -90,13 +103,14 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
         invoice_image: null,
       });
 
-      if (onSave) onSave(); 
+      onSave?.();
 
     } catch (err) {
       console.error("Błąd:", err);
-      alert("❌ Wystąpił problem podczas zapisu wpisu");
+      alert(err.message || "Wystąpił problem podczas zapisu wpisu");
     }
   };
+
 
   return (
     <div className={style["service-form"]}>

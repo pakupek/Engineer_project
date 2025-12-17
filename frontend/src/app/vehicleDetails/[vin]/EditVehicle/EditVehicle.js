@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import styles from "./EditVehicle.module.css";
 import { getToken } from "@/services/auth";
+import { compressImage } from "@/utils/imageCompression";
 
 export default function EditVehicleModal({ vin, onClose, onUpdated }) {
   const [vehicle, setVehicle] = useState(null);
@@ -51,30 +52,66 @@ export default function EditVehicleModal({ vin, onClose, onUpdated }) {
 
   // Upload zdjęć
   const uploadImages = async (e) => {
-    const files = e.target.files;
+    const files = Array.from(e.target.files);
     if (!files.length) return;
 
+    // TEMP PREVIEW
+    const tempImages = files.map((file) => ({
+      id: `temp-${crypto.randomUUID()}`,
+      image: URL.createObjectURL(file),
+      isTemp: true,
+    }));
+
+    setImages((prev) => [...prev, ...tempImages]);
     const form = new FormData();
-    for (let f of files) {
-      form.append("image", f);
-    }
 
-    const res = await fetch(`${API_URL}/api/vehicles/${vin}/images/`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: form,
+    try {
+      // Kompresja zdjęć przed uploadem
+      for (const file of files) {
+        const compressed = await compressImage(file);
+
+        if (compressed.size > 10 * 1024 * 1024) {
+          throw new Error(
+            `Plik ${file.name} po kompresji nadal przekracza 10MB`
+          );
+        }
+
+        form.append("image", compressed, compressed.name);
       }
-    );
 
-    if (res.ok) {
-      const newImages = await res.json();
-      setImages((prev) => [...prev, ...newImages]);
+      const res = await fetch(`${API_URL}/api/vehicles/${vin}/images/`,{
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+          body: form,
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.detail || "Błąd uploadu zdjęć");
+
+        // usuń temp preview
+        setImages((prev) => prev.filter((img) => !img.isTemp));
+        return;
+      }
+
+      // usuń temp preview + dodaj prawdziwe
+      setImages((prev) => [
+        ...prev.filter((img) => !img.isTemp),
+        ...data,
+      ]);
+
       e.target.value = "";
-    } else {
-      console.error(await res.json());
+    } catch (err) {
+      console.error(err);
+      alert("Błąd połączenia");
+
+      // usuń temp preview
+      setImages((prev) => prev.filter((img) => !img.isTemp));
     }
   };
+
 
   // Usuwanie zdjęcia
   const deleteImage = async (imageId) => {

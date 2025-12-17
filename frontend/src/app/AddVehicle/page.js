@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getToken } from '@/services/auth';
 import styles from "./AddVehicle.module.css"
 import DashboardLayout from '../DashboardLayout/page';
+import { compressImage } from '@/utils/imageCompression';
 
 export default function AddVehiclePage() {
   const [makes, setMakes] = useState([]);
@@ -64,7 +65,7 @@ export default function AddVehiclePage() {
     setImages([]);
   };
 
-
+  // Dodawanie zdjęcia
   const uploadImages = async (vin, files) => {
     if (!files.length) return;
 
@@ -73,9 +74,18 @@ export default function AddVehiclePage() {
     try {
       const token = getToken();
 
-      for (const file of files) {
+      for (const originalFile of files) {
+        // Kompresja
+        const compressedFile = await compressImage(originalFile);
+
+        if (compressedFile.size > 10 * 1024 * 1024) {
+          throw new Error(
+            `Plik ${originalFile.name} po kompresji nadal przekracza 10MB`
+          );
+        }
+
         const fd = new FormData();
-        fd.append("image", file);
+        fd.append("image", compressedFile, compressedFile.name);
 
         const res = await fetch(`${API_URL}/api/vehicles/${vin}/images/`, {
           method: "POST",
@@ -94,12 +104,15 @@ export default function AddVehiclePage() {
 
       setSuccess(`Dodano ${files.length} zdjęć`);
       setImages([]);
+
     } catch (err) {
+      console.error(err);
       setError(err.message);
     } finally {
       setUploading(false);
     }
   };
+
 
 
 

@@ -31,7 +31,7 @@ const Timeline = ({ vin }) => {
         const id = data.task_id;
         setTaskId(id);
 
-        // 2️⃣ Polling co 2s
+        // Polling co 2s
         const poll = async () => {
           try {
             const statusRes = await fetch(`${API_URL}/api/vehicle-history/status/${id}/`);
@@ -39,8 +39,6 @@ const Timeline = ({ vin }) => {
 
             if (statusData.status === "success") {
               const timelineData = statusData.timeline || [];
-              console.log("✅ Otrzymana odpowiedź:", statusRes);
-              console.log("✅ Otrzymana odpowiedź w json:", statusData);
               setTimeline(timelineData);
               setLoading(false);
             } else if (statusData.status === "failure") {
