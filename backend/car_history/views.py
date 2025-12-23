@@ -200,7 +200,7 @@ class VehicleHistoryPDFView(generics.RetrieveAPIView):
             # Powiązane dane
             service_entries = ServiceEntry.objects.filter(vehicle=vehicle).order_by("-date")
             damage_entries = DamageEntry.objects.filter(vehicle=vehicle).order_by("-date")
-            cloudinary_url = f"https://res.cloudinary.com/{settings.CLOUDINARY_CLOUD_NAME}/image/upload/"
+            cloudinary_url = f"https://res.cloudinary.com/{settings.CLOUDINARY_CLOUD_NAME}/image/upload/v1766490737/images/auto-linienziehbaren.jpg.jpg"
 
             # Render HTML
             html_string = render_to_string("vehicle_history_pdf.html", {
