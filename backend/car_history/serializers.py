@@ -581,8 +581,8 @@ class VehicleSaleSerializer(serializers.ModelSerializer):
 
         # Pobieramy listę URL-i zdjęć pojazdu
         images = []
-        for img in vehicle.vehicleimage_set.all():
-            url = img.image 
+        for img in vehicle.images.all():
+            url = img.image  # Cloudinary zawsze zwraca pełny URL jako string
             images.append(url)
 
         return {
