@@ -580,10 +580,10 @@ class VehicleSaleSerializer(serializers.ModelSerializer):
         generation = vehicle.generation
 
         # Pobieramy listę URL-i zdjęć pojazdu
-        images = [
-            f"http://localhost:8000{img.image.url}"  # dodaj host, żeby frontend mógł pobrać
-            for img in vehicle.images.all()
-        ]
+        images = []
+        for img in vehicle.vehicleimage_set.all():
+            url = img.image 
+            images.append(url)
 
         return {
             "vin": vehicle.vin,
