@@ -52,10 +52,10 @@ from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth import get_user_model, update_session_auth_hash
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.http import Http404, JsonResponse, HttpResponse
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-import logging, shutil, os, json, requests, django_filters, base64
+import logging, shutil, os, json, requests, django_filters
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from bs4 import BeautifulSoup
@@ -68,13 +68,17 @@ from django.db.models import F, Prefetch
 from .tasks import scrape_vehicle_history, refresh_discussions_cache_task
 from celery.result import AsyncResult
 from cloudinary.uploader import upload
-
 from django.contrib.staticfiles import finders
 
 logger = logging.getLogger(__name__)
-
-
 User = get_user_model()
+
+
+def template_context(request):
+    context = {
+        'cloudinary': f"https://res.cloudinary.com/{settings.CLOUDINARY_CLOUD_NAME}/image/upload/",
+    }
+    return render(request, 'vehicle_history_pdf.html', context)
 
 @api_view(["GET"])
 def get_verification_code(request):
