@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-import os, django, rest_framework
+import os
 from dotenv import load_dotenv
 from datetime import timedelta
 
@@ -40,12 +40,11 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'car_history','static'),
-    os.path.join(os.path.dirname(django.__file__), 'contrib', 'admin', 'static'),
-    os.path.join(os.path.dirname(rest_framework.__file__), 'static', 'rest_framework'),
+    os.path.join(BASE_DIR, 'car_history', 'static'),
 ]
 
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+
 
 
 
