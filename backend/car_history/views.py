@@ -74,12 +74,6 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-def template_context(request):
-    context = {
-        'cloudinary': f"https://res.cloudinary.com/{settings.CLOUDINARY_CLOUD_NAME}/image/upload/",
-    }
-    return render(request, 'vehicle_history_pdf.html', context)
-
 @api_view(["GET"])
 def get_verification_code(request):
     email = request.GET.get("email")
@@ -206,12 +200,14 @@ class VehicleHistoryPDFView(generics.RetrieveAPIView):
             # Powiązane dane
             service_entries = ServiceEntry.objects.filter(vehicle=vehicle).order_by("-date")
             damage_entries = DamageEntry.objects.filter(vehicle=vehicle).order_by("-date")
+            cloudinary_url = f"https://res.cloudinary.com/{settings.CLOUDINARY_CLOUD_NAME}/image/upload/"
 
             # Render HTML
             html_string = render_to_string("vehicle_history_pdf.html", {
                 "vehicle": vehicle,
                 "service_entries": service_entries,
                 "damage_entries": damage_entries,
+                "cloudinary": cloudinary_url,
             })
 
             # CSS dla PDF
