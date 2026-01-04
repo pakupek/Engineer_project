@@ -3,7 +3,7 @@
 # =========================
 FROM node:20-alpine AS deps
 WORKDIR /app/frontend
-COPY frontend/package.json frontend/package-lock.json ./
+COPY package.json package-lock.json ./
 RUN npm ci --legacy-peer-deps
 
 # =========================
