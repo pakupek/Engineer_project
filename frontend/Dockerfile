@@ -12,7 +12,7 @@ RUN npm ci --legacy-peer-deps
 FROM node:20-alpine AS builder
 WORKDIR /app/frontend
 COPY --from=deps /app/frontend/node_modules ./node_modules
-COPY frontend .
+COPY . .
 RUN npm run build
 
 # =========================
