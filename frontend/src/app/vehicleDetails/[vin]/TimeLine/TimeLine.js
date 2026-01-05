@@ -8,7 +8,7 @@ const Timeline = ({ vin }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [taskId, setTaskId] = useState(null);
-  const API_URL = 'https://backend-production-8ce8.up.railway.app';
+  const API_URL = 'backend-production-0265.up.railway.app';
 
   useEffect(() => {
     if (!vin) return;
