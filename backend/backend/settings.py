@@ -89,8 +89,6 @@ ALLOWED_HOSTS = [
     'dev-django',
     'engineer-project.onrender.com',
     'frontend-okdn.onrender.com',
-    'backend-production-8ce8.up.railway.app',
-    'frontend-production-9908.up.railway.app',
 ]
 AUTH_USER_MODEL = 'car_history.User'
 
@@ -156,7 +154,6 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "https://frontend-okdn.onrender.com",
-    "https://frontend-production-9908.up.railway.app",
 ]
 
 CORS_ALLOW_HEADERS = [
@@ -174,7 +171,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
-    "https://frontend-production-9908.up.railway.app",
+    "https://frontend-okdn.onrender.com",
 ]
 
 
