@@ -39,7 +39,7 @@ export function VehicleInformation({ car, setCar }){
   const [showSaleForm, setShowSaleForm] = useState(false);
   const router = useRouter();
   const [showEdit, setShowEdit] = useState(false);
-  const API_URL = 'https://backend-production-8ce8.up.railway.app';
+  const API_URL = 'https://engineer-project.onrender.com';
   // Funkcja do odświeżania danych po edycji
   const handleVehicleUpdated = (updatedVehicle) => {
     setCar(updatedVehicle); // aktualizuje dane od razu

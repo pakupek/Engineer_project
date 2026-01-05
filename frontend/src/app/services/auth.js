@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_URL = 'https://backend-production-8ce8.up.railway.app';
+const API_URL = 'https://engineer-project.onrender.com';
 
 // Konfiguracja axios z interceptors
 const api = axios.create({
