@@ -544,7 +544,7 @@ class VehicleHistory:
         try:
             await self.page.wait_for_selector(
                 "//section[.//h2[contains(., 'Dane techniczne')]]",
-                timeout=10000
+                timeout=30000
             )
 
             section_html = await self.page.locator(
@@ -597,7 +597,7 @@ class VehicleHistory:
             )
 
             # poczekaj aż zakładka będzie dostępna
-            await tab.wait_for(state="visible", timeout=10000)
+            await tab.wait_for(state="visible", timeout=30000)
 
             # klik przez JS (KLUCZOWE)
             await tab.evaluate("el => el.click()")
@@ -605,7 +605,7 @@ class VehicleHistory:
             # poczekaj aż Angular załaduje oś czasu
             await self.page.wait_for_selector(
                 "app-axis ul li",
-                timeout=10000
+                timeout=30000
             )
 
             # pobierz całość
