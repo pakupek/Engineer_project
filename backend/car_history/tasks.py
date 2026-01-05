@@ -8,15 +8,37 @@ from django.db import transaction
 from django.core.files.base import ContentFile
 
 logger = logging.getLogger(__name__)
-_vehicle_history_cache = {}
 
-@shared_task()
-def scrape_vehicle_history(registration, vin, production_date):
+
+@shared_task(bind=True)
+def scrape_vehicle_history(self, registration, vin, production_date):
     """
-    Wywołuje async scraper Playwright w synchronej powłoce Celery
+    Wywołuje async scraper Playwright w synchronicznej powłoce Celery
     """
-    # Uruchamiamy async 
-    return asyncio.run(_scrape_async(registration, vin, production_date))
+    try:
+        # Ustaw status na "processing"
+        cache.set(f'vehicle_task_{self.request.id}', {'status': 'processing'}, timeout=3600)
+        
+        # Uruchom async scraper
+        result = asyncio.run(_scrape_async(registration, vin, production_date))
+        
+        if result:
+            # Zapisz wynik do cache (Redis)
+            cache.set(f'vehicle_history_{vin}', result, timeout=3600)
+            cache.set(f'vehicle_task_{self.request.id}', {
+                'status': 'completed',
+                'vin': vin
+            }, timeout=3600)
+            
+        return result
+        
+    except Exception as e:
+        logger.error(f"Błąd w scrape_vehicle_history: {e}")
+        cache.set(f'vehicle_task_{self.request.id}', {
+            'status': 'failed',
+            'error': str(e)
+        }, timeout=3600)
+        raise
 
 
 async def _scrape_async(registration, vin, production_date):
@@ -25,8 +47,6 @@ async def _scrape_async(registration, vin, production_date):
     """
     vh = VehicleHistory(registration, vin, production_date)
     result = await vh.search()
-    if result:
-        _vehicle_history_cache[vin] = result  # zapis do wspólnego cache w procesie Celery
     return result
 
 
