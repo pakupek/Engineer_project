@@ -17,9 +17,6 @@ echo "Upload media files to cloudinary"
 poetry run python manage.py upload_cloudinary
 echo "==============================="
 
-echo "Collect static files"
-poetry run python manage.py collectstatic --noinput
-echo "==============================="
 
 echo "Start server"
 # Gunicorn: 4 workerów, bind do portu Render
