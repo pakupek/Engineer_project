@@ -31,7 +31,7 @@ export default function CarDetails() {
   const [editingDamage, setEditingDamage] = useState(null);
   const handleEditEntry = (entry) => setEditingEntry(entry);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
-  const API_URL = 'backend-production-0265.up.railway.app';
+  const API_URL = 'https://backend-production-0265.up.railway.app';;
 
   const handleSave = () => {
     setEditingEntry(null);

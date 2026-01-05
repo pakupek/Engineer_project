@@ -10,7 +10,7 @@ export default function EditVehicleModal({ vin, onClose, onUpdated }) {
   const [images, setImages] = useState([]);
   const [formData, setFormData] = useState({});
   const token = getToken();
-  const API_URL = 'backend-production-0265.up.railway.app';
+  const API_URL = 'https://backend-production-0265.up.railway.app';;
 
   // Blokowanie scrolla w tle przy otwartym modalu
   useEffect(() => {

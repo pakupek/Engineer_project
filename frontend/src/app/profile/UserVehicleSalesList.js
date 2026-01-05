@@ -10,7 +10,7 @@ export default function UserVehicleSalesList() {
   const [sales, setSales] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
-  const API_URL = 'backend-production-0265.up.railway.app';
+  const API_URL = 'https://backend-production-0265.up.railway.app';;
   
   const handleDeleteSale = (id) => {
     setSales((prev) => prev.filter((sale) => sale.id !== id));

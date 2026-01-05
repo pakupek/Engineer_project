@@ -8,7 +8,7 @@ export default function DamageHistory({ onEditDamage }) {
   const [loading, setLoading] = useState(true);
   const { vin } = useParams();
   const [editingDamage, setEditingDamage] = useState(null);
-  const API_URL = 'backend-production-0265.up.railway.app';
+  const API_URL = 'https://backend-production-0265.up.railway.app';;
   
 
   const fetchDamageHistory = async () => {

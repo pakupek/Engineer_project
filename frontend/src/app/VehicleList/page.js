@@ -13,7 +13,7 @@ export default function VehiclesPage() {
   const [filters, setFilters] = useState({});
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const API_URL = 'backend-production-0265.up.railway.app';
+  const API_URL = 'https://backend-production-0265.up.railway.app';;
 
   const handleFilterChange = (updatedFilters) => {
     setFilters(updatedFilters);

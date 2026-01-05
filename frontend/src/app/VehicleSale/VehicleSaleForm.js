@@ -9,7 +9,7 @@ export default function VehicleSaleForm({ vin, onSaleCreated }) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [vehicleData, setVehicleData] = useState(null);
-  const API_URL = 'backend-production-0265.up.railway.app';
+  const API_URL = 'https://backend-production-0265.up.railway.app';;
 
   // Pobierz dane pojazdu
   useEffect(() => {
