@@ -14,7 +14,7 @@ export default function Register() {
   });
   const [errors, setErrors] = useState({});
   const router = useRouter();
-  const API_URL = 'https://backend-production-8ce8.up.railway.app';
+  const API_URL = 'https://engineer-project.onrender.com';
 
   const validateForm = () => {
     const newErrors = {};

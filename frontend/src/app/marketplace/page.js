@@ -15,7 +15,7 @@ export default function VehicleSalesList() {
   });
   const [makes, setMakes] = useState([]);
   const [models, setModels] = useState([]);
-  const API_URL = 'https://backend-production-8ce8.up.railway.app';
+  const API_URL = 'https://engineer-project.onrender.com';
 
   // Pobranie listy ogłoszeń + filtrów
   useEffect(() => {

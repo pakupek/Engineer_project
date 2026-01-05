@@ -7,7 +7,7 @@ export default function TechnicalData({ vin }) {
     const [technicalData, setTechnicalData] = useState(null);
     const [taskId, setTaskId] = useState(null);
     const [loading, setLoading] = useState(false);
-    const API_URL = 'https://backend-production-8ce8.up.railway.app';
+    const API_URL = 'https://engineer-project.onrender.com';
     // Pobranie danych technicznych pojazdu
     useEffect(() => {
       let interval;

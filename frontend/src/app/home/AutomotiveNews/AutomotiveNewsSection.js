@@ -7,7 +7,7 @@ export default function AutomotiveNewsSection() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const API_URL = 'https://backend-production-8ce8.up.railway.app';
+  const API_URL = 'https://engineer-project.onrender.com';
 
   useEffect(() => {
     async function loadData() {

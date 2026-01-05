@@ -9,7 +9,7 @@ export default function DamageFormContainer({ damageToEdit, onEditComplete}) {
   const { vin } = useParams();
   const [markers, setMarkers] = useState([]);
   const [selectedSeverity, setSelectedSeverity] = useState("drobne");
-  const API_URL = 'https://backend-production-8ce8.up.railway.app';
+  const API_URL = 'https://engineer-project.onrender.com';
 
   // Wczytaj istniejące markery przy edycji
   useEffect(() => {

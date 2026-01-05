@@ -10,7 +10,7 @@ export default function VehicleSaleDetail({ saleId }) {
   const [selectedImage, setSelectedImage] = useState(0);
   const [showPhone, setShowPhone] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
-  const API_URL = 'https://backend-production-8ce8.up.railway.app';
+  const API_URL = 'https://engineer-project.onrender.com';
 
   const handleDownloadPdf = async () => {
     try {
