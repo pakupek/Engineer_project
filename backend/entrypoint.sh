@@ -17,9 +17,12 @@ echo "Upload media files to cloudinary"
 poetry run python manage.py upload_cloudinary
 echo "==============================="
 
-echo "Collect static files"
-poetry run python manage.py collectstatic --noinput
-echo "==============================="
+# Uruchom Celery w tle
+echo "Starting Celery worker..."
+poetry run celery -A backend worker --loglevel=info --detach
+
+echo "Starting Celery beat..."
+poetry run celery -A backend beat --loglevel=info --detach
 
 echo "Start server"
 # Gunicorn: 4 workerów, bind do portu Render
