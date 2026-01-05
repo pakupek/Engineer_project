@@ -6,7 +6,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
 
 app = Celery(
     'backend',
-    broker=os.environ.get("REDIS_URL"),
-    backend=os.environ.get("REDIS_URL"),) 
+    broker=os.environ.get("CELERY_BROKER_URL"),
+    backend=os.environ.get("CELERY_RESULT_BACKEND"),) 
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
