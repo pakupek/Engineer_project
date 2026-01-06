@@ -50,14 +50,85 @@ export default function ForumDetailClient({ initialDiscussion, initialComments, 
     if (page > 1) setPage(page - 1);
   };
 
+  // Kompresja zdjęć przed wysłaniem
+  const compressImage = (file, options = {}) => {
+    const {
+      maxWidth = 1920,
+      maxHeight = 1920,
+      quality = 0.75,
+      type = "image/jpeg",
+    } = options;
 
-  const handleImageChange = (e) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        img.src = reader.result;
+      };
+
+      img.onload = () => {
+        let { width, height } = img;
+
+        // zachowanie proporcji
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject("Kompresja nie powiodła się");
+
+            const compressedFile = new File([blob], file.name, {
+              type,
+              lastModified: Date.now(),
+            });
+
+            resolve(compressedFile);
+          },
+          type,
+          quality
+        );
+      };
+
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+
+
+  const handleImageChange = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 5) {
       alert("Można dodać maksymalnie 5 zdjęć");
       return;
     }
-    setImages(files);
+    try {
+      const compressed = await Promise.all(
+        files.map((file) =>
+          compressImage(file, {
+            maxWidth: 1600,
+            maxHeight: 1600,
+            quality: 0.7,
+          })
+        )
+      );
+
+      setImages(compressed);
+    } catch (err) {
+      console.error("Błąd kompresji:", err);
+      alert("Nie udało się skompresować zdjęć");
+    }
   };
   
 
