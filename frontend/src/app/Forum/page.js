@@ -35,7 +35,7 @@ export default function Forum() {
     const [page, setPage] = useState(1); 
     const [pageCount, setPageCount] = useState(1);
     const [images, setImages] = useState([]);
-    const API_URL = 'https://backend-production-0265.up.railway.app';;
+    const API_URL = 'https://backend-production-15b8.up.railway.app';;
 
     const handleImageChange = (e) => {
         const files = Array.from(e.target.files);

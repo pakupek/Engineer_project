@@ -7,7 +7,7 @@ import Image from "next/image";
 
 export default function VehicleSaleCard({ sale, onDelete }) {
   const v = sale.vehicle_info;
-  const API_URL = 'https://backend-production-0265.up.railway.app';;
+  const API_URL = 'https://backend-production-15b8.up.railway.app';;
 
   const handleDelete = async () => {
     if (!confirm("Czy na pewno chcesz usunąć to ogłoszenie?")) return;

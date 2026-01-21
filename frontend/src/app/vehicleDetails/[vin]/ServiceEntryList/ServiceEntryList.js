@@ -11,7 +11,7 @@ export default function ServiceEntriesList({ vin, onEditEntry }) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const API_URL = 'https://backend-production-0265.up.railway.app';;
+  const API_URL = 'https://backend-production-15b8.up.railway.app';;
   const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   // 🔹 Blokada scrollowania strony gdy modal jest otwarty

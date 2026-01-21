@@ -6,7 +6,7 @@ import styles from "./VehicleImages.module.css";
 
 export default function VehicleImages({ car }) {
     const [current, setCurrent] = useState(0);
-    const API_URL = 'https://backend-production-0265.up.railway.app';;
+    const API_URL = 'https://backend-production-15b8.up.railway.app';;
     const images =
         car?.images
         ?.filter((imgObj) => imgObj?.image && imgObj.image.trim() !== "")

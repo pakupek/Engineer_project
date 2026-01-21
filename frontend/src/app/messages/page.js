@@ -25,7 +25,7 @@ function MessagesContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const messagesEndRef = useRef(null);
   const router = useRouter();
-  const API_URL = 'https://backend-production-0265.up.railway.app';;
+  const API_URL = 'https://backend-production-15b8.up.railway.app';
 
   // Auto-scroll do najnowszej wiadomości
   const scrollToBottom = () => {

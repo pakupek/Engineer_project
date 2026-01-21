@@ -14,7 +14,7 @@ export default function Register() {
   });
   const [errors, setErrors] = useState({});
   const router = useRouter();
-  const API_URL = 'https://backend-production-0265.up.railway.app';;
+  const API_URL = 'https://backend-production-15b8.up.railway.app';;
 
   const validateForm = () => {
     const newErrors = {};

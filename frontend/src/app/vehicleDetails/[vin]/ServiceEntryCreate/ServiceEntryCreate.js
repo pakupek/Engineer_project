@@ -13,7 +13,7 @@ export default function ServiceEntryCreate({ vin, editingEntry, onSave }) {
     cost: "",
     invoice_image: null,
   });
-  const API_URL = 'https://backend-production-0265.up.railway.app';;
+  const API_URL = 'https://backend-production-15b8.up.railway.app';;
 
   // 🔹 Gdy kliknięto "Edytuj" — wypełnij formularz danymi wpisu
   useEffect(() => {

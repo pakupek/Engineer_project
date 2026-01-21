@@ -7,7 +7,7 @@ export default function SaleForm({ vin, onSaleAdded }) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [history, setHistory] = useState({ damages: [], services: [] });
-  const API_URL = 'https://backend-production-0265.up.railway.app';;
+  const API_URL = 'https://backend-production-15b8.up.railway.app';;
 
   useEffect(() => {
     if (vin) {
